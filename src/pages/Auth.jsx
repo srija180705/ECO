@@ -1,6 +1,8 @@
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 function Auth() {
+  const navigate = useNavigate()
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -22,7 +24,7 @@ function Auth() {
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
-    
+
     // Basic validation
     if (!formData.email || !formData.password) {
       setError('Please fill in all required fields')
@@ -37,7 +39,7 @@ function Auth() {
     try {
       setLoading(true)
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
-      const payload = isLogin 
+      const payload = isLogin
         ? { email: formData.email, password: formData.password }
         : { name: formData.name, email: formData.email, password: formData.password }
 
@@ -57,9 +59,9 @@ function Auth() {
       localStorage.setItem('token', data.token)
       localStorage.setItem('user', JSON.stringify(data.user))
 
-      alert(`${isLogin ? 'Login' : 'Registration'} successful!\n\nWelcome ${data.user.name}!`)
       setFormData({ name: '', email: '', password: '' })
-      
+      navigate('/dashboard')
+
     } catch (err) {
       setError(err.message || 'An error occurred')
       console.error('Auth error:', err)
