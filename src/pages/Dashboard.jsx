@@ -1,11 +1,26 @@
-import React from 'react';
+import React, { useState, useMemo } from 'react';
 import { useLocation } from 'react-router-dom';
 import './Dashboard.css';
+import { mockDB } from '../data/mockData';
 
 function Dashboard() {
   const location = useLocation();
   const user = location.state && location.state.user;
   const firstName = user?.name ? user.name.split(' ')[0] : 'Volunteer';
+
+  const [q, setQ] = useState("");
+  const [category, setCategory] = useState("all");
+
+  const filteredEvents = useMemo(() => {
+    return mockDB.events.filter((ev) => {
+      const matchQ =
+        ev.title.toLowerCase().includes(q.toLowerCase()) ||
+        ev.location.toLowerCase().includes(q.toLowerCase()) ||
+        ev.category.toLowerCase().includes(q.toLowerCase());
+      const matchCat = category === "all" || ev.category.toLowerCase() === category.toLowerCase();
+      return matchQ && matchCat;
+    });
+  }, [q, category]);
 
   return (
     <div className="dashboard-layout">
@@ -67,15 +82,22 @@ function Dashboard() {
               type="text" 
               placeholder="Search events by name, location, or category..." 
               className="search-input"
+              value={q}
+              onChange={(e) => setQ(e.target.value)}
             />
           </div>
           <button className="filter-btn">
              <span>⚙️</span> Filters
           </button>
-          <select className="category-select">
-            <option>All</option>
-            <option>Cleanup</option>
-            <option>Tree Planting</option>
+          <select 
+            className="category-select"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+          >
+            <option value="all">All</option>
+            <option value="cleanup">Cleanup</option>
+            <option value="planting">Planting</option>
+            <option value="recycling">Recycling</option>
           </select>
         </div>
 
@@ -121,37 +143,29 @@ function Dashboard() {
         <section className="upcoming-events">
           <h2>Upcoming Events Near You</h2>
           <div className="events-grid">
-            <div className="event-card">
-              <div className="event-card-header">
-                <h3>Necklace Road Plastic Pickup</h3>
-                <div className="event-reward">
-                  <span className="reward-icon">🏵️</span>
-                  <span className="reward-points">50</span>
+            {filteredEvents.length === 0 ? (
+              <div style={{ padding: 40, textAlign: "center", color: "#666", gridColumn: "1 / -1" }}>
+                No events found. Try adjusting your search or filters.
+              </div>
+            ) : (
+              filteredEvents.map(event => (
+                <div className="event-card" key={event.id}>
+                  <div className="event-card-header">
+                    <h3>{event.title}</h3>
+                    <div className="event-reward">
+                      <span className="reward-icon">🏵️</span>
+                      <span className="reward-points">{event.points}</span>
+                    </div>
+                    <button className="join-btn">Join</button>
+                  </div>
+                  <span className="event-badge">{event.category}</span>
+                  <div className="event-details">
+                    <p>📅 {new Date(event.dateISO).toDateString()}</p>
+                    <p>📍 {event.location} {event.distanceKm ? `(${event.distanceKm} km)` : ''}</p>
+                  </div>
                 </div>
-                <button className="join-btn">Join</button>
-              </div>
-              <span className="event-badge">cleanup</span>
-              <div className="event-details">
-                <p>📅 Sun Feb 15 2026</p>
-                <p>📍 Necklace Road, Hyderabad</p>
-              </div>
-            </div>
-
-            <div className="event-card">
-              <div className="event-card-header">
-                <h3>Gachibowli Park Beach Cleanup</h3>
-                <div className="event-reward">
-                  <span className="reward-icon">🏵️</span>
-                  <span className="reward-points">45</span>
-                </div>
-                <button className="join-btn">Join</button>
-              </div>
-              <span className="event-badge">cleanup</span>
-              <div className="event-details">
-                <p>📅 Mon Feb 16 2026</p>
-                <p>📍 Gachibowli Stadium Park, Hyderabad</p>
-              </div>
-            </div>
+              ))
+            )}
           </div>
         </section>
       </main>
