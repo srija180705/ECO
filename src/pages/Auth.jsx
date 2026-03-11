@@ -55,12 +55,10 @@ function Auth() {
         throw new Error(data.message || 'Authentication failed')
       }
 
-      // Save token to localStorage
-      localStorage.setItem('token', data.token)
-      localStorage.setItem('user', JSON.stringify(data.user))
-
+      // Successful auth – do NOT store anything persistent
+      // Just navigate to dashboard, mark that we came from Auth, and pass user data
       setFormData({ name: '', email: '', password: '' })
-      navigate('/dashboard')
+      navigate('/dashboard', { state: { fromAuth: true, user: data.user } })
 
     } catch (err) {
       setError(err.message || 'An error occurred')

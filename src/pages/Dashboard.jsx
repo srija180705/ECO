@@ -1,13 +1,11 @@
 import React from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import './Dashboard.css';
 
 function Dashboard() {
-  const navigate = useNavigate();
-
-  // Try to get user from localStorage
-  const user = JSON.parse(localStorage.getItem('user')) || { name: 'Sarah' };
-  const firstName = user.name.split(' ')[0];
+  const location = useLocation();
+  const user = location.state && location.state.user;
+  const firstName = user?.name ? user.name.split(' ')[0] : 'Volunteer';
 
   return (
     <div className="dashboard-layout">

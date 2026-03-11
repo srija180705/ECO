@@ -1,7 +1,18 @@
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'react-router-dom'
 import Splash from './pages/Splash'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
+
+// Protected route wrapper using navigation state only
+function PrivateRoute({ children }) {
+  const location = useLocation()
+  const fromAuth = location.state && location.state.fromAuth
+
+  if (!fromAuth) {
+    return <Navigate to="/auth" replace />
+  }
+  return children
+}
 
 function App() {
   return (
@@ -9,7 +20,14 @@ function App() {
       <Routes>
         <Route path="/" element={<Splash />} />
         <Route path="/auth" element={<Auth />} />
-        <Route path="/dashboard" element={<Dashboard />} />
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <Dashboard />
+            </PrivateRoute>
+          }
+        />
       </Routes>
     </Router>
   )
