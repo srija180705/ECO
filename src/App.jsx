@@ -2,6 +2,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import Splash from './pages/Splash'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
+import Profile from './pages/Profile'
 
 // Protected route wrapper using navigation state only
 function PrivateRoute({ children }) {
@@ -25,6 +26,14 @@ function App() {
           element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <PrivateRoute>
+              <Profile />
             </PrivateRoute>
           }
         />

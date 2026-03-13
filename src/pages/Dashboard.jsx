@@ -1,10 +1,11 @@
 import React, { useState, useMemo } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import { mockDB } from '../data/mockData';
 
 function Dashboard() {
   const location = useLocation();
+  const navigate = useNavigate();
   const user = location.state && location.state.user;
   const firstName = user?.name ? user.name.split(' ')[0] : 'Volunteer';
 
@@ -24,11 +25,10 @@ function Dashboard() {
 
   return (
     <div className="dashboard-layout">
-      {/* Sidebar */}
+      {/* Sidebar - Kept as team standard */}
       <aside className="sidebar">
         <div className="sidebar-brand">
           <div className="brand-logo">
-            {/* Leaf SVG */}
             <svg viewBox="0 0 24 24" fill="white" xmlns="http://www.w3.org/2000/svg">
                <path d="M17.5 2.5C17.5 2.5 12 2.5 8 6.5C4.5 10 4.5 16 4.5 16C4.5 16 10.5 16 14 12.5C18 8.5 17.5 2.5 17.5 2.5ZM12 11.5L8 15.5C8 15.5 9 16.5 10 17.5L14 13.5L12 11.5Z" />
             </svg>
@@ -40,26 +40,18 @@ function Dashboard() {
         </div>
 
         <nav className="sidebar-nav">
-          <a href="#" className="nav-item active">
-            <span className="nav-icon">🏠</span>
-            Home
-          </a>
-          <a href="#" className="nav-item">
-            <span className="nav-icon">👥</span>
-            Community
-          </a>
-          <a href="#" className="nav-item">
-            <span className="nav-icon">📍</span>
-            Map
-          </a>
-          <a href="#" className="nav-item">
-            <span className="nav-icon">🎁</span>
-            Rewards
-          </a>
-          <a href="#" className="nav-item">
-            <span className="nav-icon">👤</span>
-            Profile
-          </a>
+          <a href="#" className="nav-item active">🏠 Home</a>
+          <a href="#" className="nav-item">👥 Community</a>
+          <a href="#" className="nav-item">📍 Map</a>
+          <a href="#" className="nav-item">🎁 Rewards</a>
+          <button
+            type="button"
+            className="nav-item"
+            onClick={() => navigate('/profile', { state: { fromAuth: true, user } })}
+            style={{ textAlign: 'left', background: 'none', border: 'none', padding: 0 }}
+          >
+            👤 Profile
+          </button>
         </nav>
       </aside>
 
@@ -70,8 +62,11 @@ function Dashboard() {
             <h2>Welcome back, {firstName} <span className="wave">👋</span></h2>
             <p>Find your next volunteering opportunity</p>
           </div>
-          <button className="map-view-btn">
-            <span className="icon">🗺️</span> Map View
+          <button 
+            onClick={() => navigate('/auth')} 
+            style={{ padding: '8px 16px', backgroundColor: '#d32f2f', color: 'white', border: 'none', borderRadius: '6px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            Logout
           </button>
         </header>
 
@@ -80,15 +75,12 @@ function Dashboard() {
             <span className="search-icon">🔍</span>
             <input 
               type="text" 
-              placeholder="Search events by name, location, or category..." 
+              placeholder="Search events..." 
               className="search-input"
               value={q}
               onChange={(e) => setQ(e.target.value)}
             />
           </div>
-          <button className="filter-btn">
-             <span>⚙️</span> Filters
-          </button>
           <select 
             className="category-select"
             value={category}
@@ -101,74 +93,39 @@ function Dashboard() {
           </select>
         </div>
 
-        <div className="stats-grid">
-          <div className="stat-card stat-green">
-            <div className="stat-icon-wrapper">
-              <span className="stat-icon">🏵️</span>
-            </div>
-            <div className="stat-info">
-              <h3>0</h3>
-              <p>Total Points</p>
-            </div>
-          </div>
-          <div className="stat-card stat-blue">
-            <div className="stat-icon-wrapper">
-              <span className="stat-icon">📅</span>
-            </div>
-            <div className="stat-info">
-              <h3>0</h3>
-              <p>Events Joined</p>
-            </div>
-          </div>
-          <div className="stat-card stat-purple">
-            <div className="stat-icon-wrapper">
-              <span className="stat-icon">📍</span>
-            </div>
-            <div className="stat-info">
-              <h3>0</h3>
-              <p>Nearby Events</p>
-            </div>
-          </div>
-          <div className="stat-card stat-orange">
-            <div className="stat-icon-wrapper">
-              <span className="stat-icon">🏆</span>
-            </div>
-            <div className="stat-info">
-              <h3>1</h3>
-              <p>Badges Earned</p>
-            </div>
-          </div>
-        </div>
-
         <section className="upcoming-events">
           <h2>Upcoming Events Near You</h2>
           <div className="events-grid">
-            {filteredEvents.length === 0 ? (
-              <div style={{ padding: 40, textAlign: "center", color: "#666", gridColumn: "1 / -1" }}>
-                No events found. Try adjusting your search or filters.
+            {filteredEvents.map(event => (
+              <div className="event-card" key={event.id}>
+                <h3>{event.title}</h3>
+                <p>📅 {new Date(event.dateISO).toDateString()}</p>
+                <p>📍 {event.location}</p>
+                <button className="join-btn">Join</button>
               </div>
-            ) : (
-              filteredEvents.map(event => (
-                <div className="event-card" key={event.id}>
-                  <div className="event-card-header">
-                    <h3>{event.title}</h3>
-                    <div className="event-reward">
-                      <span className="reward-icon">🏵️</span>
-                      <span className="reward-points">{event.points}</span>
-                    </div>
-                    <button className="join-btn">Join</button>
-                  </div>
-                  <span className="event-badge">{event.category}</span>
-                  <div className="event-details">
-                    <p>📅 {new Date(event.dateISO).toDateString()}</p>
-                    <p>📍 {event.location} {event.distanceKm ? `(${event.distanceKm} km)` : ''}</p>
-                  </div>
-                </div>
-              ))
-            )}
+            ))}
           </div>
         </section>
-      </main>
+
+        {/* --- AKARSHAN'S CONTRIBUTION: MISSION & FAQ --- */}
+        <section className="info-section" style={{ padding: '30px', backgroundColor: '#f9f9f9', borderRadius: '15px', marginTop: '40px', border: '1px solid #e0e0e0' }}>
+          <h2 style={{ color: '#2e7d32', marginBottom: '15px' }}>About Our Mission</h2>
+          <p style={{ fontSize: '1.1rem', lineHeight: '1.6' }}>
+            The <b>Eco-Volunteer Match</b> platform is designed to streamline the connection between volunteers and local environmental initiatives in Hyderabad.
+          </p>
+          
+          <h3 style={{ color: '#2e7d32', marginTop: '25px' }}>Frequently Asked Questions</h3>
+          <details style={{ marginBottom: '12px', cursor: 'pointer', padding: '15px', backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #eee' }}>
+            <summary style={{ fontWeight: 'bold' }}>How do I track my impact?</summary>
+            <p style={{ marginTop: '10px', color: '#555' }}>Your dashboard updates automatically once a drive organizer confirms your participation.</p>
+          </details>
+          <details style={{ cursor: 'pointer', padding: '15px', backgroundColor: '#fff', borderRadius: '10px', border: '1px solid #eee' }}>
+            <summary style={{ fontWeight: 'bold' }}>Can I lead my own drive?</summary>
+            <p style={{ marginTop: '10px', color: '#555' }}>Currently, drive creation is restricted to verified organizers. You can apply for 'Lead' status in profile settings.</p>
+          </details>
+        </section>
+
+      </main> 
     </div>
   );
 }

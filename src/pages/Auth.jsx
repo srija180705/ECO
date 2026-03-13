@@ -38,27 +38,24 @@ function Auth() {
 
     try {
       setLoading(true)
-      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
-      const payload = isLogin
-        ? { email: formData.email, password: formData.password }
-        : { name: formData.name, email: formData.email, password: formData.password }
 
-      const response = await fetch(`http://localhost:4000${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      })
+      // MOCKED AUTH FLOW (no backend):
+      // Pretend to call a server, then build a user object from the form data.
+      await new Promise(resolve => setTimeout(resolve, 600))
 
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.message || 'Authentication failed')
+      const mockUser = {
+        id: 'mock-user-1',
+        name: isLogin ? (formData.name || 'Eco Volunteer') : formData.name,
+        email: formData.email,
+        city: 'Hyderabad',
+        points: 1520,
+        badges: ['b1', 'b2', 'b3'],
+        joinedEventIds: ['e1', 'e3', 'e6', 'e8'],
+        interests: ['cleanup', 'planting', 'recycling'],
       }
 
-      // Successful auth – do NOT store anything persistent
-      // Just navigate to dashboard, mark that we came from Auth, and pass user data
       setFormData({ name: '', email: '', password: '' })
-      navigate('/dashboard', { state: { fromAuth: true, user: data.user } })
+      navigate('/dashboard', { state: { fromAuth: true, user: mockUser } })
 
     } catch (err) {
       setError(err.message || 'An error occurred')
