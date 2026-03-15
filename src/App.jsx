@@ -3,6 +3,7 @@ import Splash from './pages/Splash'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
+import MapView from './pages/MapView'
 
 // Protected route wrapper using navigation state only
 function PrivateRoute({ children }) {
@@ -26,6 +27,14 @@ function App() {
           element={
             <PrivateRoute>
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/map"
+          element={
+            <PrivateRoute>
+              <MapView />
             </PrivateRoute>
           }
         />

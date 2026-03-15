@@ -39,6 +39,10 @@ function Dashboard() {
     navigate('/auth');
   };
 
+  const handleOpenMap = () => {
+    navigate('/map', { state: { fromAuth: true, user } });
+  };
+
   return (
     <div className="dashboard-layout">
       {/* Sidebar */}
@@ -65,7 +69,14 @@ function Dashboard() {
               <span className="nav-icon">👥</span>
               <span>Community</span>
             </button>
-            <button type="button" className={`nav-item ${activeTab === 'map' ? 'active' : ''}`} onClick={() => setActiveTab('map')}>
+            <button
+              type="button"
+              className={`nav-item ${activeTab === 'map' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('map');
+                navigate('/map', { state: { fromAuth: true, user } });
+              }}
+            >
               <span className="nav-icon">📍</span>
               <span>Map</span>
             </button>
@@ -105,7 +116,7 @@ function Dashboard() {
                 <h2>Welcome back, {firstName} <span className="wave">👋</span></h2>
                 <p>Find your next volunteering opportunity</p>
               </div>
-              <button className="map-view-btn">
+              <button className="map-view-btn" onClick={handleOpenMap}>
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <rect x="3" y="3" width="7" height="7" />
                   <rect x="14" y="3" width="7" height="7" />
