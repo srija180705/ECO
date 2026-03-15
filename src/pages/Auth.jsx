@@ -39,26 +39,43 @@ function Auth() {
     try {
       setLoading(true)
 
-      // MOCKED AUTH FLOW (no backend):
-      // Pretend to call a server, then build a user object from the form data.
-      await new Promise(resolve => setTimeout(resolve, 600))
+      const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
+      const body = isLogin
+        ? { email: formData.email, password: formData.password }
+        : { name: formData.name, email: formData.email, password: formData.password }
 
-      const mockUser = {
-        id: 'mock-user-1',
-        name: isLogin ? (formData.name || 'Eco Volunteer') : formData.name,
-        email: formData.email,
-        city: 'Hyderabad',
-        points: 1520,
-        badges: ['b1', 'b2', 'b3'],
-        joinedEventIds: ['e1', 'e3', 'e6', 'e8'],
-        interests: ['cleanup', 'planting', 'recycling'],
+      const res = await fetch(`http://localhost:4000${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      })
+
+      const data = await res.json()
+
+      if (!res.ok) {
+        setError(data.message || 'Authentication failed')
+        return
+      }
+
+      // Store token in localStorage
+      localStorage.setItem('token', data.token)
+
+      const user = {
+        id: data.user._id,
+        name: data.user.name,
+        email: data.user.email,
+        city: data.user.city || 'Hyderabad',
+        points: 0,
+        badges: [],
+        joinedEventIds: [],
+        interests: [],
       }
 
       setFormData({ name: '', email: '', password: '' })
-      navigate('/dashboard', { state: { fromAuth: true, user: mockUser } })
+      navigate('/dashboard', { state: { fromAuth: true, user } })
 
     } catch (err) {
-      setError(err.message || 'An error occurred')
+      setError('Unable to connect to server. Please try again.')
       console.error('Auth error:', err)
     } finally {
       setLoading(false)
