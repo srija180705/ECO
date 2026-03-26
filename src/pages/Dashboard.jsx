@@ -12,6 +12,12 @@ function Dashboard() {
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("all");
   const [activeTab, setActiveTab] = useState("dashboard");
+  const [showNotifications, setShowNotifications] = useState(false);
+
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: 'New event in your area: Beach Cleanup', time: '2 hours ago' },
+    { id: 2, text: 'You earned 50 points!', time: '1 day ago' },
+  ]);
 
   // Calculate user stats
   const userStats = useMemo(() => {
@@ -116,15 +122,58 @@ function Dashboard() {
                 <h2>Welcome back, {firstName} <span className="wave">👋</span></h2>
                 <p>Find your next volunteering opportunity</p>
               </div>
-              <button className="map-view-btn" onClick={handleOpenMap}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="7" height="7" />
-                  <rect x="14" y="3" width="7" height="7" />
-                  <rect x="3" y="14" width="7" height="7" />
-                  <rect x="14" y="14" width="7" height="7" />
-                </svg>
-                Map View
-              </button>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                {/* Notification Bell */}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', position: 'relative', display: 'flex', color: '#4b5563' }}
+                    onClick={() => setShowNotifications(!showNotifications)}
+                  >
+                    <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="24" height="24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 11-6 0h6z"></path>
+                    </svg>
+                    <div style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: 'white', fontSize: 10, width: 16, height: 16, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                      {notifications.length}
+                    </div>
+                  </button>
+                  {showNotifications && (
+                    <div style={{ position: 'absolute', top: 40, right: 0, width: 300, background: 'white', borderRadius: 8, boxShadow: '0 10px 25px rgba(0,0,0,0.1)', zIndex: 1000, padding: 16, border: '1px solid #e5e7eb', textAlign: 'left' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f3f4f6', paddingBottom: 8, marginBottom: 12 }}>
+                        <h4 style={{ margin: 0, color: '#111827' }}>Notifications</h4>
+                        {notifications.length > 0 && (
+                          <button 
+                            onClick={() => setNotifications([])} 
+                            style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: 12, cursor: 'pointer', padding: 0 }}
+                          >
+                            Clear all
+                          </button>
+                        )}
+                      </div>
+                      
+                      {notifications.length === 0 ? (
+                        <div style={{ padding: '16px 0', textAlign: 'center', color: '#9ca3af', fontSize: 14 }}>No new notifications</div>
+                      ) : (
+                        notifications.map(n => (
+                          <div key={n.id} style={{ padding: '8px 0', borderBottom: '1px solid #f3f4f6', fontSize: 14 }}>
+                            <div style={{ fontWeight: 500, color: '#374151' }}>{n.text}</div>
+                            <div style={{ color: '#9ca3af', fontSize: 12, marginTop: 4 }}>{n.time}</div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <button className="map-view-btn" onClick={handleOpenMap}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                  </svg>
+                  Map View
+                </button>
+              </div>
             </header>
 
             <div className="search-filter-bar">
