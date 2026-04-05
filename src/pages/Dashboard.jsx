@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import { mockDB } from '../data/mockData';
@@ -19,27 +19,116 @@ function Dashboard() {
     { id: 2, text: 'You earned 50 points!', time: '1 day ago' },
   ]);
 
+  // Join event state management with localStorage persistence
+  const [joinedEvents, setJoinedEvents] = useState(() => {
+    const saved = localStorage.getItem('eco_joined_events');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [attendedEvents, setAttendedEvents] = useState(() => {
+    const saved = localStorage.getItem('eco_attended_events');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [totalPoints, setTotalPoints] = useState(() => {
+    const saved = localStorage.getItem('eco_total_points');
+    return saved ? parseInt(saved) : 0;
+  });
+
+  // Persist to localStorage whenever state changes
+  useEffect(() => {
+    localStorage.setItem('eco_joined_events', JSON.stringify(joinedEvents));
+  }, [joinedEvents]);
+
+  useEffect(() => {
+    localStorage.setItem('eco_attended_events', JSON.stringify(attendedEvents));
+  }, [attendedEvents]);
+
+  useEffect(() => {
+    localStorage.setItem('eco_total_points', totalPoints.toString());
+  }, [totalPoints]);
+
   // Calculate user stats
   const userStats = useMemo(() => {
     const mockUser = mockDB.users[0];
     return {
-      totalPoints: user?.points ?? 0,
-      eventsJoined: user?.joinedEventIds?.length ?? 0,
+      totalPoints: totalPoints,
+      eventsJoined: joinedEvents.length,
       nearbyEvents: 0,
       badgesEarned: user?.badges?.length ?? 0,
     };
-  }, [user]);
+  }, [totalPoints, joinedEvents, user]);
 
   const filteredEvents = useMemo(() => {
     return mockDB.events.filter((ev) => {
+      // Show only events user hasn't registered for yet
+      const isNotJoined = !joinedEvents.includes(ev.id);
       const matchQ =
         ev.title.toLowerCase().includes(q.toLowerCase()) ||
         ev.location.toLowerCase().includes(q.toLowerCase()) ||
         ev.category.toLowerCase().includes(q.toLowerCase());
       const matchCat = category === "all" || ev.category.toLowerCase() === category.toLowerCase();
-      return matchQ && matchCat;
+      return isNotJoined && matchQ && matchCat;
     });
-  }, [q, category]);
+  }, [q, category, joinedEvents]);
+
+  const registeredEventsData = useMemo(() => {
+    return mockDB.events.filter(ev => joinedEvents.includes(ev.id) && !attendedEvents.includes(ev.id));
+  }, [joinedEvents, attendedEvents]);
+
+  const attendedEventsData = useMemo(() => {
+    return mockDB.events.filter(ev => attendedEvents.includes(ev.id));
+  }, [attendedEvents]);
+
+  // Handle join event
+  const handleJoinEvent = (eventId) => {
+    if (!joinedEvents.includes(eventId)) {
+      setJoinedEvents([...joinedEvents, eventId]);
+      alert('✓ Event registered successfully!');
+    }
+  };
+
+  // Handle unjoin event
+  const handleUnjoinEvent = (eventId) => {
+    setJoinedEvents(joinedEvents.filter(id => id !== eventId));
+    // Also remove from attended if they attended and unjoin
+    setAttendedEvents(attendedEvents.filter(id => id !== eventId));
+    alert('✓ You have cancelled this event registration.');
+  };
+
+  // Handle mark as attended - with date validation
+  const handleMarkAttended = (eventId) => {
+    const event = mockDB.events.find(e => e.id === eventId);
+    if (!event) return;
+
+    const eventDate = new Date(event.dateISO);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDate.setHours(0, 0, 0, 0);
+
+    // Only allow marking as attended if event date has passed
+    if (eventDate >= today) {
+      alert(`❌ You can only mark this event as attended after ${eventDate.toDateString()}!`);
+      return;
+    }
+
+    // Mark as attended
+    setAttendedEvents([...attendedEvents, eventId]);
+    // Award points
+    const points = event.points || 0;
+    setTotalPoints(totalPoints + points);
+    alert(`✓ Attendance confirmed! You earned ${points} points!`);
+  };
+
+  // Handle reset points
+  const handleResetPoints = () => {
+    if (window.confirm('Are you sure you want to reset all points and clear all registered events? This cannot be undone.')) {
+      setJoinedEvents([]);
+      setAttendedEvents([]);
+      setTotalPoints(0);
+      alert('✓ Points and events have been reset.');
+    }
+  };
 
   const handleLogout = () => {
     navigate('/auth');
@@ -103,13 +192,23 @@ function Dashboard() {
             <span className="user-name">{firstName}</span>
             <span className="user-points">{userStats.totalPoints} points</span>
           </div>
-          <button className="logout-btn" onClick={handleLogout} title="Logout">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-          </button>
+          <div className="sidebar-buttons">
+            <button className="reset-btn" onClick={handleResetPoints} title="Reset Points">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.76 9.76 0 0 1-6.74-2.74L3 16" />
+                <path d="M3 21v-5h5" />
+              </svg>
+            </button>
+            <button className="logout-btn" onClick={handleLogout} title="Logout">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </button>
+          </div>
         </div>
       </aside>
 
@@ -249,7 +348,7 @@ function Dashboard() {
               <h2>Upcoming Events Near You</h2>
               {filteredEvents.length === 0 ? (
                 <div className="no-events">
-                  <p>No events found. Try adjusting your search or filters.</p>
+                  <p>No more available events. You've registered for all!</p>
                 </div>
               ) : (
                 <div className="events-grid">
@@ -268,12 +367,87 @@ function Dashboard() {
                         <p>📍 {event.location}</p>
                         <p>📏 {event.distanceKm} km away</p>
                       </div>
-                      <button className="join-btn">Join Event</button>
+                      <button className="join-btn" onClick={() => handleJoinEvent(event.id)}>Join Event</button>
                     </div>
                   ))}
                 </div>
               )}
             </section>
+
+            {/* My Registered Events */}
+            {joinedEvents.length > 0 && (
+              <section className="registered-events">
+                <h2>My Registered Events</h2>
+                <div className="events-grid">
+                  {registeredEventsData.map(event => {
+                    const eventDate = new Date(event.dateISO);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    eventDate.setHours(0, 0, 0, 0);
+                    const isPastEvent = eventDate < today;
+
+                    return (
+                      <div className="event-card registered" key={event.id}>
+                        <div className="event-card-header">
+                          <h3>{event.title}</h3>
+                          <div className="event-reward">
+                            <span>⭐</span>
+                            <span className="reward-points">{event.points} pts (if attended)</span>
+                          </div>
+                        </div>
+                        <span className="event-badge registered-badge">{event.category}</span>
+                        <div className="event-details">
+                          <p>📅 {new Date(event.dateISO).toDateString()}</p>
+                          <p>📍 {event.location}</p>
+                          <p>📏 {event.distanceKm} km away</p>
+                        </div>
+                        <div className="event-actions">
+                          <button 
+                            className={`attend-btn ${!isPastEvent ? 'disabled' : ''}`}
+                            onClick={() => handleMarkAttended(event.id)}
+                            disabled={!isPastEvent}
+                          >
+                            {isPastEvent ? 'Mark as Attended' : 'Event Not Yet Completed'}
+                          </button>
+                          <button className="cancel-btn" onClick={() => handleUnjoinEvent(event.id)}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {/* Events Attended */}
+            {attendedEvents.length > 0 && (
+              <section className="attended-events">
+                <h2>Events Attended ✓</h2>
+                <div className="events-grid">
+                  {attendedEventsData.map(event => (
+                    <div className="event-card attended" key={event.id}>
+                      <div className="event-card-header">
+                        <h3>{event.title}</h3>
+                        <div className="event-reward attended-reward">
+                          <span>✓</span>
+                          <span className="reward-points">{event.points} pts Earned</span>
+                        </div>
+                      </div>
+                      <span className="event-badge attended-badge">{event.category}</span>
+                      <div className="event-details">
+                        <p>📅 {new Date(event.dateISO).toDateString()}</p>
+                        <p>📍 {event.location}</p>
+                        <p>📏 {event.distanceKm} km away</p>
+                      </div>
+                      <div className="attended-confirmation">
+                        ✓ Points Earned
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
           </>
         ) : (
           <div className="coming-soon-container">
