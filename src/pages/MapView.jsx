@@ -77,6 +77,33 @@ function MapView() {
     return key ? cityCoords[key] : null;
   };
 
+  const createCustomIcon = (points) => {
+    return L.divIcon({
+      className: 'custom-points-marker',
+      html: `
+        <div style="
+          background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+          color: white;
+          border-radius: 50%;
+          width: 36px;
+          height: 36px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          font-weight: bold;
+          font-size: 12px;
+          box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+          border: 2px solid white;
+        ">
+          ${points}
+        </div>
+      `,
+      iconSize: [36, 36],
+      iconAnchor: [18, 18],
+      popupAnchor: [0, -18]
+    });
+  };
+
   return (
     <div style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
       <header style={{ padding: '16px 24px', borderBottom: '1px solid #e5e7eb', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
@@ -87,7 +114,7 @@ function MapView() {
         <div style={{ display: 'flex', gap: 12 }}>
           <button
             type="button"
-            style={{ padding: '8px 14px', borderRadius: 999, border: '1px solid #d1d5db', background: 'white', cursor: 'pointer' }}
+            style={{ padding: '8px 14px', borderRadius: 999, border: '1px solid #d1d5db', background: 'white', cursor: 'pointer', fontWeight: 500, color: '#374151' }}
             onClick={() => navigate(-1)}
           >
             Back to Dashboard
@@ -112,7 +139,7 @@ function MapView() {
               const position = getEventPosition(event);
               if (!position) return null;
               return (
-                <Marker key={event.id} position={position}>
+                <Marker key={event.id} position={position} icon={createCustomIcon(event.points)}>
                   <Popup>
                     <strong>{event.title}</strong>
                     <br />
