@@ -141,15 +141,15 @@ function Dashboard() {
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f3f4f6', paddingBottom: 8, marginBottom: 12 }}>
                         <h4 style={{ margin: 0, color: '#111827' }}>Notifications</h4>
                         {notifications.length > 0 && (
-                          <button 
-                            onClick={() => setNotifications([])} 
+                          <button
+                            onClick={() => setNotifications([])}
                             style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: 12, cursor: 'pointer', padding: 0 }}
                           >
                             Clear all
                           </button>
                         )}
                       </div>
-                      
+
                       {notifications.length === 0 ? (
                         <div style={{ padding: '16px 0', textAlign: 'center', color: '#9ca3af', fontSize: 14 }}>No new notifications</div>
                       ) : (

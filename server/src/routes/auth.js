@@ -7,7 +7,7 @@ const router = express.Router();
 
 router.post("/register", async (req, res, next) => {
   try {
-    const { name, email, password, city } = req.body;
+    const { name, email, password, city, role } = req.body;
     if (!email || !password) return res.status(400).json({ message: "email/password required" });
 
     const exists = await User.findOne({ email: email.toLowerCase() });
@@ -19,6 +19,8 @@ router.post("/register", async (req, res, next) => {
       email: email.toLowerCase(),
       passwordHash,
       city: city || "Hyderabad",
+      role: role || "volunteer",
+      isVerified: true,
       points: 0,
       badges: ["b1"],
       interests: []
@@ -31,7 +33,9 @@ router.post("/register", async (req, res, next) => {
         _id: user._id, 
         name: user.name, 
         email: user.email, 
-        city: user.city
+        city: user.city,
+        role: user.role,
+        isVerified: user.isVerified
       } 
     });
   } catch (error) {
@@ -57,7 +61,9 @@ router.post("/login", async (req, res, next) => {
         _id: user._id, 
         name: user.name, 
         email: user.email, 
-        city: user.city
+        city: user.city,
+        role: user.role,
+        isVerified: user.isVerified
       } 
     });
   } catch (error) {

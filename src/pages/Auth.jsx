@@ -9,7 +9,8 @@ function Auth() {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    password: ''
+    password: '',
+    role: 'volunteer'
   })
 
   const handleChange = (e) => {
@@ -42,7 +43,7 @@ function Auth() {
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
       const body = isLogin
         ? { email: formData.email, password: formData.password }
-        : { name: formData.name, email: formData.email, password: formData.password }
+        : { name: formData.name, email: formData.email, password: formData.password, role: formData.role }
 
       const res = await fetch(`http://localhost:4000${endpoint}`, {
         method: 'POST',
@@ -61,9 +62,12 @@ function Auth() {
       localStorage.setItem('token', data.token)
 
       const user = {
+        _id: data.user._id,
         id: data.user._id,
         name: data.user.name,
         email: data.user.email,
+        role: data.user.role || 'volunteer',
+        isVerified: data.user.isVerified ?? true,
         city: data.user.city || 'Hyderabad',
         points: 0,
         badges: [],
@@ -71,8 +75,12 @@ function Auth() {
         interests: [],
       }
 
-      setFormData({ name: '', email: '', password: '' })
-      navigate('/dashboard', { state: { fromAuth: true, user } })
+      localStorage.setItem('user', JSON.stringify(user))
+      setFormData({ name: '', email: '', password: '', role: 'volunteer' })
+      
+      // Redirect based on role
+      const redirectPath = user.role === 'organizer' ? '/organizer-dashboard' : '/dashboard'
+      navigate(redirectPath, { state: { fromAuth: true, user } })
 
     } catch (err) {
       setError('Unable to connect to server. Please try again.')
@@ -92,7 +100,7 @@ function Auth() {
             className={`tab ${isLogin ? 'active' : ''}`}
             onClick={() => {
               setIsLogin(true)
-              setFormData({ name: '', email: '', password: '' })
+              setFormData({ name: '', email: '', password: '', role: 'volunteer' })
               setError('')
             }}
           >
@@ -102,7 +110,7 @@ function Auth() {
             className={`tab ${!isLogin ? 'active' : ''}`}
             onClick={() => {
               setIsLogin(false)
-              setFormData({ name: '', email: '', password: '' })
+              setFormData({ name: '', email: '', password: '', role: 'volunteer' })
               setError('')
             }}
           >
@@ -124,6 +132,21 @@ function Auth() {
                 onChange={handleChange}
                 placeholder="Enter your full name"
               />
+            </div>
+          )}
+
+          {!isLogin && (
+            <div className="form-group">
+              <label htmlFor="role">Role</label>
+              <select
+                id="role"
+                name="role"
+                value={formData.role}
+                onChange={handleChange}
+              >
+                <option value="volunteer">Volunteer</option>
+                <option value="organizer">Event Organizer</option>
+              </select>
             </div>
           )}
 
@@ -151,7 +174,7 @@ function Auth() {
             />
           </div>
 
-          {/* Role selection removed — only 'volunteer' supported */}
+
 
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Processing...' : isLogin ? 'Login' : 'Create Account'}
@@ -165,7 +188,7 @@ function Auth() {
             className="link-btn"
             onClick={() => {
               setIsLogin(!isLogin)
-              setFormData({ name: '', email: '', password: '' })
+              setFormData({ name: '', email: '', password: '', role: 'volunteer' })
               setError('')
             }}
           >
