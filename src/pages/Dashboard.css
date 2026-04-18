@@ -701,3 +701,145 @@
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
 }
+
+/* ===== Sidebar Buttons ===== */
+.sidebar-buttons {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.reset-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #9ca3af;
+  padding: 6px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.reset-btn:hover {
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+/* ===== Registered Events Section ===== */
+.registered-events {
+  margin-top: 32px;
+}
+
+.registered-events h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 20px 0;
+}
+
+.event-card.registered {
+  border-left-color: #f59e0b;
+}
+
+.event-card.registered::before {
+  background-color: #f59e0b;
+}
+
+.registered-badge {
+  background-color: #fef3c7 !important;
+  color: #92400e !important;
+}
+
+.event-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.attend-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background-color: #10b981;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.attend-btn:hover:not(.disabled) {
+  background-color: #059669;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+}
+
+.attend-btn.disabled {
+  background-color: #d1d5db;
+  color: #9ca3af;
+  cursor: not-allowed;
+  opacity: 0.7;
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 8px 12px;
+  background-color: #ffffff;
+  border: 1px solid #ef4444;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 13px;
+  color: #ef4444;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+}
+
+.cancel-btn:hover {
+  background-color: #fee2e2;
+  border-color: #dc2626;
+}
+
+/* ===== Attended Events Section ===== */
+.attended-events {
+  margin-top: 32px;
+}
+
+.attended-events h2 {
+  font-size: 20px;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0 0 20px 0;
+}
+
+.event-card.attended {
+  border-left-color: #10b981;
+}
+
+.event-card.attended::before {
+  background-color: #10b981;
+}
+
+.attended-badge {
+  background-color: #ecfdf5 !important;
+  color: #065f46 !important;
+}
+
+.attended-reward {
+  background-color: #d1fae5 !important;
+  color: #065f46 !important;
+}
+
+.attended-confirmation {
+  padding: 10px 14px;
+  background-color: #d1fae5;
+  color: #065f46;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: 600;
+  font-size: 13px;
+  margin-top: 12px;
+  border: 1px solid #a7f3d0;
+}
