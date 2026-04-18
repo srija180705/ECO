@@ -35,7 +35,8 @@ router.post("/register", async (req, res, next) => {
         email: user.email, 
         city: user.city,
         role: user.role,
-        isVerified: user.isVerified
+        isVerified: user.isVerified,
+        points: user.points ?? 0,
       } 
     });
   } catch (error) {
@@ -63,7 +64,8 @@ router.post("/login", async (req, res, next) => {
         email: user.email, 
         city: user.city,
         role: user.role,
-        isVerified: user.isVerified
+        isVerified: user.isVerified,
+        points: user.points ?? 0,
       } 
     });
   } catch (error) {
