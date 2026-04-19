@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import { mockDB } from '../data/mockData';
 import Rewards from './Rewards';
+import Community from './community';
 
 function readStoredUser() {
   try {
@@ -40,13 +41,15 @@ function Dashboard() {
     { id: 2, text: 'You earned 50 points!', time: '1 day ago' },
   ]);
 
-  // Join event state management with localStorage persistence
+  // Join event state management with localStorage persistence and MongoDB sync
   const [joinedEvents, setJoinedEvents] = useState(() => {
+    if (user?.joinedEvents && user.joinedEvents.length > 0) return user.joinedEvents;
     const saved = localStorage.getItem('eco_joined_events');
     return saved ? JSON.parse(saved) : [];
   });
 
   const [attendedEvents, setAttendedEvents] = useState(() => {
+    if (user?.attendedEvents && user.attendedEvents.length > 0) return user.attendedEvents;
     const saved = localStorage.getItem('eco_attended_events');
     return saved ? JSON.parse(saved) : [];
   });
@@ -79,24 +82,30 @@ function Dashboard() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ points: totalPoints }),
+        // Send points and event engagement data directly to MongoDB User Document
+        body: JSON.stringify({ points: totalPoints, joinedEvents, attendedEvents }),
       })
         .then((res) => (res.ok ? res.json() : null))
         .then((data) => {
-          if (data && typeof data.points === 'number') {
+          if (data) {
             try {
               const cur = JSON.parse(localStorage.getItem('user') || '{}');
-              localStorage.setItem('user', JSON.stringify({ ...cur, points: data.points }));
+              localStorage.setItem('user', JSON.stringify({
+                ...cur,
+                points: typeof data.points === 'number' ? data.points : cur.points,
+                joinedEvents: data.joinedEvents || cur.joinedEvents,
+                attendedEvents: data.attendedEvents || cur.attendedEvents
+              }));
             } catch {
               /* noop */
             }
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }, 450);
 
     return () => clearTimeout(timer);
-  }, [totalPoints]);
+  }, [totalPoints, joinedEvents, attendedEvents]);
 
   // Calculate user stats
   const userStats = useMemo(() => {
@@ -181,6 +190,8 @@ function Dashboard() {
   };
 
   const handleLogout = () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
     navigate('/auth');
   };
 
@@ -229,7 +240,14 @@ function Dashboard() {
               <span className="nav-icon">🎁</span>
               <span>Rewards</span>
             </button>
-            <button type="button" className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+            <button
+              type="button"
+              className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('profile');
+                navigate('/profile', { state: { fromAuth: true, user } });
+              }}
+            >
               <span className="nav-icon">👤</span>
               <span>Profile</span>
             </button>
@@ -458,7 +476,7 @@ function Dashboard() {
                           <p>📏 {event.distanceKm} km away</p>
                         </div>
                         <div className="event-actions">
-                          <button 
+                          <button
                             className={`attend-btn ${!isPastEvent ? 'disabled' : ''}`}
                             onClick={() => handleMarkAttended(event.id)}
                             disabled={!isPastEvent}
@@ -505,6 +523,8 @@ function Dashboard() {
               </section>
             )}
           </>
+        ) : activeTab === 'community' ? (
+          <Community />
         ) : (
           <div className="coming-soon-container">
             <div className="coming-soon-icon">🚧</div>

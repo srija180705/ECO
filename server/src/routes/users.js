@@ -42,18 +42,20 @@ router.patch("/:id", auth, async (req, res, next) => {
     if (req.user.userId !== req.params.id) {
       return res.status(403).json({ message: "Unauthorized" });
     }
-    
-    const { name, city, interests, points } = req.body;
+
+    const { name, city, interests, points, joinedEvents, attendedEvents } = req.body;
     const patch = {};
     if (name !== undefined) patch.name = name;
     if (city !== undefined) patch.city = city;
     if (interests !== undefined) patch.interests = interests;
+    if (joinedEvents !== undefined) patch.joinedEvents = joinedEvents;
+    if (attendedEvents !== undefined) patch.attendedEvents = attendedEvents;
     if (points !== undefined) {
       const p = Number(points);
       if (Number.isFinite(p) && p >= 0) patch.points = Math.floor(p);
     }
     const user = await User.findByIdAndUpdate(req.params.id, patch, { new: true }).select("-passwordHash");
-    
+
     res.json(user);
   } catch (error) {
     next(error);

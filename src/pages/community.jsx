@@ -1,7 +1,72 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { MessageSquarePlus, ThumbsUp, Send, Image as ImageIcon, X, Trash2 } from "lucide-react";
-import { useAuth } from "../context/AuthContext";
-import * as api from "../services/api";
+import './community.css';
+
+const API_URL = 'http://localhost:4000/api/posts';
+
+const api = {
+  listPosts: async () => {
+    const token = localStorage.getItem('token');
+    const res = await fetch(API_URL, {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    if (!res.ok) throw new Error("Failed to load posts");
+    return res.json();
+  },
+  createPost: async (content, imageFile) => {
+    let imageUrl = null;
+    if (imageFile) {
+      imageUrl = await new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result);
+        reader.readAsDataURL(imageFile);
+      });
+    }
+
+    const token = localStorage.getItem('token');
+    const res = await fetch(API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ content, imageUrl }),
+    });
+    if (!res.ok) throw new Error("Failed to create post");
+    return res.json();
+  },
+  likePost: async (postId) => {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_URL}/${postId}/like`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+    if (!res.ok) throw new Error("Failed to like post");
+    return res.json();
+  },
+  deletePost: async (postId) => {
+    const token = localStorage.getItem('token');
+    const res = await fetch(`${API_URL}/${postId}`, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      }
+    });
+    if (!res.ok) throw new Error("Failed to delete post");
+    return res.json();
+  }
+};
+
+function readStoredUser() {
+  try {
+    const raw = localStorage.getItem('user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
 
 function timeAgo(iso) {
   const d = new Date(iso).getTime();
@@ -16,7 +81,8 @@ function timeAgo(iso) {
 }
 
 export default function Community() {
-  const { me, refreshMe } = useAuth();
+  const me = readStoredUser();
+  const refreshMe = async () => { };
   const [posts, setPosts] = useState([]);
   const [text, setText] = useState("");
   const [imageFile, setImageFile] = useState(null);
@@ -43,7 +109,7 @@ export default function Community() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const canPost = useMemo(() => text.trim().length >= 3, [text]);
+  const canPost = useMemo(() => text.trim().length > 0 || imageFile !== null, [text, imageFile]);
 
   function handleImageSelect(e) {
     const file = e.target.files[0];
@@ -125,7 +191,7 @@ export default function Community() {
     }
   }
 
-  const emojis = ["😀","😃","😄","😁","😆","😅","😂","🤣","😊","😇","🙂","🙃","😉","😌","😍","🥰","😘","😗","😙","😚","😋","😛","😝","😜","🤪","🤨","🧐","🤓","😎","🥸","🤩","🥳","😏","😒","😞","😔","😟","😕","🙁","☹️","😣","😖","😫","😩","🥺","😢","😭","😤","😠","😡","🤬","🤯","😳","🥵","🥶","😱","😨","😰","😥","😓","🤗","🤔","🤭","🤫","🤥","😶","😐","😑","😬","🙄","😯","😦","😧","😮","😲","🥱","😴","🤤","😪","😵","🤐","🥴","🤢","🤮","🤧","😷","🤒","🤕","🤑","🤠","😈","👿","👹","👺","🤡","💩","👻","💀","☠️","👽","👾","🤖","🎃","😺","😸","😹","😻","😼","😽","🙀","😿","😾","👍","👎","👌","✌️","🤞","🤟","🤘","🤙","👈","👉","👆","🖕","👇","☝️","✊","👊","🤛","🤜","👏","🙌","👐","🤲","🤝","🙏","✍️","💅","🤳","💪","🦾","🦵","🦿","🦶","👣","👀","👁️","👃","👄","👅","👂","🦻","❤️","🧡","💛","💚","💙","💜","🖤","🤍","🤎","💔","❤️‍🔥","💗","💓","💞","💕","💖","💘","💝","💟","🔥","✨","⭐","🌟","💫","⚡","☀️","🌙","🌍","🌎","🌏","🌈","☁️","⛅","❄️","🌊","🎉","🎊","🎈","🎁","🏆","🚀","🌱","🌿","🍃","💚","♻️","🌻","🌸","🌺","🐘","🦁","🐒","🐢","🦋","🐝","🌲","🏔️","⛰️","🏕️","🚴","🏊","🧘","🤝","💡","📚","🎯","⭐","✅","💯"];
+  const emojis = ["😀", "😃", "😄", "😁", "😆", "😅", "😂", "🤣", "😊", "😇", "🙂", "🙃", "😉", "😌", "😍", "🥰", "😘", "😗", "😙", "😚", "😋", "😛", "😝", "😜", "🤪", "🤨", "🧐", "🤓", "😎", "🥸", "🤩", "🥳", "😏", "😒", "😞", "😔", "😟", "😕", "🙁", "☹️", "😣", "😖", "😫", "😩", "🥺", "😢", "😭", "😤", "😠", "😡", "🤬", "🤯", "😳", "🥵", "🥶", "😱", "😨", "😰", "😥", "😓", "🤗", "🤔", "🤭", "🤫", "🤥", "😶", "😐", "😑", "😬", "🙄", "😯", "😦", "😧", "😮", "😲", "🥱", "😴", "🤤", "😪", "😵", "🤐", "🥴", "🤢", "🤮", "🤧", "😷", "🤒", "🤕", "🤑", "🤠", "😈", "👿", "👹", "👺", "🤡", "💩", "👻", "💀", "☠️", "👽", "👾", "🤖", "🎃", "😺", "😸", "😹", "😻", "😼", "😽", "🙀", "😿", "😾", "👍", "👎", "👌", "✌️", "🤞", "🤟", "🤘", "🤙", "👈", "👉", "👆", "🖕", "👇", "☝️", "✊", "👊", "🤛", "🤜", "👏", "🙌", "👐", "🤲", "🤝", "🙏", "✍️", "💅", "🤳", "💪", "🦾", "🦵", "🦿", "🦶", "👣", "👀", "👁️", "👃", "👄", "👅", "👂", "🦻", "❤️", "🧡", "💛", "💚", "💙", "💜", "🖤", "🤍", "🤎", "💔", "❤️‍🔥", "💗", "💓", "💞", "💕", "💖", "💘", "💝", "💟", "🔥", "✨", "⭐", "🌟", "💫", "⚡", "☀️", "🌙", "🌍", "🌎", "🌏", "🌈", "☁️", "⛅", "❄️", "🌊", "🎉", "🎊", "🎈", "🎁", "🏆", "🚀", "🌱", "🌿", "🍃", "💚", "♻️", "🌻", "🌸", "🌺", "🐘", "🦁", "🐒", "🐢", "🦋", "🐝", "🌲", "🏔️", "⛰️", "🏕️", "🚴", "🏊", "🧘", "🤝", "💡", "📚", "🎯", "⭐", "✅", "💯"];
 
   return (
     <div className="page">
@@ -153,7 +219,7 @@ export default function Community() {
               placeholder="Share something about your volunteering journey..."
               rows={4}
             />
-            
+
             <button
               type="button"
               onClick={() => setShowEmojiPicker(!showEmojiPicker)}
@@ -171,7 +237,7 @@ export default function Community() {
             >
               😊
             </button>
-            
+
             {showEmojiPicker && (
               <div style={{
                 position: "absolute",
@@ -213,7 +279,7 @@ export default function Community() {
               </div>
             )}
           </div>
-          
+
           {imagePreview && (
             <div style={{ marginTop: 12, position: "relative" }}>
               <img
@@ -339,7 +405,7 @@ export default function Community() {
               {p.imageUrl && (
                 <div style={{ marginTop: 12 }}>
                   <img
-                    src={`http://localhost:5000${p.imageUrl}`}
+                    src={p.imageUrl}
                     alt="Post"
                     style={{
                       width: "100%",
