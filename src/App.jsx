@@ -2,17 +2,23 @@ import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from 'r
 import Splash from './pages/Splash'
 import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
+import OrganizerDashboard from './pages/OrganizerDashboard'
 import Profile from './pages/Profile'
 import MapView from './pages/MapView'
 import AdminPage from './pages/AdminPage'
 
 // Protected route wrapper - checks localStorage token/user only
-function PrivateRoute({ children }) {
-  const storedToken = localStorage.getItem('token')
-  const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
+function PrivateRoute({ children, allowedRoles = null, organizerOnly = false }) {
+  const location = useLocation()
+  const token = localStorage.getItem('token')
+  const storedUser = localStorage.getItem('user')
+  const navUser = location.state && location.state.user
+  const user = navUser || (storedUser ? JSON.parse(storedUser) : null)
 
-  if (!storedToken || !storedUser) {
-    return <Navigate to="/auth" replace />
+  if (!token || !user) return <Navigate to="/auth" replace />
+  if (allowedRoles && !allowedRoles.includes(user.role)) return <Navigate to="/dashboard" replace />
+  if (organizerOnly && !(user.role === 'organizer' && user.isVerified)) {
+    return <Navigate to="/dashboard" replace />
   }
   return children
 }
@@ -37,8 +43,16 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <PrivateRoute>
+            <PrivateRoute allowedRoles={['volunteer', 'user']}>
               <Dashboard />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/organizer-dashboard"
+          element={
+            <PrivateRoute organizerOnly>
+              <OrganizerDashboard />
             </PrivateRoute>
           }
         />

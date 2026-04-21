@@ -1,21 +1,41 @@
-﻿import { useState, useMemo, useEffect } from 'react';
+﻿import React, { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
+import { mockDB } from '../data/mockData';
 import { apiFetch } from '../api.js';
+import Rewards from './Rewards';
+import Community from './community';
+
+function readStoredUser() {
+  try {
+    const raw = localStorage.getItem('user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+}
+
+function readInitialTotalPoints() {
+  const eco = parseInt(localStorage.getItem('eco_total_points') || '0', 10);
+  try {
+    const u = JSON.parse(localStorage.getItem('user') || 'null');
+    const up = typeof u?.points === 'number' ? u.points : 0;
+    return Math.max(eco, up);
+  } catch {
+    return eco;
+  }
+}
 
 function Dashboard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
-  const [user, setUser] = useState(location.state?.user || storedUser);
+  const user = location.state?.user ?? readStoredUser();
   const firstName = user?.name ? user.name.split(' ')[0] : 'Volunteer';
 
-  const [q, setQ] = useState('');
-  const [category, setCategory] = useState('all');
-  const [activeTab, setActiveTab] = useState('dashboard');
-  const [events, setEvents] = useState([]);
-  const [loadingEvents, setLoadingEvents] = useState(true);
-  const [fetchError, setFetchError] = useState('');
+  const [q, setQ] = useState("");
+  const [category, setCategory] = useState("all");
+  const [activeTab, setActiveTab] = useState("dashboard");
+  const [showNotifications, setShowNotifications] = useState(false);
   const [createStatus, setCreateStatus] = useState('');
   const [createError, setCreateError] = useState('');
   const [eventForm, setEventForm] = useState({
@@ -33,61 +53,149 @@ function Dashboard() {
     permissionPdf: null,
   });
 
+  const [notifications, setNotifications] = useState([
+    { id: 1, text: 'New event in your area: Beach Cleanup', time: '2 hours ago' },
+    { id: 2, text: 'You earned 50 points!', time: '1 day ago' },
+  ]);
+
+  const [joinedEvents, setJoinedEvents] = useState(() => {
+    if (user?.joinedEvents && user.joinedEvents.length > 0) return user.joinedEvents;
+    const saved = localStorage.getItem('eco_joined_events');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [attendedEvents, setAttendedEvents] = useState(() => {
+    if (user?.attendedEvents && user.attendedEvents.length > 0) return user.attendedEvents;
+    const saved = localStorage.getItem('eco_attended_events');
+    return saved ? JSON.parse(saved) : [];
+  });
+
+  const [totalPoints, setTotalPoints] = useState(readInitialTotalPoints);
+
   useEffect(() => {
-    const loadEvents = async () => {
-      const token = localStorage.getItem('token');
-      if (!token) {
-        setFetchError('Login required to load events.');
-        setLoadingEvents(false);
-        return;
-      }
+    localStorage.setItem('eco_joined_events', JSON.stringify(joinedEvents));
+  }, [joinedEvents]);
 
-      try {
-        const response = await apiFetch('/api/events', {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}));
-          setFetchError(errorData.message || 'Failed to load events.');
-          return;
-        }
-        const data = await response.json();
-        setEvents(data);
-      } catch (err) {
-        setFetchError(err.message || 'Failed to load events.');
-      } finally {
-        setLoadingEvents(false);
-      }
-    };
+  useEffect(() => {
+    localStorage.setItem('eco_attended_events', JSON.stringify(attendedEvents));
+  }, [attendedEvents]);
 
-    loadEvents();
-  }, []);
+  useEffect(() => {
+    localStorage.setItem('eco_total_points', totalPoints.toString());
+  }, [totalPoints]);
 
-  const userStats = useMemo(
-    () => ({
-      totalPoints: user?.points ?? 0,
-      eventsJoined: 0, // Temporarily set to 0 as join functionality is removed
-      nearbyEvents: events.length,
+  useEffect(() => {
+    const u = readStoredUser();
+    if (!u?._id) return;
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    const timer = setTimeout(() => {
+      fetch(`http://localhost:4000/api/users/${u._id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ points: totalPoints, joinedEvents, attendedEvents }),
+      })
+        .then((res) => (res.ok ? res.json() : null))
+        .then((data) => {
+          if (data) {
+            try {
+              const cur = JSON.parse(localStorage.getItem('user') || '{}');
+              localStorage.setItem('user', JSON.stringify({
+                ...cur,
+                points: typeof data.points === 'number' ? data.points : cur.points,
+                joinedEvents: data.joinedEvents || cur.joinedEvents,
+                attendedEvents: data.attendedEvents || cur.attendedEvents
+              }));
+            } catch {
+              /* noop */
+            }
+          }
+        })
+        .catch(() => { });
+    }, 450);
+
+    return () => clearTimeout(timer);
+  }, [totalPoints, joinedEvents, attendedEvents]);
+
+  const userStats = useMemo(() => {
+    return {
+      totalPoints: totalPoints,
+      eventsJoined: joinedEvents.length,
+      nearbyEvents: 0,
       badgesEarned: user?.badges?.length ?? 0,
-    }),
-    [user, events.length]
-  );
+    };
+  }, [totalPoints, joinedEvents, user]);
 
   const filteredEvents = useMemo(() => {
-    return events.filter((ev) => {
+    return mockDB.events.filter((ev) => {
+      const isNotJoined = !joinedEvents.includes(ev.id);
       const matchQ =
         ev.title.toLowerCase().includes(q.toLowerCase()) ||
         ev.location.toLowerCase().includes(q.toLowerCase()) ||
         ev.category.toLowerCase().includes(q.toLowerCase());
-      const matchCat = category === 'all' || ev.category.toLowerCase() === category.toLowerCase();
-      return matchQ && matchCat;
+      const matchCat = category === "all" || ev.category.toLowerCase() === category.toLowerCase();
+      return isNotJoined && matchQ && matchCat;
     });
-  }, [events, q, category]);
+  }, [q, category, joinedEvents]);
+
+  const registeredEventsData = useMemo(() => {
+    return mockDB.events.filter(ev => joinedEvents.includes(ev.id) && !attendedEvents.includes(ev.id));
+  }, [joinedEvents, attendedEvents]);
+
+  const attendedEventsData = useMemo(() => {
+    return mockDB.events.filter(ev => attendedEvents.includes(ev.id));
+  }, [attendedEvents]);
+
+  const handleJoinEvent = (eventId) => {
+    if (!joinedEvents.includes(eventId)) {
+      setJoinedEvents([...joinedEvents, eventId]);
+      alert('✓ Event registered successfully!');
+    }
+  };
+
+  const handleUnjoinEvent = (eventId) => {
+    setJoinedEvents(joinedEvents.filter(id => id !== eventId));
+    setAttendedEvents(attendedEvents.filter(id => id !== eventId));
+    alert('✓ You have cancelled this event registration.');
+  };
+
+  const handleMarkAttended = (eventId) => {
+    const event = mockDB.events.find(e => e.id === eventId);
+    if (!event) return;
+
+    const eventDate = new Date(event.dateISO);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    eventDate.setHours(0, 0, 0, 0);
+
+    if (eventDate >= today) {
+      alert(`❌ You can only mark this event as attended after ${eventDate.toDateString()}!`);
+      return;
+    }
+
+    setAttendedEvents([...attendedEvents, eventId]);
+    const points = event.points || 0;
+    setTotalPoints(totalPoints + points);
+    alert(`✓ Attendance confirmed! You earned ${points} points!`);
+  };
+
+  const handleResetPoints = () => {
+    if (window.confirm('Are you sure you want to reset all points and clear all registered events? This cannot be undone.')) {
+      setJoinedEvents([]);
+      setAttendedEvents([]);
+      setTotalPoints(0);
+      alert('✓ Points and events have been reset.');
+    }
+  };
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
-    navigate('/auth', { replace: true });
+    navigate('/auth');
   };
 
   const handleOpenMap = () => {
@@ -105,29 +213,6 @@ function Dashboard() {
     setEventForm((prev) => ({ ...prev, permissionPdf: e.target.files[0] || null }));
     setCreateStatus('');
     setCreateError('');
-  };
-
-  const formatTwoDigits = (value) => String(value).padStart(2, '0');
-  const formatEventTime = (ev) => {
-    const startDay = ev.startDateISO ? new Date(ev.startDateISO).toDateString() : '';
-    const endDay = ev.endDateISO ? new Date(ev.endDateISO).toDateString() : '';
-    const startHour = formatTwoDigits(ev.startHour || 9);
-    const endHour = formatTwoDigits(ev.endHour || 17);
-    return `${startDay} ${startHour}:00 — ${endDay} ${endHour}:00`;
-  };
-
-  const handleEventLocationClick = (event) => {
-    navigate('/map', {
-      state: {
-        fromAuth: true,
-        user,
-        selectedEvent: {
-          title: event.title,
-          location: event.location,
-          address: event.address,
-        },
-      },
-    });
   };
 
   const handleCreateEvent = async (e) => {
@@ -211,6 +296,10 @@ function Dashboard() {
               <span className="nav-icon">🏠</span>
               <span>Dashboard</span>
             </button>
+            <button type="button" className={`nav-item ${activeTab === 'community' ? 'active' : ''}`} onClick={() => setActiveTab('community')}>
+              <span className="nav-icon">👥</span>
+              <span>Community</span>
+            </button>
             <button type="button" className={`nav-item ${activeTab === 'create' ? 'active' : ''}`} onClick={() => setActiveTab('create')}>
               <span className="nav-icon">📝</span>
               <span>Create Event</span>
@@ -241,19 +330,6 @@ function Dashboard() {
               <span className="nav-icon">👤</span>
               <span>Profile</span>
             </button>
-            {user?.role === 'admin' && (
-              <button
-                type="button"
-                className={`nav-item ${activeTab === 'admin' ? 'active' : ''}`}
-                onClick={() => {
-                  setActiveTab('admin');
-                  navigate('/admin', { state: { fromAuth: true, user } });
-                }}
-              >
-                <span className="nav-icon">⚙️</span>
-                <span>Admin</span>
-              </button>
-            )}
           </nav>
         </div>
 
@@ -263,33 +339,91 @@ function Dashboard() {
             <span className="user-name">{firstName}</span>
             <span className="user-points">{userStats.totalPoints} points</span>
           </div>
-          <button className="logout-btn" onClick={handleLogout} title="Logout">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" y1="12" x2="9" y2="12" />
-            </svg>
-          </button>
+          <div className="sidebar-buttons">
+            <button className="reset-btn" onClick={handleResetPoints} title="Reset Points">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+                <path d="M21 12a9 9 0 0 1-9 9 9.76 9.76 0 0 1-6.74-2.74L3 16" />
+                <path d="M3 21v-5h5" />
+              </svg>
+            </button>
+            <button className="logout-btn" onClick={handleLogout} title="Logout">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+                <polyline points="16 17 21 12 16 7" />
+                <line x1="21" y1="12" x2="9" y2="12" />
+              </svg>
+            </button>
+          </div>
         </div>
       </aside>
 
       <main className="dashboard-main">
-        {activeTab === 'dashboard' && (
+        {activeTab === 'rewards' ? (
+          <Rewards
+            userId={user?._id ? String(user._id) : null}
+            userPoints={totalPoints}
+            onPointsUpdated={setTotalPoints}
+          />
+        ) : activeTab === 'dashboard' ? (
           <>
             <header className="dashboard-header">
               <div className="header-title">
                 <h2>Welcome back, {firstName} <span className="wave">👋</span></h2>
                 <p>Find your next volunteering opportunity</p>
               </div>
-              <button className="map-view-btn" onClick={handleOpenMap}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <rect x="3" y="3" width="7" height="7" />
-                  <rect x="14" y="3" width="7" height="7" />
-                  <rect x="3" y="14" width="7" height="7" />
-                  <rect x="14" y="14" width="7" height="7" />
-                </svg>
-                Map View
-              </button>
+              <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
+                <div style={{ position: 'relative' }}>
+                  <button
+                    style={{ background: 'none', border: 'none', cursor: 'pointer', position: 'relative', display: 'flex', color: '#4b5563' }}
+                    onClick={() => setShowNotifications(!showNotifications)}
+                  >
+                    <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="24" height="24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 11-6 0h6z"></path>
+                    </svg>
+                    <div style={{ position: 'absolute', top: -4, right: -4, background: '#ef4444', color: 'white', fontSize: 10, width: 16, height: 16, borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold' }}>
+                      {notifications.length}
+                    </div>
+                  </button>
+                  {showNotifications && (
+                    <div style={{ position: 'absolute', top: 40, right: 0, width: 300, background: 'white', borderRadius: 8, boxShadow: '0 10px 25px rgba(0,0,0,0.1)', zIndex: 1000, padding: 16, border: '1px solid #e5e7eb', textAlign: 'left' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #f3f4f6', paddingBottom: 8, marginBottom: 12 }}>
+                        <h4 style={{ margin: 0, color: '#111827' }}>Notifications</h4>
+                        {notifications.length > 0 && (
+                          <button
+                            onClick={() => setNotifications([])}
+                            style={{ background: 'none', border: 'none', color: '#6366f1', fontSize: 12, cursor: 'pointer', padding: 0 }}
+                          >
+                            Clear all
+                          </button>
+                        )}
+                      </div>
+
+                      {notifications.length === 0 ? (
+                        <div style={{ padding: '16px 0', textAlign: 'center', color: '#9ca3af', fontSize: 14 }}>No new notifications</div>
+                      ) : (
+                        notifications.map(n => (
+                          <div key={n.id} style={{ padding: '8px 0', borderBottom: '1px solid #f3f4f6', fontSize: 14 }}>
+                            <div style={{ fontWeight: 500, color: '#374151' }}>{n.text}</div>
+                            <div style={{ color: '#9ca3af', fontSize: 12, marginTop: 4 }}>{n.time}</div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                <button className="map-view-btn" onClick={handleOpenMap}>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <rect x="3" y="3" width="7" height="7" />
+                    <rect x="14" y="3" width="7" height="7" />
+                    <rect x="3" y="14" width="7" height="7" />
+                    <rect x="14" y="14" width="7" height="7" />
+                  </svg>
+                  Map View
+                </button>
+              </div>
             </header>
 
             <div className="search-filter-bar">
@@ -316,7 +450,11 @@ function Dashboard() {
                 </svg>
                 Filters
               </button>
-              <select className="category-select" value={category} onChange={(e) => setCategory(e.target.value)}>
+              <select
+                className="category-select"
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+              >
                 <option value="all">All</option>
                 <option value="cleanup">Cleanup</option>
                 <option value="planting">Planting</option>
@@ -357,22 +495,14 @@ function Dashboard() {
 
             <section className="upcoming-events">
               <h2>Upcoming Events Near You</h2>
-              {loadingEvents ? (
+              {filteredEvents.length === 0 ? (
                 <div className="no-events">
-                  <p>Loading events...</p>
-                </div>
-              ) : fetchError ? (
-                <div className="no-events">
-                  <p>{fetchError}</p>
-                </div>
-              ) : filteredEvents.length === 0 ? (
-                <div className="no-events">
-                  <p>No approved events are available yet.</p>
+                  <p>No more available events. You've registered for all!</p>
                 </div>
               ) : (
                 <div className="events-grid">
-                  {filteredEvents.map((event) => (
-                    <div className="event-card" key={event._id || event.id}>
+                  {filteredEvents.map(event => (
+                    <div className="event-card" key={event.id}>
                       <div className="event-card-header">
                         <h3>{event.title}</h3>
                         <div className="event-reward">
@@ -382,25 +512,91 @@ function Dashboard() {
                       </div>
                       <span className="event-badge">{event.category}</span>
                       <div className="event-details">
-                        <p>� <button
-                          type="button"
-                          style={{ border: 'none', background: 'none', padding: 0, color: '#2563eb', textDecoration: 'underline', cursor: 'pointer' }}
-                          onClick={() => handleEventLocationClick(event)}
-                        >
-                          {event.address || event.location}
-                        </button></p>
-                        <p>🗓️ {formatEventTime(event)}</p>
-                        <p>🏙️ {event.location}</p>
+                        <p>📅 {new Date(event.dateISO).toDateString()}</p>
+                        <p>📍 {event.location}</p>
+                        <p>📏 {event.distanceKm} km away</p>
                       </div>
+                      <button className="join-btn" onClick={() => handleJoinEvent(event.id)}>Join Event</button>
                     </div>
                   ))}
                 </div>
               )}
             </section>
-          </>
-        )}
 
-        {activeTab === 'create' && (
+            {joinedEvents.length > 0 && (
+              <section className="registered-events">
+                <h2>My Registered Events</h2>
+                <div className="events-grid">
+                  {registeredEventsData.map(event => {
+                    const eventDate = new Date(event.dateISO);
+                    const today = new Date();
+                    today.setHours(0, 0, 0, 0);
+                    eventDate.setHours(0, 0, 0, 0);
+                    const isPastEvent = eventDate < today;
+
+                    return (
+                      <div className="event-card registered" key={event.id}>
+                        <div className="event-card-header">
+                          <h3>{event.title}</h3>
+                          <div className="event-reward">
+                            <span>⭐</span>
+                            <span className="reward-points">{event.points} pts (if attended)</span>
+                          </div>
+                        </div>
+                        <span className="event-badge registered-badge">{event.category}</span>
+                        <div className="event-details">
+                          <p>📅 {new Date(event.dateISO).toDateString()}</p>
+                          <p>📍 {event.location}</p>
+                          <p>📏 {event.distanceKm} km away</p>
+                        </div>
+                        <div className="event-actions">
+                          <button
+                            className={`attend-btn ${!isPastEvent ? 'disabled' : ''}`}
+                            onClick={() => handleMarkAttended(event.id)}
+                            disabled={!isPastEvent}
+                          >
+                            {isPastEvent ? 'Mark as Attended' : 'Event Not Yet Completed'}
+                          </button>
+                          <button className="cancel-btn" onClick={() => handleUnjoinEvent(event.id)}>
+                            Cancel
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </section>
+            )}
+
+            {attendedEvents.length > 0 && (
+              <section className="attended-events">
+                <h2>Events Attended ✓</h2>
+                <div className="events-grid">
+                  {attendedEventsData.map(event => (
+                    <div className="event-card attended" key={event.id}>
+                      <div className="event-card-header">
+                        <h3>{event.title}</h3>
+                        <div className="event-reward attended-reward">
+                          <span>✓</span>
+                          <span className="reward-points">{event.points} pts Earned</span>
+                        </div>
+                      </div>
+                      <span className="event-badge attended-badge">{event.category}</span>
+                      <div className="event-details">
+                        <p>📅 {new Date(event.dateISO).toDateString()}</p>
+                        <p>📍 {event.location}</p>
+                        <p>📏 {event.distanceKm} km away</p>
+                      </div>
+                      <div className="attended-confirmation">
+                        ✓ Points Earned
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+          </>
+        ) : activeTab === 'create' ? (
           <section className="create-event-section">
             <header className="dashboard-header create-header">
               <div className="header-title">
@@ -477,6 +673,16 @@ function Dashboard() {
               </form>
             </div>
           </section>
+        ) : activeTab === 'community' ? (
+          <Community />
+        ) : (
+          <div className="coming-soon-container">
+            <div className="coming-soon-icon">🚧</div>
+            <h2 className="coming-soon-title">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
+            <p className="coming-soon-text">Coming Soon</p>
+            <p className="coming-soon-subtext">We're working hard to bring this feature to you. Stay tuned!</p>
+            <button className="coming-soon-btn" onClick={() => setActiveTab('dashboard')}>Back to Dashboard</button>
+          </div>
         )}
       </main>
     </div>

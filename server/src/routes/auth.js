@@ -7,18 +7,20 @@ const router = express.Router();
 
 router.post("/register", async (req, res, next) => {
   try {
-    const { name, email, password, city } = req.body;
+    const { name, email, password, city, role } = req.body;
     if (!email || !password) return res.status(400).json({ message: "email/password required" });
 
     const exists = await User.findOne({ email: email.toLowerCase() });
     if (exists) return res.status(409).json({ message: "Email already exists" });
+
+    const normalizedRole = role === "organizer" ? "organizer" : "volunteer";
 
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await User.create({
       name: name || "Volunteer",
       email: email.toLowerCase(),
       passwordHash,
-      role: "user",
+      role: normalizedRole,
       city: city || "Hyderabad",
       points: 0,
       badges: ["b1"],
@@ -32,7 +34,7 @@ router.post("/register", async (req, res, next) => {
         _id: user._id, 
         name: user.name, 
         email: user.email, 
-        role: user.role,
+        role: user.role === "user" ? "volunteer" : user.role,
         city: user.city
       } 
     });
@@ -59,7 +61,7 @@ router.post("/login", async (req, res, next) => {
         _id: user._id, 
         name: user.name, 
         email: user.email, 
-        role: user.role,
+        role: user.role === "user" ? "volunteer" : user.role,
         city: user.city
       } 
     });

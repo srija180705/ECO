@@ -9,6 +9,9 @@ const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/users");
 const eventRoutes = require("./routes/events");
 const grievanceRoutes = require("./routes/grievances");
+const organizerRoutes = require("./routes/organizer");
+const rewardRoutes = require("./routes/rewards");
+const postRoutes = require("./routes/posts");
 
 // Validate required environment variables
 const requiredEnvVars = ["JWT_SECRET", "MONGODB_URI"];
@@ -21,7 +24,8 @@ if (missing.length > 0) {
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(
   cors({
     origin: true, // Allow all origins
@@ -38,6 +42,9 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/events", eventRoutes);
 app.use("/api/grievances", grievanceRoutes);
+app.use("/api/organizer", organizerRoutes);
+app.use("/api/rewards", rewardRoutes);
+app.use("/api/posts", postRoutes);
 
 // Admin dashboard route
 app.get("/api/admin/dashboard", adminAuth, (req, res) => {
