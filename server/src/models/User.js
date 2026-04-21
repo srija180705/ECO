@@ -7,10 +7,14 @@ const UserSchema = new mongoose.Schema(
     passwordHash: { type: String, required: true },
     role: { type: String, default: "user", enum: ["user", "admin"] },
     city: { type: String, default: "Hyderabad" },
+    role: { type: String, enum: ["volunteer", "organizer"], default: "volunteer" },
+    isVerified: { type: Boolean, default: true },
     points: { type: Number, default: 0 },
     badges: { type: [String], default: [] },
-    joinedEventIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
-    interests: { type: [String], default: [] }
+    joinedEvents: { type: [String], default: [] },
+    attendedEvents: { type: [String], default: [] },
+    interests: { type: [String], default: [] },
+    createdEventIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }]
   },
   { timestamps: true }
 );
