@@ -10,7 +10,8 @@ const UserSchema = new mongoose.Schema(
     isVerified: { type: Boolean, default: true },
     points: { type: Number, default: 0 },
     badges: { type: [String], default: [] },
-    joinedEventIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }],
+    joinedEvents: { type: [String], default: [] },
+    attendedEvents: { type: [String], default: [] },
     interests: { type: [String], default: [] },
     createdEventIds: [{ type: mongoose.Schema.Types.ObjectId, ref: "Event" }]
   },

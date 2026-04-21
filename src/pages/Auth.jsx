@@ -69,7 +69,7 @@ function Auth() {
         role: data.user.role || 'volunteer',
         isVerified: data.user.isVerified ?? true,
         city: data.user.city || 'Hyderabad',
-        points: 0,
+        points: data.user.points ?? 0,
         badges: [],
         joinedEventIds: [],
         interests: [],
