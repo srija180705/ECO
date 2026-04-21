@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiFetch } from '../api.js'
 
 function Auth() {
   const navigate = useNavigate()
@@ -44,7 +45,7 @@ function Auth() {
         ? { email: formData.email, password: formData.password }
         : { name: formData.name, email: formData.email, password: formData.password }
 
-      const response = await fetch(endpoint, {
+      const response = await apiFetch(endpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'

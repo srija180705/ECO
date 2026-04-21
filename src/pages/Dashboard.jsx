@@ -1,6 +1,7 @@
 ﻿import { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
+import { apiFetch } from '../api.js';
 
 function Dashboard() {
   const location = useLocation();
@@ -42,7 +43,7 @@ function Dashboard() {
       }
 
       try {
-        const response = await fetch('/api/events', {
+        const response = await apiFetch('/api/events', {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!response.ok) {
@@ -157,7 +158,7 @@ function Dashboard() {
     }
 
     try {
-      const response = await fetch('/api/events', {
+      const response = await apiFetch('/api/events', {
         method: 'POST',
         headers: { Authorization: `Bearer ${token}` },
         body: formData,

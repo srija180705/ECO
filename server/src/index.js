@@ -24,7 +24,7 @@ const app = express();
 app.use(express.json());
 app.use(
   cors({
-    origin: process.env.CLIENT_ORIGIN || "http://localhost:5173",
+    origin: true, // Allow all origins
     credentials: true
   })
 );
@@ -57,7 +57,7 @@ const PORT = process.env.PORT || 4000;
 (async () => {
   try {
     await connectDB(process.env.MONGODB_URI);
-    app.listen(PORT, () => console.log(`[API] running on http://localhost:${PORT}`));
+    app.listen(PORT, '0.0.0.0', () => console.log(`[API] running on http://0.0.0.0:${PORT}`));
   } catch (error) {
     console.error("[ERROR] Failed to start server:", error);
     process.exit(1);

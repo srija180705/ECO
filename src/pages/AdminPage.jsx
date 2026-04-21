@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import './Dashboard.css'
+import { apiFetch } from '../api.js'
 
 function AdminPage() {
   const location = useLocation()
@@ -27,8 +28,8 @@ function AdminPage() {
 
       try {
         const [eventsRes, grievancesRes] = await Promise.all([
-          fetch('/api/events/admin', { headers: { Authorization: `Bearer ${token}` } }),
-          fetch('/api/grievances/admin', { headers: { Authorization: `Bearer ${token}` } })
+          apiFetch('/api/events/admin', { headers: { Authorization: `Bearer ${token}` } }),
+          apiFetch('/api/grievances/admin', { headers: { Authorization: `Bearer ${token}` } })
         ])
 
         if (!eventsRes.ok || !grievancesRes.ok) {
@@ -85,8 +86,8 @@ function AdminPage() {
     setError('')
     try {
       const [eventsRes, grievancesRes] = await Promise.all([
-        fetch('/api/events/admin', { headers: { Authorization: `Bearer ${token}` } }),
-        fetch('/api/grievances/admin', { headers: { Authorization: `Bearer ${token}` } })
+        apiFetch('/api/events/admin', { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch('/api/grievances/admin', { headers: { Authorization: `Bearer ${token}` } })
       ])
       if (!eventsRes.ok || !grievancesRes.ok) {
         const errorBody = !eventsRes.ok
@@ -106,7 +107,7 @@ function AdminPage() {
 
   const handleApprove = async (eventId) => {
     try {
-      await fetch(`/api/events/admin/${eventId}/approve`, {
+      await apiFetch(`/api/events/admin/${eventId}/approve`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       })
@@ -118,7 +119,7 @@ function AdminPage() {
 
   const handleClose = async (eventId) => {
     try {
-      await fetch(`/api/events/admin/${eventId}/close`, {
+      await apiFetch(`/api/events/admin/${eventId}/close`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       })
@@ -130,7 +131,7 @@ function AdminPage() {
 
   const handleResolve = async (grievanceId) => {
     try {
-      await fetch(`/api/grievances/admin/${grievanceId}/resolve`, {
+      await apiFetch(`/api/grievances/admin/${grievanceId}/resolve`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       })
