@@ -40,42 +40,31 @@ function Auth() {
       setLoading(true)
 
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
-      const body = isLogin
+      const body = isLogin 
         ? { email: formData.email, password: formData.password }
         : { name: formData.name, email: formData.email, password: formData.password }
 
-      const res = await fetch(`http://localhost:4000${endpoint}`, {
+      const response = await fetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
       })
 
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.message || 'Authentication failed')
-        return
+      if (response.ok) {
+        const data = await response.json()
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        setFormData({ name: '', email: '', password: '' })
+        navigate('/dashboard', { state: { fromAuth: true, user: data.user } })
+      } else {
+        const errorData = await response.json()
+        setError(errorData.message || 'Authentication failed')
       }
-
-      // Store token in localStorage
-      localStorage.setItem('token', data.token)
-
-      const user = {
-        id: data.user._id,
-        name: data.user.name,
-        email: data.user.email,
-        city: data.user.city || 'Hyderabad',
-        points: 0,
-        badges: [],
-        joinedEventIds: [],
-        interests: [],
-      }
-
-      setFormData({ name: '', email: '', password: '' })
-      navigate('/dashboard', { state: { fromAuth: true, user } })
 
     } catch (err) {
-      setError('Unable to connect to server. Please try again.')
+      setError('Authentication failed. Please try again.')
       console.error('Auth error:', err)
     } finally {
       setLoading(false)

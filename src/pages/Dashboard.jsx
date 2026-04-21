@@ -1,51 +1,196 @@
-import React, { useState, useMemo } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
-import { mockDB } from '../data/mockData';
 
 function Dashboard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = location.state && location.state.user;
+  const storedUser = JSON.parse(localStorage.getItem('user') || 'null');
+  const [user, setUser] = useState(location.state?.user || storedUser);
   const firstName = user?.name ? user.name.split(' ')[0] : 'Volunteer';
 
-  const [q, setQ] = useState("");
-  const [category, setCategory] = useState("all");
-  const [activeTab, setActiveTab] = useState("dashboard");
+  const [q, setQ] = useState('');
+  const [category, setCategory] = useState('all');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [events, setEvents] = useState([]);
+  const [loadingEvents, setLoadingEvents] = useState(true);
+  const [fetchError, setFetchError] = useState('');
+  const [createStatus, setCreateStatus] = useState('');
+  const [createError, setCreateError] = useState('');
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    organizationName: '',
+    category: 'cleanup',
+    location: '',
+    address: '',
+    description: '',
+    startDateISO: '',
+    endDateISO: '',
+    startHour: 9,
+    endHour: 17,
+    points: 50,
+    permissionPdf: null,
+  });
 
-  // Calculate user stats
-  const userStats = useMemo(() => {
-    const mockUser = mockDB.users[0];
-    return {
-      totalPoints: user?.points ?? 0,
-      eventsJoined: user?.joinedEventIds?.length ?? 0,
-      nearbyEvents: 0,
-      badgesEarned: user?.badges?.length ?? 0,
+  useEffect(() => {
+    const loadEvents = async () => {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        setFetchError('Login required to load events.');
+        setLoadingEvents(false);
+        return;
+      }
+
+      try {
+        const response = await fetch('/api/events', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!response.ok) {
+          const errorData = await response.json().catch(() => ({}));
+          setFetchError(errorData.message || 'Failed to load events.');
+          return;
+        }
+        const data = await response.json();
+        setEvents(data);
+      } catch (err) {
+        setFetchError(err.message || 'Failed to load events.');
+      } finally {
+        setLoadingEvents(false);
+      }
     };
-  }, [user]);
+
+    loadEvents();
+  }, []);
+
+  const userStats = useMemo(
+    () => ({
+      totalPoints: user?.points ?? 0,
+      eventsJoined: 0, // Temporarily set to 0 as join functionality is removed
+      nearbyEvents: events.length,
+      badgesEarned: user?.badges?.length ?? 0,
+    }),
+    [user, events.length]
+  );
 
   const filteredEvents = useMemo(() => {
-    return mockDB.events.filter((ev) => {
+    return events.filter((ev) => {
       const matchQ =
         ev.title.toLowerCase().includes(q.toLowerCase()) ||
         ev.location.toLowerCase().includes(q.toLowerCase()) ||
         ev.category.toLowerCase().includes(q.toLowerCase());
-      const matchCat = category === "all" || ev.category.toLowerCase() === category.toLowerCase();
+      const matchCat = category === 'all' || ev.category.toLowerCase() === category.toLowerCase();
       return matchQ && matchCat;
     });
-  }, [q, category]);
+  }, [events, q, category]);
 
   const handleLogout = () => {
-    navigate('/auth');
+    localStorage.removeItem('token');
+    localStorage.removeItem('user');
+    navigate('/auth', { replace: true });
   };
 
   const handleOpenMap = () => {
     navigate('/map', { state: { fromAuth: true, user } });
   };
 
+  const handleEventChange = (e) => {
+    const { name, value } = e.target;
+    setEventForm((prev) => ({ ...prev, [name]: value }));
+    setCreateStatus('');
+    setCreateError('');
+  };
+
+  const handleFileChange = (e) => {
+    setEventForm((prev) => ({ ...prev, permissionPdf: e.target.files[0] || null }));
+    setCreateStatus('');
+    setCreateError('');
+  };
+
+  const formatTwoDigits = (value) => String(value).padStart(2, '0');
+  const formatEventTime = (ev) => {
+    const startDay = ev.startDateISO ? new Date(ev.startDateISO).toDateString() : '';
+    const endDay = ev.endDateISO ? new Date(ev.endDateISO).toDateString() : '';
+    const startHour = formatTwoDigits(ev.startHour || 9);
+    const endHour = formatTwoDigits(ev.endHour || 17);
+    return `${startDay} ${startHour}:00 — ${endDay} ${endHour}:00`;
+  };
+
+  const handleEventLocationClick = (event) => {
+    navigate('/map', {
+      state: {
+        fromAuth: true,
+        user,
+        selectedEvent: {
+          title: event.title,
+          location: event.location,
+          address: event.address,
+        },
+      },
+    });
+  };
+
+  const handleCreateEvent = async (e) => {
+    e.preventDefault();
+    setCreateError('');
+    setCreateStatus('');
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setCreateError('Login required to submit an event.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('title', eventForm.title);
+    formData.append('organizationName', eventForm.organizationName);
+    formData.append('category', eventForm.category);
+    formData.append('location', eventForm.location);
+    formData.append('address', eventForm.address);
+    formData.append('description', eventForm.description);
+    formData.append('startDateISO', eventForm.startDateISO);
+    formData.append('endDateISO', eventForm.endDateISO);
+    formData.append('startHour', eventForm.startHour);
+    formData.append('endHour', eventForm.endHour);
+    formData.append('points', eventForm.points);
+    if (eventForm.permissionPdf) {
+      formData.append('permissionPdf', eventForm.permissionPdf);
+    }
+
+    try {
+      const response = await fetch('/api/events', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setCreateError(errorData.message || 'Unable to submit event.');
+        return;
+      }
+
+      setCreateStatus('Event submitted successfully and is awaiting admin approval.');
+      setEventForm({
+        title: '',
+        organizationName: '',
+        category: 'cleanup',
+        location: '',
+        address: '',
+        description: '',
+        startDateISO: '',
+        endDateISO: '',
+        startHour: 9,
+        endHour: 17,
+        points: 50,
+        permissionPdf: null,
+      });
+    } catch (err) {
+      setCreateError(err.message || 'Unable to submit event.');
+    }
+  };
+
   return (
     <div className="dashboard-layout">
-      {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-top">
           <div className="sidebar-brand">
@@ -65,9 +210,9 @@ function Dashboard() {
               <span className="nav-icon">🏠</span>
               <span>Dashboard</span>
             </button>
-            <button type="button" className={`nav-item ${activeTab === 'community' ? 'active' : ''}`} onClick={() => setActiveTab('community')}>
-              <span className="nav-icon">👥</span>
-              <span>Community</span>
+            <button type="button" className={`nav-item ${activeTab === 'create' ? 'active' : ''}`} onClick={() => setActiveTab('create')}>
+              <span className="nav-icon">📝</span>
+              <span>Create Event</span>
             </button>
             <button
               type="button"
@@ -84,10 +229,30 @@ function Dashboard() {
               <span className="nav-icon">🎁</span>
               <span>Rewards</span>
             </button>
-            <button type="button" className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+            <button
+              type="button"
+              className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
+              onClick={() => {
+                setActiveTab('profile');
+                navigate('/profile', { state: { fromAuth: true, user } });
+              }}
+            >
               <span className="nav-icon">👤</span>
               <span>Profile</span>
             </button>
+            {user?.role === 'admin' && (
+              <button
+                type="button"
+                className={`nav-item ${activeTab === 'admin' ? 'active' : ''}`}
+                onClick={() => {
+                  setActiveTab('admin');
+                  navigate('/admin', { state: { fromAuth: true, user } });
+                }}
+              >
+                <span className="nav-icon">⚙️</span>
+                <span>Admin</span>
+              </button>
+            )}
           </nav>
         </div>
 
@@ -107,9 +272,8 @@ function Dashboard() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="dashboard-main">
-        {activeTab === 'dashboard' ? (
+        {activeTab === 'dashboard' && (
           <>
             <header className="dashboard-header">
               <div className="header-title">
@@ -151,11 +315,7 @@ function Dashboard() {
                 </svg>
                 Filters
               </button>
-              <select
-                className="category-select"
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
-              >
+              <select className="category-select" value={category} onChange={(e) => setCategory(e.target.value)}>
                 <option value="all">All</option>
                 <option value="cleanup">Cleanup</option>
                 <option value="planting">Planting</option>
@@ -163,7 +323,6 @@ function Dashboard() {
               </select>
             </div>
 
-            {/* Stats Cards */}
             <div className="stats-grid">
               <div className="stat-card stat-green">
                 <div className="stat-icon-wrapper">🏅</div>
@@ -195,17 +354,24 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* Upcoming Events */}
             <section className="upcoming-events">
               <h2>Upcoming Events Near You</h2>
-              {filteredEvents.length === 0 ? (
+              {loadingEvents ? (
                 <div className="no-events">
-                  <p>No events found. Try adjusting your search or filters.</p>
+                  <p>Loading events...</p>
+                </div>
+              ) : fetchError ? (
+                <div className="no-events">
+                  <p>{fetchError}</p>
+                </div>
+              ) : filteredEvents.length === 0 ? (
+                <div className="no-events">
+                  <p>No approved events are available yet.</p>
                 </div>
               ) : (
                 <div className="events-grid">
-                  {filteredEvents.map(event => (
-                    <div className="event-card" key={event.id}>
+                  {filteredEvents.map((event) => (
+                    <div className="event-card" key={event._id || event.id}>
                       <div className="event-card-header">
                         <h3>{event.title}</h3>
                         <div className="event-reward">
@@ -215,25 +381,101 @@ function Dashboard() {
                       </div>
                       <span className="event-badge">{event.category}</span>
                       <div className="event-details">
-                        <p>📅 {new Date(event.dateISO).toDateString()}</p>
-                        <p>📍 {event.location}</p>
-                        <p>📏 {event.distanceKm} km away</p>
+                        <p>� <button
+                          type="button"
+                          style={{ border: 'none', background: 'none', padding: 0, color: '#2563eb', textDecoration: 'underline', cursor: 'pointer' }}
+                          onClick={() => handleEventLocationClick(event)}
+                        >
+                          {event.address || event.location}
+                        </button></p>
+                        <p>🗓️ {formatEventTime(event)}</p>
+                        <p>🏙️ {event.location}</p>
                       </div>
-                      <button className="join-btn">Join Event</button>
                     </div>
                   ))}
                 </div>
               )}
             </section>
           </>
-        ) : (
-          <div className="coming-soon-container">
-            <div className="coming-soon-icon">🚧</div>
-            <h2 className="coming-soon-title">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
-            <p className="coming-soon-text">Coming Soon</p>
-            <p className="coming-soon-subtext">We're working hard to bring this feature to you. Stay tuned!</p>
-            <button className="coming-soon-btn" onClick={() => setActiveTab('dashboard')}>Back to Dashboard</button>
-          </div>
+        )}
+
+        {activeTab === 'create' && (
+          <section className="create-event-section">
+            <header className="dashboard-header create-header">
+              <div className="header-title">
+                <h2>Submit a New Event</h2>
+                <p>Provide the event details and attach permission documentation for admin review.</p>
+              </div>
+            </header>
+
+            <div className="form-card">
+              <form className="create-event-form" onSubmit={handleCreateEvent}>
+                <div className="form-grid">
+                  <label>
+                    Event Title
+                    <input name="title" value={eventForm.title} onChange={handleEventChange} required />
+                  </label>
+                  <label>
+                    Organization Name
+                    <input name="organizationName" value={eventForm.organizationName} onChange={handleEventChange} required />
+                  </label>
+                  <label>
+                    Category
+                    <select name="category" value={eventForm.category} onChange={handleEventChange} required>
+                      <option value="cleanup">Cleanup</option>
+                      <option value="planting">Planting</option>
+                      <option value="recycling">Recycling</option>
+                      <option value="awareness">Awareness</option>
+                    </select>
+                  </label>
+                  <label>
+                    Location (Area Name, City, State)
+                    <input name="location" value={eventForm.location} onChange={handleEventChange} required />
+                  </label>
+                  <label className="full-width">
+                    Description
+                    <textarea name="description" value={eventForm.description} onChange={handleEventChange} rows="4" required />
+                  </label>
+                  <label>
+                    Start Date
+                    <input type="date" name="startDateISO" value={eventForm.startDateISO} onChange={handleEventChange} required />
+                  </label>
+                  <label>
+                    End Date
+                    <input type="date" name="endDateISO" value={eventForm.endDateISO} onChange={handleEventChange} required />
+                  </label>
+                  <label>
+                    Start Hour (1-24)
+                    <input type="number" name="startHour" value={eventForm.startHour} onChange={handleEventChange} min="1" max="24" required />
+                  </label>
+                  <label>
+                    End Hour (1-24)
+                    <input type="number" name="endHour" value={eventForm.endHour} onChange={handleEventChange} min="1" max="24" required />
+                  </label>
+                  <label>
+                    Points
+                    <input type="number" name="points" value={eventForm.points} onChange={handleEventChange} min="0" required />
+                  </label>
+                  <label className="full-width">
+                    Address
+                    <textarea name="address" value={eventForm.address} onChange={handleEventChange} rows="3" required />
+                  </label>
+                </div>
+
+                <div className="file-upload-card">
+                  <h3>Permission Document</h3>
+                  <p>Attach the PDF permission letter for the event.</p>
+                  <input type="file" accept="application/pdf" onChange={handleFileChange} className="file-input" />
+                  {eventForm.permissionPdf && <span className="file-name">Selected: {eventForm.permissionPdf.name}</span>}
+                </div>
+
+                {createError && <div className="feedback feedback-error">{createError}</div>}
+                {createStatus && <div className="feedback feedback-success">{createStatus}</div>}
+
+                <button className="primary-btn" type="submit">Submit for Approval</button>
+              </form>
+            </div>
+          </section>
         )}
       </main>
     </div>

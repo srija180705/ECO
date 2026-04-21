@@ -4,14 +4,26 @@ import Auth from './pages/Auth'
 import Dashboard from './pages/Dashboard'
 import Profile from './pages/Profile'
 import MapView from './pages/MapView'
+import AdminPage from './pages/AdminPage'
 
-// Protected route wrapper using navigation state only
+// Protected route wrapper - checks localStorage token/user only
 function PrivateRoute({ children }) {
-  const location = useLocation()
-  const fromAuth = location.state && location.state.fromAuth
+  const storedToken = localStorage.getItem('token')
+  const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
 
-  if (!fromAuth) {
+  if (!storedToken || !storedUser) {
     return <Navigate to="/auth" replace />
+  }
+  return children
+}
+
+// Admin route wrapper
+function AdminRoute({ children }) {
+  const storedToken = localStorage.getItem('token')
+  const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
+
+  if (!storedToken || !storedUser || storedUser.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />
   }
   return children
 }
@@ -44,6 +56,14 @@ function App() {
             <PrivateRoute>
               <Profile />
             </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminPage />
+            </AdminRoute>
           }
         />
       </Routes>

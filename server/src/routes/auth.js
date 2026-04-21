@@ -18,6 +18,7 @@ router.post("/register", async (req, res, next) => {
       name: name || "Volunteer",
       email: email.toLowerCase(),
       passwordHash,
+      role: "user",
       city: city || "Hyderabad",
       points: 0,
       badges: ["b1"],
@@ -31,6 +32,7 @@ router.post("/register", async (req, res, next) => {
         _id: user._id, 
         name: user.name, 
         email: user.email, 
+        role: user.role,
         city: user.city
       } 
     });
@@ -57,6 +59,7 @@ router.post("/login", async (req, res, next) => {
         _id: user._id, 
         name: user.name, 
         email: user.email, 
+        role: user.role,
         city: user.city
       } 
     });

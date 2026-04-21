@@ -1,10 +1,14 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const { connectDB } = require("./db");
+const { adminAuth } = require("./middleware/auth");
 
 const authRoutes = require("./routes/auth");
 const userRoutes = require("./routes/users");
+const eventRoutes = require("./routes/events");
+const grievanceRoutes = require("./routes/grievances");
 
 // Validate required environment variables
 const requiredEnvVars = ["JWT_SECRET", "MONGODB_URI"];
@@ -25,13 +29,20 @@ app.use(
   })
 );
 
-// Serve uploaded images
-app.use("/uploads", express.static("uploads"));
+// Serve uploaded PDF documents
+app.use("/uploads", express.static(path.join(__dirname, '..', 'uploads')));
 
 app.get("/api/health", (req, res) => res.json({ ok: true }));
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/events", eventRoutes);
+app.use("/api/grievances", grievanceRoutes);
+
+// Admin dashboard route
+app.get("/api/admin/dashboard", adminAuth, (req, res) => {
+  res.sendFile(path.join(__dirname, "static", "admin-dashboard.html"));
+});
 
 // Global error handler middleware
 app.use((err, req, res, next) => {
