@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiFetch } from '../api.js'
 
 function Auth() {
   const navigate = useNavigate()
@@ -45,45 +46,42 @@ function Auth() {
         ? { email: formData.email, password: formData.password }
         : { name: formData.name, email: formData.email, password: formData.password, role: formData.role }
 
-      const res = await fetch(`http://localhost:4000${endpoint}`, {
+      const response = await apiFetch(endpoint, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
       })
 
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.message || 'Authentication failed')
-        return
+      if (response.ok) {
+        const data = await response.json()
+        localStorage.setItem('token', data.token)
+        localStorage.setItem('user', JSON.stringify(data.user))
+        const user = {
+          _id: data.user._id,
+          id: data.user._id,
+          name: data.user.name,
+          email: data.user.email,
+          role: data.user.role === 'user' ? 'volunteer' : (data.user.role || 'volunteer'),
+          isVerified: data.user.isVerified ?? true,
+          city: data.user.city || 'Hyderabad',
+          points: data.user.points ?? 0,
+          badges: [],
+          joinedEventIds: [],
+          interests: [],
+        }
+        localStorage.setItem('user', JSON.stringify(user))
+        setFormData({ name: '', email: '', password: '', role: 'volunteer' })
+        const redirectPath = user.role === 'organizer' ? '/organizer-dashboard' : (user.role === 'admin' ? '/admin' : '/dashboard')
+        navigate(redirectPath, { state: { fromAuth: true, user } })
+      } else {
+        const errorData = await response.json()
+        setError(errorData.message || 'Authentication failed')
       }
-
-      // Store token in localStorage
-      localStorage.setItem('token', data.token)
-
-      const user = {
-        _id: data.user._id,
-        id: data.user._id,
-        name: data.user.name,
-        email: data.user.email,
-        role: data.user.role || 'volunteer',
-        isVerified: data.user.isVerified ?? true,
-        city: data.user.city || 'Hyderabad',
-        points: data.user.points ?? 0,
-        badges: [],
-        joinedEventIds: [],
-        interests: [],
-      }
-
-      localStorage.setItem('user', JSON.stringify(user))
-      setFormData({ name: '', email: '', password: '', role: 'volunteer' })
-      
-      // Redirect based on role
-      const redirectPath = user.role === 'organizer' ? '/organizer-dashboard' : '/dashboard'
-      navigate(redirectPath, { state: { fromAuth: true, user } })
 
     } catch (err) {
-      setError('Unable to connect to server. Please try again.')
+      setError('Authentication failed. Please try again.')
       console.error('Auth error:', err)
     } finally {
       setLoading(false)
@@ -173,8 +171,6 @@ function Auth() {
               placeholder="Enter your password"
             />
           </div>
-
-
 
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Processing...' : isLogin ? 'Login' : 'Create Account'}

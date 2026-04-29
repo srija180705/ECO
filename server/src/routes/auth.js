@@ -13,14 +13,15 @@ router.post("/register", async (req, res, next) => {
     const exists = await User.findOne({ email: email.toLowerCase() });
     if (exists) return res.status(409).json({ message: "Email already exists" });
 
+    const normalizedRole = role === "organizer" ? "organizer" : "volunteer";
+
     const passwordHash = await bcrypt.hash(password, 10);
     const user = await User.create({
       name: name || "Volunteer",
       email: email.toLowerCase(),
       passwordHash,
+      role: normalizedRole,
       city: city || "Hyderabad",
-      role: role || "volunteer",
-      isVerified: true,
       points: 0,
       badges: ["b1"],
       interests: []
@@ -33,10 +34,8 @@ router.post("/register", async (req, res, next) => {
         _id: user._id, 
         name: user.name, 
         email: user.email, 
-        city: user.city,
-        role: user.role,
-        isVerified: user.isVerified,
-        points: user.points ?? 0,
+        role: user.role === "user" ? "volunteer" : user.role,
+        city: user.city
       } 
     });
   } catch (error) {
@@ -62,10 +61,8 @@ router.post("/login", async (req, res, next) => {
         _id: user._id, 
         name: user.name, 
         email: user.email, 
-        city: user.city,
-        role: user.role,
-        isVerified: user.isVerified,
-        points: user.points ?? 0,
+        role: user.role === "user" ? "volunteer" : user.role,
+        city: user.city
       } 
     });
   } catch (error) {

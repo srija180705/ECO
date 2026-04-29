@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>EcoSphere Admin | Dashboard + Grievances + Events Hub</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/typed.js@2.0.12"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Inter', sans-serif;
+            transition: background-color 0.2s ease, border-color 0.2s ease, color 0.2s, box-shadow 0.2s;
+        }
+        /* Theme Variables (dark default) */
+        :root {
+            --bg-start: #0b2b1f;
+            --bg-end: #03100c;
+            --glass-bg: rgba(10, 30, 25, 0.7);
+            --glass-border: rgba(72, 187, 120, 0.3);
+            --text-primary: #ffffff;
+            --text-secondary: #ccf0e6;
+            --card-bg: rgba(15, 35, 30, 0.7);
+            --border-accent: #2dd4bf;
+            --btn-accept: #059669;
+            --btn-deny: #b91c1c;
+            --sidebar-bg: rgba(0, 20, 15, 0.6);
+            --badge-bg: #0f3b2c;
+            --shadow: rgba(0,0,0,0.4);
+        }
+        body.light-theme {
+            --bg-start: #e8f5f0;
+            --bg-end: #c8e6df;
+            --glass-bg: rgba(245, 255, 250, 0.85);
+            --glass-border: rgba(46, 125, 90, 0.25);
+            --text-primary: #1a2e2a;
+            --text-secondary: #2c5a4a;
+            --card-bg: rgba(255, 255, 245, 0.9);
+            --border-accent: #2c7a5e;
+            --btn-accept: #2e7d5e;
+            --btn-deny: #c62828;
+            --sidebar-bg: rgba(230, 250, 240, 0.85);
+            --badge-bg: #d9f0e5;
+            --shadow: rgba(0,0,0,0.1);
+        }
+        body {
+            background: radial-gradient(circle at 10% 20%, var(--bg-start), var(--bg-end));
+            min-height: 100vh;
+            color: var(--text-primary);
+        }
+        #particle-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            pointer-events: none;
+        }
+        .app-container {
+            max-width: 1600px;
+            margin: 0 auto;
+            padding: 1.5rem 2rem;
+            position: relative;
+            z-index: 2;
+        }
+        /* top bar with nav */
+        .nav-bar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(10px);
+            border-radius: 2rem;
+            padding: 0.8rem 1.8rem;
+            border: 1px solid var(--glass-border);
+        }
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+        .nav-btn {
+            background: transparent;
+            border: none;
+            padding: 0.6rem 1.3rem;
+            border-radius: 2rem;
+            font-weight: 600;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            transition: 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .nav-btn.active {
+            background: var(--border-accent);
+            color: #03100c;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+        }
+        .nav-btn:hover:not(.active) {
+            background: rgba(45,212,191,0.2);
+        }
+        .theme-toggle-sm {
+            background: rgba(45,212,191,0.2);
+            border: 1px solid var(--border-accent);
+            border-radius: 2rem;
+            padding: 0.5rem 1rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        /* pages */
+        .page {
+            display: none;
+            animation: fadeIn 0.3s ease;
+        }
+        .page.active-page {
+            display: block;
+        }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+        
+        /* glass cards */
+        .glass-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border-radius: 1.8rem;
+            border: 1px solid var(--glass-border);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            border-left: 5px solid var(--border-accent);
+            padding-left: 1rem;
+            color: var(--text-secondary);
+        }
+        /* events page sidebar + content layout */
+        .events-layout {
+            display: flex;
+            gap: 1.8rem;
+            flex-wrap: wrap;
+        }
+        .category-sidebar {
+            flex: 0 0 240px;
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(8px);
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            height: fit-content;
+            border: 1px solid var(--glass-border);
+        }
+        .category-sidebar button {
+            width: 100%;
+            text-align: left;
+            background: transparent;
+            border: none;
+            padding: 0.8rem 1rem;
+            margin: 0.3rem 0;
+            border-radius: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.2s;
+        }
+        .category-sidebar button.active-cat {
+            background: var(--border-accent);
+            color: #03100c;
+        }
+        .category-sidebar button:hover:not(.active-cat) {
+            background: rgba(45,212,191,0.2);
+        }
+        .events-content {
+            flex: 1;
+            min-width: 260px;
+        }
+        .event-item {
+            background: var(--card-bg);
+            border-radius: 1.2rem;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-left: 4px solid var(--border-accent);
+        }
+        .badge-status {
+            display: inline-block;
+            background: var(--badge-bg);
+            padding: 0.2rem 0.7rem;
+            border-radius: 20px;
+            font-size: 0.7rem;
+            font-weight: 500;
+        }
+        .btn-sm {
+            padding: 0.3rem 1rem;
+            font-size: 0.75rem;
+            border-radius: 2rem;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .grid-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px,1fr));
+            gap: 6px;
+            font-size: 0.8rem;
+            margin: 8px 0;
+        }
+        .complaint-row {
+            background: var(--card-bg);
+            border-radius: 1rem;
+            padding: 1rem;
+            margin-bottom: 0.8rem;
+        }
+        .flex-between { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
+        .btn-resolve { background: #334155; color: white; }
+        body.light-theme .btn-resolve { background: #5f7c6e; }
+        input, textarea {
+            background: var(--card-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 1.5rem;
+            padding: 0.6rem 1rem;
+            color: var(--text-primary);
+        }
+        button { cursor: pointer; }
+        i { margin-right: 4px; }
+        @media (max-width: 800px) {
+            .events-layout { flex-direction: column; }
+            .category-sidebar { flex: auto; }
+            .app-container { padding: 1rem; }
+        }
+    </style>
+</head>
+<body>
+<canvas id="particle-canvas"></canvas>
+<div class="app-container">
+    <!-- Navigation & Theme -->
+    <div class="nav-bar">
+        <div class="nav-links">
+            <button class="nav-btn" data-page="dashboard"><i class="fas fa-tachometer-alt"></i> Dashboard</button>
+            <button class="nav-btn" data-page="grievances"><i class="fas fa-exclamation-triangle"></i> Grievances</button>
+            <button class="nav-btn" data-page="events"><i class="fas fa-calendar-alt"></i> Events Organizer</button>
+        </div>
+        <div class="theme-toggle-sm" id="themeToggleBtn"><i class="fas fa-moon"></i> <span id="themeText">Dark</span></div>
+    </div>
+
+    <!-- PAGE 1: DASHBOARD (original admin) -->
+    <div id="dashboard-page" class="page">
+        <div class="glass-card" style="margin-bottom:1rem;">
+            <div class="section-title"><i class="fas fa-leaf"></i> Admin Command Center</div>
+            <div id="typed-line" style="font-size:1.2rem; color:var(--text-secondary);"></div>
+        </div>
+        <div class="stats-row" style="display:flex; gap:1rem; flex-wrap:wrap; margin-bottom:1.5rem;">
+            <div class="stat-card" style="background:var(--sidebar-bg); flex:1; padding:1rem; border-radius:1.5rem;"><div class="stat-number" id="stat-pending">0</div><div>Pending Req</div></div>
+            <div class="stat-card" style="background:var(--sidebar-bg); flex:1; padding:1rem; border-radius:1.5rem;"><div class="stat-number" id="stat-events">0</div><div>Active Events</div></div>
+            <div class="stat-card" style="background:var(--sidebar-bg); flex:1; padding:1rem; border-radius:1.5rem;"><div class="stat-number" id="stat-attendees">0</div><div>Attendees</div></div>
+            <div class="stat-card" style="background:var(--sidebar-bg); flex:1; padding:1rem; border-radius:1.5rem;"><div class="stat-number" id="stat-complaints">0</div><div>Grievances</div></div>
+        </div>
+        <div class="dashboard-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:1.5rem;">
+            <div class="glass-card"><h3><i class="fas fa-handshake"></i> Pending Org Requests</h3><div id="pending-requests-container"></div></div>
+            <div class="glass-card"><h3><i class="fas fa-calendar-check"></i> Active Events Monitor</h3><div id="events-container"></div></div>
+        </div>
+    </div>
+
+    <!-- PAGE 2: GRIEVANCES (full list with email, event, org, desc) -->
+    <div id="grievances-page" class="page">
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-flag"></i> All User Grievances</div>
+            <div id="grievances-list"></div>
+            <div style="margin-top:1.5rem; background:var(--card-bg); padding:1rem; border-radius:1.5rem;">
+                <h4>➕ Add New Complaint</h4>
+                <div style="display:grid; grid-template-columns:repeat(auto-fill, minmax(200px,1fr)); gap:10px; margin-top:10px;">
+                    <input type="text" id="compEmail" placeholder="Email address" value="user@example.com">
+                    <input type="text" id="compEvent" placeholder="Event name" value="Beach Cleanup">
+                    <input type="text" id="compOrg" placeholder="Organisation name" value="OceanCare">
+                    <textarea id="compDesc" placeholder="Complaint description..." rows="2">Insufficient waste disposal</textarea>
+                </div>
+                <button id="addGrievanceBtn" class="btn-sm" style="background:var(--border-accent); margin-top:12px; padding:8px 20px;"><i class="fas fa-plus"></i> Submit Grievance</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE 3: EVENTS ORGANIZER with sidebar categories -->
+    <div id="events-page" class="page">
+        <div class="glass-card">
+            <div class="section-title"><i class="fas fa-layer-group"></i> Event Lifecycle Manager</div>
+            <div class="events-layout">
+                <div class="category-sidebar" id="event-sidebar">
+                    <button data-cat="approved-pending" class="active-cat"><i class="fas fa-clock"></i> To be Approved</button>
+                    <button data-cat="happening"><i class="fas fa-play-circle"></i> Happening</button>
+                    <button data-cat="to-happen"><i class="fas fa-calendar-week"></i> To be Happen</button>
+                    <button data-cat="closed"><i class="fas fa-archive"></i> Closed (Completed)</button>
+                </div>
+                <div class="events-content" id="events-content-area">
+                    <!-- dynamic event cards -->
+                </div>
+            </div>
+            <div class="note" style="margin-top:1rem; font-size:0.75rem; color:var(--text-secondary);"><i class="fas fa-info-circle"></i> Events auto-segregate: Closed = past date, Happening = today & time passed, To Happen = future. Approve requests to move them into events.</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ---------- DATA MODELS ----------
+    let pendingRequests = [];   // { id, organisationName, organiserName, address, time, date, phoneNo, hostName, seatsAvailable }
+    let events = [];            // { id, name, organizer, address, time, date, phone, host, capacity, attendeeCount }
+    let complaints = [];        // { id, email, eventName, organisationName, description, timestamp }
+    
+    function genId() { return Date.now() + '-' + Math.random().toString(36).substr(2, 8); }
+    
+    // Load initial data
+    function loadData() {
+        const storedPending = localStorage.getItem('eco_admin_pending');
+        const storedEvents = localStorage.getItem('eco_admin_events');
+        const storedComplaints = localStorage.getItem('eco_admin_complaints_v2');
+        if(storedPending) pendingRequests = JSON.parse(storedPending);
+        else {
+            pendingRequests = [
+                { id: genId(), organisationName: "Green Warriors", organiserName: "John Carter", address: "Central Park", time: "10:00 AM", date: "2026-05-20", phoneNo: "+1234567890", hostName: "Emma Green", seatsAvailable: 50 },
+                { id: genId(), organisationName: "Ocean Defenders", organiserName: "Sarah Liu", address: "Santa Monica Beach", time: "09:00 AM", date: "2026-06-05", phoneNo: "+1987654321", hostName: "Mike Blue", seatsAvailable: 30 }
+            ];
+        }
+        if(storedEvents) events = JSON.parse(storedEvents);
+        else {
+            events = [
+                { id: genId(), name: "River Revival", organizer: "Blue Waters", address: "Green River", time: "08:30 AM", date: "2025-04-10", phone: "+1456789012", host: "Ranger Lisa", capacity: 40, attendeeCount: 12 },
+                { id: genId(), name: "Zero Waste Fest", organizer: "EcoCircle", address: "Community Hub", time: "11:00 AM", date: new Date().toISOString().slice(0,10), phone: "+1321654987", host: "Priya", capacity: 25, attendeeCount: 8 }
+            ];
+        }
+        if(storedComplaints) complaints = JSON.parse(storedComplaints);
+        else {
+            complaints = [
+                { id: genId(), email: "alex@example.com", eventName: "River Revival", organisationName: "Blue Waters", description: "No drinking water at venue", timestamp: "2025-04-01" },
+                { id: genId(), email: "jamie@green.org", eventName: "Zero Waste Fest", organisationName: "EcoCircle", description: "Lack of recycling bins", timestamp: "2025-04-02" }
+            ];
+        }
+    }
+    function saveAll() {
+        localStorage.setItem('eco_admin_pending', JSON.stringify(pendingRequests));
+        localStorage.setItem('eco_admin_events', JSON.stringify(events));
+        localStorage.setItem('eco_admin_complaints_v2', JSON.stringify(complaints));
+    }
+    
+    // Helper: compare event date/time with current
+    function getEventStatus(eventDateStr, eventTimeStr) {
+        const now = new Date();
+        let [year, month, day] = eventDateStr.split('-');
+        let timeLower = eventTimeStr.toLowerCase();
+        let hour = 0, minute = 0;
+        if(timeLower.includes('am') || timeLower.includes('pm')) {
+            let [rawHour, rawMinute] = eventTimeStr.replace(/(am|pm)/i,'').trim().split(':');
+            hour = parseInt(rawHour);
+            minute = parseInt(rawMinute || '0');
+            if(timeLower.includes('pm') && hour !== 12) hour += 12;
+            if(timeLower.includes('am') && hour === 12) hour = 0;
+        } else {
+            let parts = eventTimeStr.split(':');
+            hour = parseInt(parts[0]);
+            minute = parseInt(parts[1] || '0');
+        }
+        const eventDate = new Date(year, month-1, day, hour, minute);
+        if(isNaN(eventDate)) return 'to-happen';
+        if(eventDate < now) return 'closed';
+        const today = new Date();
+        const isToday = eventDate.toDateString() === today.toDateString();
+        if(isToday && eventDate <= now) return 'happening';
+        if(eventDate > now) return 'to-happen';
+        return 'to-happen';
+    }
+    
+    // Categories for approved events + pending approval
+    function getCategorizedEvents() {
+        let approvedEvents = events.map(ev => ({ ...ev, type: 'event', approved: true }));
+        let pending = pendingRequests.map(req => ({ 
+            id: req.id, name: req.organisationName, organizer: req.organiserName, address: req.address, time: req.time, date: req.date, phone: req.phoneNo, host: req.hostName, capacity: req.seatsAvailable, attendeeCount: 0, type: 'pending', approved: false 
+        }));
+        let all = [...approvedEvents, ...pending];
+        let categorized = { 'approved-pending': [], happening: [], 'to-happen': [], closed: [] };
+        for(let item of all) {
+            if(!item.approved) { categorized['approved-pending'].push(item); continue; }
+            let status = getEventStatus(item.date, item.time);
+            if(status === 'closed') categorized.closed.push(item);
+            else if(status === 'happening') categorized.happening.push(item);
+            else categorized['to-happen'].push(item);
+        }
+        return categorized;
+    }
+    
+    // render events page with sidebar category
+    let currentCategory = 'approved-pending';
+    function renderEventsPage() {
+        const categorized = getCategorizedEvents();
+        const container = document.getElementById('events-content-area');
+        if(!container) return;
+        let items = categorized[currentCategory] || [];
+        if(items.length === 0) { container.innerHTML = `<div class="empty-message">✨ No events in this category</div>`; return; }
+        container.innerHTML = items.map(item => {
+            const isPending = !item.approved;
+            return `
+                <div class="event-item">
+                    <div class="flex-between"><h4><i class="fas fa-calendar-alt"></i> ${escapeHtml(item.name)}</h4> <span class="badge-status">${isPending ? '⏳ Awaiting Approval' : (currentCategory === 'closed' ? '✅ Completed' : (currentCategory === 'happening' ? '🔴 Happening Now' : '📅 Upcoming'))}</span></div>
+                    <div class="grid-details">
+                        <div><i class="fas fa-user"></i> Org: ${escapeHtml(item.organizer || item.organiserName)}</div>
+                        <div><i class="fas fa-map-marker-alt"></i> ${escapeHtml(item.address)}</div>
+                        <div><i class="fas fa-calendar-day"></i> ${item.date} at ${item.time}</div>
+                        <div><i class="fas fa-phone"></i> ${item.phone || item.phoneNo}</div>
+                        <div><i class="fas fa-chair"></i> Capacity: ${item.capacity}</div>
+                    </div>
+                    ${isPending ? `<div class="flex-between" style="margin-top:12px;"><button class="btn-sm approve-pending-btn" data-id="${item.id}" style="background:var(--btn-accept);"><i class="fas fa-check"></i> Approve & Publish</button><button class="btn-sm deny-pending-btn" data-id="${item.id}" style="background:var(--btn-deny);">Deny</button></div>` : `<div><i class="fas fa-users"></i> Attendees reported: ${item.attendeeCount || 0}</div>`}
+                </div>
+            `;
+        }).join('');
+        // attach approval/deny listeners for pending items
+        document.querySelectorAll('.approve-pending-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => { approvePendingFromEvents(btn.getAttribute('data-id')); });
+        });
+        document.querySelectorAll('.deny-pending-btn').forEach(btn => {
+            btn.addEventListener('click', (e) => { denyPendingFromEvents(btn.getAttribute('data-id')); });
+        });
+    }
+    function approvePendingFromEvents(reqId) {
+        const reqIndex = pendingRequests.findIndex(r => r.id === reqId);
+        if(reqIndex === -1) return;
+        const req = pendingRequests[reqIndex];
+        const newEvent = {
+            id: genId(), name: req.organisationName, organizer: req.organiserName, address: req.address, time: req.time, date: req.date, phone: req.phoneNo, host: req.hostName, capacity: parseInt(req.seatsAvailable) || 1, attendeeCount: 0
+        };
+        events.push(newEvent);
+        pendingRequests.splice(reqIndex, 1);
+        saveAll();
+        refreshAllUIs();
+    }
+    function denyPendingFromEvents(reqId) {
+        pendingRequests = pendingRequests.filter(r => r.id !== reqId);
+        saveAll();
+        refreshAllUIs();
+    }
+    function setupSidebarEvents() {
+        const btns = document.querySelectorAll('#event-sidebar button');
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                btns.forEach(b => b.classList.remove('active-cat'));
+                btn.classList.add('active-cat');
+                currentCategory = btn.getAttribute('data-cat');
+                renderEventsPage();
+            });
+        });
+    }
+    
+    // Grievances page render with email, event, org, description
+    function renderGrievances() {
+        const container = document.getElementById('grievances-list');
+        if(!container) return;
+        if(complaints.length === 0) { container.innerHTML = `<div class="empty-message">No grievances reported.</div>`; return; }
+        container.innerHTML = complaints.map(c => `
+            <div class="complaint-row" data-id="${c.id}">
+                <div class="flex-between"><strong><i class="fas fa-envelope"></i> ${escapeHtml(c.email)}</strong> <span class="badge-status">${c.timestamp}</span></div>
+                <div><i class="fas fa-calendar-alt"></i> Event: ${escapeHtml(c.eventName)} | Org: ${escapeHtml(c.organisationName)}</div>
+                <div style="margin-top:8px; background:var(--glass-bg); padding:8px; border-radius:12px;"><i class="fas fa-comment"></i> ${escapeHtml(c.description)}</div>
+                <div class="flex-between" style="margin-top:10px;"><button class="btn-sm resolve-complaint" data-id="${c.id}" style="background:#334155;">Resolve</button></div>
+            </div>
+        `).join('');
+        document.querySelectorAll('.resolve-complaint').forEach(btn => {
+            btn.addEventListener('click', (e) => { resolveComplaintById(btn.getAttribute('data-id')); });
+        });
+    }
+    function resolveComplaintById(id) { complaints = complaints.filter(c => c.id !== id); saveAll(); refreshAllUIs(); }
+    function addNewComplaint(email, eventName, orgName, desc) {
+        if(!email.trim() || !desc.trim()) return alert("Email & description required");
+        const newComp = { id: genId(), email: email.trim(), eventName: eventName.trim(), organisationName: orgName.trim(), description: desc.trim(), timestamp: new Date().toISOString().slice(0,10) };
+        complaints.unshift(newComp);
+        saveAll();
+        refreshAllUIs();
+    }
+    
+    // Dashboard render (pending + events)
+    function renderDashboard() {
+        const pendingDiv = document.getElementById('pending-requests-container');
+        if(pendingDiv) {
+            if(pendingRequests.length===0) pendingDiv.innerHTML = `<div class="empty-message">All requests processed ✅</div>`;
+            else pendingDiv.innerHTML = pendingRequests.map(req => `<div class="event-item" style="margin-bottom:12px;"><div class="flex-between"><b>${escapeHtml(req.organisationName)}</b><button class="btn-sm accept-dash" data-id="${req.id}" style="background:var(--btn-accept);">Accept</button><button class="btn-sm deny-dash" data-id="${req.id}" style="background:var(--btn-deny);">Deny</button></div><div class="grid-details"><div>📅 ${req.date} ${req.time}</div><div>📍 ${req.address}</div><div>👥 Seats: ${req.seatsAvailable}</div></div></div>`).join('');
+            document.querySelectorAll('.accept-dash').forEach(btn => btn.addEventListener('click', (e) => { acceptReqFromDash(btn.getAttribute('data-id')); }));
+            document.querySelectorAll('.deny-dash').forEach(btn => btn.addEventListener('click', (e) => { denyReqFromDash(btn.getAttribute('data-id')); }));
+        }
+        const eventsDiv = document.getElementById('events-container');
+        if(eventsDiv) {
+            if(events.length===0) eventsDiv.innerHTML = `<div class="empty-message">No active events</div>`;
+            else eventsDiv.innerHTML = events.map(ev => `<div class="event-item"><div class="flex-between"><b>${escapeHtml(ev.name)}</b><span>👥 ${ev.attendeeCount}/${ev.capacity}</span></div><div>📆 ${ev.date} ${ev.time} | 📍${ev.address}</div><button class="btn-sm rsvp-dash" data-id="${ev.id}" style="background:#2563eb; margin-top:6px;">+1 Attendee</button></div>`).join('');
+            document.querySelectorAll('.rsvp-dash').forEach(btn => btn.addEventListener('click', (e) => { incrementAttendee(btn.getAttribute('data-id')); }));
+        }
+        document.getElementById('stat-pending').innerText = pendingRequests.length;
+        document.getElementById('stat-events').innerText = events.length;
+        document.getElementById('stat-attendees').innerText = events.reduce((a,b)=>a+(b.attendeeCount||0),0);
+        document.getElementById('stat-complaints').innerText = complaints.length;
+    }
+    function acceptReqFromDash(id) {
+        const idx = pendingRequests.findIndex(r=>r.id===id);
+        if(idx!==-1){
+            const req = pendingRequests[idx];
+            events.push({ id:genId(), name:req.organisationName, organizer:req.organiserName, address:req.address, time:req.time, date:req.date, phone:req.phoneNo, host:req.hostName, capacity:req.seatsAvailable, attendeeCount:0 });
+            pendingRequests.splice(idx,1);
+            saveAll(); refreshAllUIs();
+        }
+    }
+    function denyReqFromDash(id){ pendingRequests = pendingRequests.filter(r=>r.id!==id); saveAll(); refreshAllUIs(); }
+    function incrementAttendee(eid){ const ev = events.find(e=>e.id===eid); if(ev && ev.attendeeCount<ev.capacity){ ev.attendeeCount++; saveAll(); refreshAllUIs(); } else alert("Capacity full"); }
+    
+    function refreshAllUIs() { renderDashboard(); renderGrievances(); renderEventsPage(); }
+    
+    // navigation + theme
+    function initNavigation() {
+        const pages = ['dashboard', 'grievances', 'events'];
+        const btns = document.querySelectorAll('.nav-btn');
+        btns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const pageId = btn.getAttribute('data-page');
+                document.querySelectorAll('.page').forEach(p => p.classList.remove('active-page'));
+                document.getElementById(`${pageId}-page`).classList.add('active-page');
+                btns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                if(pageId === 'events') { renderEventsPage(); setupSidebarEvents(); }
+                if(pageId === 'grievances') renderGrievances();
+                if(pageId === 'dashboard') renderDashboard();
+            });
+        });
+        document.getElementById('dashboard-page').classList.add('active-page');
+        document.querySelector('.nav-btn[data-page="dashboard"]').classList.add('active');
+    }
+    
+    // Theme
+    function initTheme() {
+        const isLight = localStorage.getItem('eco_theme') === 'light';
+        if(isLight) document.body.classList.add('light-theme');
+        updateThemeUI(isLight);
+        document.getElementById('themeToggleBtn').addEventListener('click', () => {
+            const nowLight = document.body.classList.toggle('light-theme');
+            localStorage.setItem('eco_theme', nowLight ? 'light' : 'dark');
+            updateThemeUI(nowLight);
+        });
+    }
+    function updateThemeUI(isLight){ 
+        const txt = document.getElementById('themeText');
+        if(txt) txt.innerText = isLight ? 'Light' : 'Dark';
+        const icon = document.querySelector('#themeToggleBtn i');
+        if(icon) icon.className = isLight ? 'fas fa-sun' : 'fas fa-moon';
+    }
+    
+    // particle background
+    function initParticles() {
+        const canvas = document.getElementById('particle-canvas');
+        const ctx = canvas.getContext('2d');
+        let width, height, particles=[];
+        function resize(){ width=window.innerWidth; height=window.innerHeight; canvas.width=width; canvas.height=height; }
+        class Particle { constructor(){ this.x=Math.random()*width; this.y=Math.random()*height; this.size=Math.random()*2+1; this.speedX=(Math.random()-0.5)*0.4; this.speedY=(Math.random()-0.5)*0.3; this.updateColor=()=>{ this.color=document.body.classList.contains('light-theme')?`rgba(46,125,90,0.3)`:`rgba(80,220,150,0.4)`; }; this.updateColor(); } update(){ this.x+=this.speedX; this.y+=this.speedY; if(this.x<0) this.x=width; if(this.x>width) this.x=0; if(this.y<0) this.y=height; if(this.y>height) this.y=0; } draw(){ ctx.beginPath(); ctx.arc(this.x,this.y,this.size,0,Math.PI*2); ctx.fillStyle=this.color; ctx.fill(); } }
+        function init(){ particles=[]; for(let i=0;i<70;i++) particles.push(new Particle()); }
+        function animate(){ ctx.clearRect(0,0,width,height); for(let p of particles){ p.updateColor(); p.update(); p.draw(); } requestAnimationFrame(animate); }
+        window.addEventListener('resize',()=>{ resize(); init(); });
+        resize(); init(); animate();
+    }
+    
+    // typing effect on dashboard
+    function startTyping(){ new Typed('#typed-line', { strings: ['🌿 Manage eco-events, approve organizers, track grievances', '⚡ Real-time segregation & auto-closure of events'], typeSpeed:40, loop:true, showCursor:true }); }
+    
+    document.addEventListener('DOMContentLoaded', () => {
+        loadData(); initNavigation(); initTheme(); initParticles(); startTyping();
+        renderDashboard(); renderGrievances(); renderEventsPage(); setupSidebarEvents();
+        document.getElementById('addGrievanceBtn')?.addEventListener('click', () => {
+            let email = document.getElementById('compEmail').value;
+            let evName = document.getElementById('compEvent').value;
+            let org = document.getElementById('compOrg').value;
+            let desc = document.getElementById('compDesc').value;
+            addNewComplaint(email, evName, org, desc);
+            document.getElementById('compDesc').value = '';
+        });
+    });
+    function escapeHtml(str){ if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+</script>
+</body>
+</html>

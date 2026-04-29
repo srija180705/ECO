@@ -5,7 +5,9 @@ import Dashboard from './pages/Dashboard'
 import OrganizerDashboard from './pages/OrganizerDashboard'
 import Profile from './pages/Profile'
 import MapView from './pages/MapView'
+import AdminPage from './pages/AdminPage'
 
+// Protected route wrapper - checks localStorage token/user only
 function PrivateRoute({ children, allowedRoles = null, organizerOnly = false }) {
   const location = useLocation()
   const token = localStorage.getItem('token')
@@ -21,6 +23,17 @@ function PrivateRoute({ children, allowedRoles = null, organizerOnly = false }) 
   return children
 }
 
+// Admin route wrapper
+function AdminRoute({ children }) {
+  const storedToken = localStorage.getItem('token')
+  const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
+
+  if (!storedToken || !storedUser || storedUser.role !== 'admin') {
+    return <Navigate to="/dashboard" replace />
+  }
+  return children
+}
+
 function App() {
   return (
     <Router>
@@ -30,7 +43,7 @@ function App() {
         <Route
           path="/dashboard"
           element={
-            <PrivateRoute allowedRoles={['volunteer']}>
+            <PrivateRoute allowedRoles={['volunteer', 'user']}>
               <Dashboard />
             </PrivateRoute>
           }
@@ -57,6 +70,14 @@ function App() {
             <PrivateRoute>
               <Profile />
             </PrivateRoute>
+          }
+        />
+        <Route
+          path="/admin"
+          element={
+            <AdminRoute>
+              <AdminPage />
+            </AdminRoute>
           }
         />
       </Routes>
