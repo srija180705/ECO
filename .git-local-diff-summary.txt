@@ -1,0 +1,5 @@
+﻿ server/src/models/Event.js       |   2 +
+ server/src/routes/events.js      |  65 +++++++++++++++++++-
+ src/pages/Dashboard.jsx          | 129 +++++++++++++++++++++++++++++++++++++++
+ src/pages/OrganizerDashboard.jsx |  28 +++++++++
+ 4 files changed, 223 insertions(+), 1 deletion(-)

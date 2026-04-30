@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MessageSquarePlus, ThumbsUp, Send, Image as ImageIcon, X, Trash2 } from "lucide-react";
 import './community.css';
 const API_URL = 'http://localhost:4000/api/posts';
@@ -105,7 +105,6 @@ export default function Community() {
 
   useEffect(() => {
     load();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const canPost = useMemo(() => text.trim().length > 0 || imageFile !== null, [text, imageFile]);

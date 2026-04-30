@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import { mockDB } from '../data/mockData';
+import { apiFetch } from '../api.js';
 import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
@@ -22,6 +23,7 @@ function MapView() {
   const selectedEvent = location.state && location.state.selectedEvent;
   const firstName = user?.name ? user.name.split(' ')[0] : 'Volunteer';
 
+  const [events, setEvents] = useState(() => mockDB.events);
   const [userLocation, setUserLocation] = useState(null);
   const [geoError, setGeoError] = useState(null);
   const [selectedPosition, setSelectedPosition] = useState(null);
@@ -30,7 +32,39 @@ function MapView() {
   // Fallback center (India)
   const indiaCenter = [20.5937, 78.9629];
 
+  const normalizeEvent = (event) => ({
+    ...event,
+    id: String(event._id || event.id),
+  });
+
+  const mergeEvents = (primaryEvents, fallbackEvents) => {
+    const byId = new Map();
+    [...primaryEvents, ...fallbackEvents].forEach((event) => {
+      const normalized = normalizeEvent(event);
+      byId.set(normalized.id, normalized);
+    });
+    return Array.from(byId.values());
+  };
+
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setEvents(mockDB.events);
+    } else {
+      apiFetch('/api/events', { headers: { Authorization: `Bearer ${token}` } })
+        .then((res) => res.ok ? res.json() : Promise.reject())
+        .then((data) => {
+          if (Array.isArray(data) && data.length > 0) {
+            setEvents(mergeEvents(data, mockDB.events));
+          } else {
+            setEvents(mockDB.events);
+          }
+        })
+        .catch(() => {
+          setEvents(mockDB.events);
+        });
+    }
+
     if (!('geolocation' in navigator)) {
       setGeoError('Location not supported by this browser');
       return;
@@ -57,6 +91,23 @@ function MapView() {
 
   // Very simple city → coordinate mapping based on event.location text
   const cityCoords = {
+    ameenpur: [17.5261, 78.3264],
+    barkatpura: [17.3949, 78.4978],
+    charminar: [17.3616, 78.4747],
+    gandipet: [17.3847, 78.3180],
+    gachibowli: [17.4435, 78.3772],
+    hussain: [17.4239, 78.4738],
+    jubilee: [17.4326, 78.4071],
+    kbr: [17.4217, 78.4215],
+    kondapur: [17.4647, 78.3649],
+    madhapur: [17.4486, 78.3908],
+    nagole: [17.3715, 78.5698],
+    necklace: [17.4240, 78.4650],
+    ntr: [17.4137, 78.4691],
+    osmania: [17.4135, 78.5289],
+    sanjeevaiah: [17.4347, 78.4731],
+    secunderabad: [17.4399, 78.4983],
+    shilparamam: [17.4526, 78.3780],
     mumbai: [19.076, 72.8777],
     bengaluru: [12.9716, 77.5946],
     kolkata: [22.5726, 88.3639],
@@ -181,7 +232,7 @@ function MapView() {
               </Marker>
             )}
 
-            {mockDB.events.map((event) => {
+            {events.map((event) => {
               const position = getEventPosition(event);
               if (!position) return null;
               return (

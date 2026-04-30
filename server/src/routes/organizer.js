@@ -1,4 +1,7 @@
 const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 const { auth } = require("../middleware/auth");
 const Event = require("../models/Event");
 const Application = require("../models/Application");
@@ -6,15 +9,59 @@ const User = require("../models/User");
 
 const router = express.Router();
 
-function normalizeTimeToMinutes(time) {
-  if (!time || !/^\d{2}:\d{2}$/.test(time)) return null;
-  const [hh, mm] = time.split(":").map(Number);
-  return hh * 60 + mm;
+const uploadPath = path.join(__dirname, '..', '..', 'uploads');
+fs.mkdirSync(uploadPath, { recursive: true });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => cb(null, uploadPath),
+  filename: (req, file, cb) => {
+    const uniqueName = `${Date.now()}-${file.originalname.replace(/\s+/g, '-')}`;
+    cb(null, uniqueName);
+  }
+});
+
+const upload = multer({ storage });
+
+function normalizeHour(value) {
+  const hour = Number(value);
+  if (!Number.isFinite(hour)) return null;
+  return Math.min(24, Math.max(1, Math.floor(hour)));
+}
+
+function hourToMinutes(value) {
+  const hour = normalizeHour(value);
+  return hour === null ? null : hour * 60;
 }
 
 function hasTimeOverlap(aStart, aEnd, bStart, bEnd) {
   if ([aStart, aEnd, bStart, bEnd].some((v) => v === null)) return false;
   return aStart < bEnd && bStart < aEnd;
+}
+
+function todayISO() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function hasDateOverlap(aStart, aEnd, bStart, bEnd) {
+  return aStart <= bEnd && bStart <= aEnd;
+}
+
+function getEventDate(event) {
+  return event.startDateISO || event.dateISO || "";
+}
+
+function getEventEndDate(event) {
+  return event.endDateISO || event.startDateISO || event.dateISO || "";
+}
+
+function organizerEventQuery(organizerId, extra) {
+  extra = extra || {};
+  return Object.assign({}, extra, {
+    $or: [
+      { createdBy: organizerId },
+      { organizerId },
+    ],
+  });
 }
 
 async function verifyOrganizer(req, res, next) {
@@ -41,9 +88,18 @@ async function updateEventCounts(eventId) {
 
 router.use(auth, verifyOrganizer);
 
+router.get("/calendar-events", async (req, res, next) => {
+  try {
+    const events = await Event.find({ approved: true }).sort({ startDateISO: 1, startHour: 1 });
+    res.json(events);
+  } catch (error) {
+    next(error);
+  }
+});
+
 router.get("/events", async (req, res, next) => {
   try {
-    const events = await Event.find({ organizerId: req.organizer._id }).sort({ dateISO: 1, startTime: 1 });
+    const events = await Event.find(organizerEventQuery(req.organizer._id)).sort({ startDateISO: 1, startHour: 1 });
     res.json(events);
   } catch (error) {
     next(error);
@@ -52,13 +108,13 @@ router.get("/events", async (req, res, next) => {
 
 router.get("/stats", async (req, res, next) => {
   try {
-    const events = await Event.find({ organizerId: req.organizer._id }).sort({ dateISO: 1, startTime: 1 });
+    const events = await Event.find(organizerEventQuery(req.organizer._id)).sort({ startDateISO: 1, startHour: 1 });
     const eventIds = events.map((e) => e._id);
     const applications = await Application.find({ eventId: { $in: eventIds } });
 
     const totalEvents = events.length;
-    const upcoming = events.filter((e) => e.status === "upcoming" || e.status === "ongoing");
-    const past = events.filter((e) => e.status === "completed" || e.status === "cancelled");
+    const upcoming = events.filter((e) => getEventEndDate(e) >= todayISO());
+    const past = events.filter((e) => getEventEndDate(e) < todayISO());
 
     const appStats = {
       pending: applications.filter((a) => a.status === "pending").length,
@@ -94,53 +150,46 @@ router.get("/stats", async (req, res, next) => {
   }
 });
 
-router.post("/events", async (req, res, next) => {
+router.post("/events", upload.single('permissionPdf'), async (req, res, next) => {
   try {
     const {
       title,
-      description,
-      dateISO,
-      startTime,
-      endTime,
+      organizationName,
+      category = "cleanup",
       location,
-      detailedLocation,
+      address,
+      description,
+      startDateISO,
+      endDateISO,
+      startHour,
+      endHour,
+      points,
+      distanceKm,
       requiredSkills = [],
       volunteerSlots = 0,
       imageUrl = "",
-      category = "environment",
     } = req.body;
 
-    if (!title || !description || !dateISO || !location) {
-      return res.status(400).json({ message: "title, description, dateISO and location are required" });
+    if (!title || !description || !startDateISO || !endDateISO || !location || !address) {
+      return res.status(400).json({ message: "title, description, start/end dates, location and address are required" });
     }
 
-    if (
-      !detailedLocation
-      || !detailedLocation.addressLine1
-      || !detailedLocation.city
-      || !detailedLocation.state
-      || !detailedLocation.postalCode
-    ) {
-      return res.status(400).json({
-        message: "Detailed location is required: addressLine1, city, state and postalCode",
-      });
-    }
+    const existingAtLocation = await Event.find(
+      organizerEventQuery(req.organizer._id, {
+        location: { $regex: `^${String(location).trim()}$`, $options: "i" },
+        status: { $ne: "rejected" },
+      })
+    );
 
-    const existingAtLocation = await Event.find({
-      organizerId: req.organizer._id,
-      location: { $regex: `^${String(location).trim()}$`, $options: "i" },
-      dateISO,
-      status: { $ne: "cancelled" },
-    });
-
-    const candidateStart = normalizeTimeToMinutes(startTime);
-    const candidateEnd = normalizeTimeToMinutes(endTime);
+    const candidateStart = hourToMinutes(startHour);
+    const candidateEnd = hourToMinutes(endHour);
     const conflictEvent = existingAtLocation.find((event) =>
+      hasDateOverlap(startDateISO, endDateISO, getEventDate(event), getEventEndDate(event)) &&
       hasTimeOverlap(
         candidateStart,
         candidateEnd,
-        normalizeTimeToMinutes(event.startTime),
-        normalizeTimeToMinutes(event.endTime)
+        hourToMinutes(event.startHour),
+        hourToMinutes(event.endHour)
       )
     );
 
@@ -149,9 +198,10 @@ router.post("/events", async (req, res, next) => {
         message: "Event conflict detected at the same location and overlapping time",
         conflict: {
           title: conflictEvent.title,
-          dateISO: conflictEvent.dateISO,
-          startTime: conflictEvent.startTime,
-          endTime: conflictEvent.endTime,
+          startDateISO: conflictEvent.startDateISO,
+          endDateISO: conflictEvent.endDateISO,
+          startHour: conflictEvent.startHour,
+          endHour: conflictEvent.endHour,
           location: conflictEvent.location,
         },
       });
@@ -159,26 +209,25 @@ router.post("/events", async (req, res, next) => {
 
     const event = await Event.create({
       title,
-      description,
+      organizationName: organizationName || req.organizer.name,
       category,
-      organizerId: req.organizer._id,
       location,
-      detailedLocation: {
-        addressLine1: detailedLocation.addressLine1 || "",
-        area: detailedLocation.area || "",
-        city: detailedLocation.city || "",
-        state: detailedLocation.state || "",
-        postalCode: detailedLocation.postalCode || "",
-        landmark: detailedLocation.landmark || "",
-      },
-      dateISO,
-      startTime: startTime || "",
-      endTime: endTime || "",
-      requiredSkills,
+      address,
+      description,
+      startDateISO,
+      endDateISO,
+      startHour: normalizeHour(startHour) || 9,
+      endHour: normalizeHour(endHour) || 17,
+      points: Number(points) || 0,
+      distanceKm: Number(distanceKm) || 0,
+      requiredSkills: Array.isArray(requiredSkills) ? requiredSkills : String(requiredSkills || '').split(',').map((item) => item.trim()).filter(Boolean),
       volunteerSlots: Number(volunteerSlots) || 0,
       imageUrl,
-      status: "upcoming",
-      points: 25,
+      approved: false,
+      status: "pending",
+      permissionPdf: req.file ? `/uploads/${req.file.filename}` : null,
+      createdBy: req.organizer._id,
+      organizerId: req.organizer._id,
     });
 
     await User.findByIdAndUpdate(req.organizer._id, { $addToSet: { createdEventIds: event._id } });
@@ -188,30 +237,32 @@ router.post("/events", async (req, res, next) => {
   }
 });
 
-router.put("/events/:eventId", async (req, res, next) => {
+router.put("/events/:eventId", upload.single('permissionPdf'), async (req, res, next) => {
   try {
-    const event = await Event.findOne({ _id: req.params.eventId, organizerId: req.organizer._id });
+    const event = await Event.findOne(organizerEventQuery(req.organizer._id, { _id: req.params.eventId }));
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    const nextDate = req.body.dateISO || event.dateISO;
+    const nextStartDate = req.body.startDateISO || event.startDateISO;
+    const nextEndDate = req.body.endDateISO || event.endDateISO;
     const nextLocation = req.body.location || event.location;
-    const nextStart = req.body.startTime || event.startTime;
-    const nextEnd = req.body.endTime || event.endTime;
+    const nextStart = req.body.startHour || event.startHour;
+    const nextEnd = req.body.endHour || event.endHour;
 
-    const siblingEvents = await Event.find({
-      _id: { $ne: event._id },
-      organizerId: req.organizer._id,
-      location: { $regex: `^${String(nextLocation).trim()}$`, $options: "i" },
-      dateISO: nextDate,
-      status: { $ne: "cancelled" },
-    });
+    const siblingEvents = await Event.find(
+      organizerEventQuery(req.organizer._id, {
+        _id: { $ne: event._id },
+        location: { $regex: `^${String(nextLocation).trim()}$`, $options: "i" },
+        status: { $ne: "rejected" },
+      })
+    );
 
     const conflictEvent = siblingEvents.find((candidate) =>
+      hasDateOverlap(nextStartDate, nextEndDate, getEventDate(candidate), getEventEndDate(candidate)) &&
       hasTimeOverlap(
-        normalizeTimeToMinutes(nextStart),
-        normalizeTimeToMinutes(nextEnd),
-        normalizeTimeToMinutes(candidate.startTime),
-        normalizeTimeToMinutes(candidate.endTime)
+        hourToMinutes(nextStart),
+        hourToMinutes(nextEnd),
+        hourToMinutes(candidate.startHour),
+        hourToMinutes(candidate.endHour)
       )
     );
 
@@ -222,18 +273,27 @@ router.put("/events/:eventId", async (req, res, next) => {
     }
 
     Object.assign(event, {
-      title: req.body.title ?? event.title,
-      description: req.body.description ?? event.description,
-      dateISO: nextDate,
-      startTime: nextStart,
-      endTime: nextEnd,
+      title: req.body.title !== undefined ? req.body.title : event.title,
+      organizationName: req.body.organizationName !== undefined ? req.body.organizationName : event.organizationName,
+      category: req.body.category !== undefined ? req.body.category : event.category,
       location: nextLocation,
-      detailedLocation: req.body.detailedLocation ?? event.detailedLocation,
-      requiredSkills: req.body.requiredSkills ?? event.requiredSkills,
-      volunteerSlots: req.body.volunteerSlots ?? event.volunteerSlots,
-      imageUrl: req.body.imageUrl ?? event.imageUrl,
-      category: req.body.category ?? event.category,
-      status: req.body.status ?? event.status,
+      address: req.body.address !== undefined ? req.body.address : event.address,
+      description: req.body.description !== undefined ? req.body.description : event.description,
+      startDateISO: nextStartDate,
+      endDateISO: nextEndDate,
+      startHour: normalizeHour(nextStart) || event.startHour,
+      endHour: normalizeHour(nextEnd) || event.endHour,
+      points: req.body.points !== undefined ? Number(req.body.points) || 0 : event.points,
+      distanceKm: req.body.distanceKm !== undefined ? Number(req.body.distanceKm) || 0 : event.distanceKm,
+      requiredSkills: req.body.requiredSkills !== undefined
+        ? (Array.isArray(req.body.requiredSkills) ? req.body.requiredSkills : String(req.body.requiredSkills).split(',').map((item) => item.trim()).filter(Boolean))
+        : event.requiredSkills,
+      volunteerSlots: req.body.volunteerSlots !== undefined ? req.body.volunteerSlots : event.volunteerSlots,
+      imageUrl: req.body.imageUrl !== undefined ? req.body.imageUrl : event.imageUrl,
+      permissionPdf: req.file ? `/uploads/${req.file.filename}` : event.permissionPdf,
+      approved: false,
+      status: "pending",
+      isPublished: false,
     });
 
     await event.save();
@@ -245,7 +305,7 @@ router.put("/events/:eventId", async (req, res, next) => {
 
 router.delete("/events/:eventId", async (req, res, next) => {
   try {
-    const event = await Event.findOneAndDelete({ _id: req.params.eventId, organizerId: req.organizer._id });
+    const event = await Event.findOneAndDelete(organizerEventQuery(req.organizer._id, { _id: req.params.eventId }));
     if (!event) return res.status(404).json({ message: "Event not found" });
     await Application.deleteMany({ eventId: event._id });
     await User.findByIdAndUpdate(req.organizer._id, { $pull: { createdEventIds: event._id } });
@@ -257,7 +317,7 @@ router.delete("/events/:eventId", async (req, res, next) => {
 
 router.get("/event/:eventId/applications", async (req, res, next) => {
   try {
-    const event = await Event.findOne({ _id: req.params.eventId, organizerId: req.organizer._id });
+    const event = await Event.findOne(organizerEventQuery(req.organizer._id, { _id: req.params.eventId }));
     if (!event) return res.status(404).json({ message: "Event not found" });
 
     const applications = await Application.find({ eventId: req.params.eventId }).sort({ createdAt: -1 });
@@ -277,7 +337,7 @@ router.patch("/application/:appId/status", async (req, res, next) => {
     const application = await Application.findById(req.params.appId);
     if (!application) return res.status(404).json({ message: "Application not found" });
 
-    const event = await Event.findOne({ _id: application.eventId, organizerId: req.organizer._id });
+    const event = await Event.findOne(organizerEventQuery(req.organizer._id, { _id: application.eventId }));
     if (!event) return res.status(403).json({ message: "Not authorized" });
 
     application.status = status;
@@ -297,7 +357,7 @@ router.patch("/application/:appId/assign-role", async (req, res, next) => {
     const application = await Application.findById(req.params.appId);
     if (!application) return res.status(404).json({ message: "Application not found" });
 
-    const event = await Event.findOne({ _id: application.eventId, organizerId: req.organizer._id });
+    const event = await Event.findOne(organizerEventQuery(req.organizer._id, { _id: application.eventId }));
     if (!event) return res.status(403).json({ message: "Not authorized" });
 
     application.assignedRole = assignedRole;
@@ -311,7 +371,7 @@ router.patch("/application/:appId/assign-role", async (req, res, next) => {
 
 router.get("/reports", async (req, res, next) => {
   try {
-    const events = await Event.find({ organizerId: req.organizer._id });
+    const events = await Event.find(organizerEventQuery(req.organizer._id));
     const eventIds = events.map((event) => event._id);
     const applications = await Application.find({ eventId: { $in: eventIds } });
 

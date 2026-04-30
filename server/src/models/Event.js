@@ -14,10 +14,18 @@ const EventSchema = new mongoose.Schema(
     endHour: { type: Number, required: true, default: 17 },
     points: { type: Number, required: true, default: 0 },
     distanceKm: { type: Number, required: true, default: 0 },
+    requiredSkills: { type: [String], default: [] },
+    volunteerSlots: { type: Number, default: 0 },
+    imageUrl: { type: String, default: "" },
+    applicantCount: { type: Number, default: 0 },
+    approvedVolunteersCount: { type: Number, default: 0 },
     approved: { type: Boolean, default: false },
     status: { type: String, enum: ["pending", "approved", "rejected"], default: "pending" },
+    isPublished: { type: Boolean, default: false },
+    publishedAt: { type: Date, default: null },
     permissionPdf: { type: String, default: null },
-    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }
+    createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    organizerId: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null }
   },
   { timestamps: true }
 );

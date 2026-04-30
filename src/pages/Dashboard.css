@@ -685,6 +685,17 @@
   color: #059669;
 }
 
+.decline-btn {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.decline-btn:hover {
+  background-color: #fee2e2;
+  border-color: #ef4444;
+  color: #991b1b;
+}
+
 /* ===== Responsive ===== */
 @media (max-width: 1024px) {
   .stats-grid {

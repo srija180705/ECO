@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
@@ -7,20 +7,20 @@ import './OrganizerDashboard.css'
 
 const EMPTY_EVENT_FORM = {
   title: '',
-  description: '',
-  dateISO: '',
-  startTime: '',
-  endTime: '',
+  organizationName: '',
+  category: 'cleanup',
   location: '',
-  addressLine1: '',
-  area: '',
-  city: '',
-  state: '',
-  postalCode: '',
-  landmark: '',
+  address: '',
+  description: '',
+  startDateISO: '',
+  endDateISO: '',
+  startHour: 9,
+  endHour: 17,
+  points: 50,
+  distanceKm: 0,
   requiredSkills: '',
   volunteerSlots: '',
-  imageUrl: '',
+  permissionPdf: null,
 }
 
 function OrganizerDashboard() {
@@ -33,14 +33,14 @@ function OrganizerDashboard() {
 
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [actionStatus, setActionStatus] = useState('')
   const [activeTab, setActiveTab] = useState('dashboard')
   const [stats, setStats] = useState(null)
   const [reports, setReports] = useState(null)
   const [events, setEvents] = useState([])
+  const [calendarEvents, setCalendarEvents] = useState([])
   const [selectedEvent, setSelectedEvent] = useState(null)
   const [applications, setApplications] = useState([])
-  const [appSkillFilter, setAppSkillFilter] = useState('')
-  const [appAvailabilityFilter, setAppAvailabilityFilter] = useState('')
   const [showNotifications, setShowNotifications] = useState(false)
   const [showEventModal, setShowEventModal] = useState(false)
   const [editingEvent, setEditingEvent] = useState(null)
@@ -55,17 +55,25 @@ function OrganizerDashboard() {
     Authorization: `Bearer ${token}`,
   }), [token])
 
+  const uploadHeaders = useMemo(() => ({
+    Authorization: `Bearer ${token}`,
+  }), [token])
+
   const notifications = useMemo(() => {
     if (!stats) return []
     return [
-      { id: 'n1', text: `${stats.appStats?.pending || 0} new applications pending`, time: 'Just now' },
-      { id: 'n2', text: `${stats.upcomingEvents || 0} upcoming events require planning`, time: 'Today' },
+      { id: 'n1', text: `${stats.upcomingEvents || 0} upcoming events require planning`, time: 'Today' },
     ]
   }, [stats])
 
   const eventsForSelectedDate = useMemo(() => {
     const selectedISO = calendarDate.toISOString().split('T')[0]
-    return events.filter((event) => event.dateISO === selectedISO)
+    return calendarEvents.filter((event) => isEventOnDate(event, selectedISO))
+  }, [calendarDate, calendarEvents])
+
+  const createdEventsForSelectedDate = useMemo(() => {
+    const selectedISO = calendarDate.toISOString().split('T')[0]
+    return events.filter((event) => isEventOnDate(event, selectedISO))
   }, [calendarDate, events])
 
   useEffect(() => {
@@ -83,19 +91,21 @@ function OrganizerDashboard() {
   async function fetchDashboard() {
     try {
       setLoading(true)
-      const [statsRes, eventsRes, reportsRes] = await Promise.all([
+      const [statsRes, eventsRes, reportsRes, calendarRes] = await Promise.all([
         fetch('http://localhost:4000/api/organizer/stats', { headers }),
         fetch('http://localhost:4000/api/organizer/events', { headers }),
         fetch('http://localhost:4000/api/organizer/reports', { headers }),
+        fetch('http://localhost:4000/api/organizer/calendar-events', { headers }),
       ])
 
-      if (!statsRes.ok || !eventsRes.ok || !reportsRes.ok) {
+      if (!statsRes.ok || !eventsRes.ok || !reportsRes.ok || !calendarRes.ok) {
         throw new Error('Could not load organizer data')
       }
 
       setStats(await statsRes.json())
       setEvents(await eventsRes.json())
       setReports(await reportsRes.json())
+      setCalendarEvents(await calendarRes.json())
       setError('')
     } catch (err) {
       setError(err.message || 'Failed to load organizer dashboard')
@@ -113,6 +123,8 @@ function OrganizerDashboard() {
     const data = await res.json()
     setSelectedEvent(data.event)
     setApplications(data.applications)
+    setActionStatus(`Loaded ${data.applications.length} volunteers for ${data.event.title}`)
+    setError('')
   }
 
   function handleEventFormChange(event) {
@@ -122,17 +134,25 @@ function OrganizerDashboard() {
     setEventConflict(findConflict(nextForm, editingEvent?._id))
   }
 
+  function handleEventFileChange(event) {
+    const nextForm = { ...eventForm, permissionPdf: event.target.files[0] || null }
+    setEventForm(nextForm)
+  }
+
   function findConflict(form, ignoreEventId = null) {
-    if (!form.location || !form.dateISO || !form.startTime || !form.endTime) return null
-    const start = toMinutes(form.startTime)
-    const end = toMinutes(form.endTime)
+    if (!form.location || !form.startDateISO || !form.endDateISO || !form.startHour || !form.endHour) return null
+    const start = hourToMinutes(form.startHour)
+    const end = hourToMinutes(form.endHour)
     if (start === null || end === null || end <= start) return { message: 'End time must be later than start time' }
+    if (form.startDateISO > form.endDateISO) return { message: 'End date must be on or after start date' }
     const sameSlot = events.find((event) => {
       if (ignoreEventId && event._id === ignoreEventId) return false
       if (event.location.trim().toLowerCase() !== form.location.trim().toLowerCase()) return false
-      if (event.dateISO !== form.dateISO) return false
-      const eventStart = toMinutes(event.startTime)
-      const eventEnd = toMinutes(event.endTime)
+      const eventStartDate = event.startDateISO || event.dateISO
+      const eventEndDate = event.endDateISO || event.startDateISO || event.dateISO
+      if (!(form.startDateISO <= eventEndDate && eventStartDate <= form.endDateISO)) return false
+      const eventStart = hourToMinutes(event.startHour)
+      const eventEnd = hourToMinutes(event.endHour)
       return eventStart !== null && eventEnd !== null && start < eventEnd && eventStart < end
     })
     if (!sameSlot) return null
@@ -148,19 +168,20 @@ function OrganizerDashboard() {
     const sameDayAndLocation = events
       .filter((event) => (
         (!ignoreEventId || event._id !== ignoreEventId)
-        && event.dateISO === form.dateISO
+        && (form.startDateISO <= (event.endDateISO || event.startDateISO || event.dateISO))
+        && ((event.startDateISO || event.dateISO) <= form.endDateISO)
         && event.location.trim().toLowerCase() === form.location.trim().toLowerCase()
       ))
-      .sort((a, b) => toMinutes(a.endTime) - toMinutes(b.endTime))
+      .sort((a, b) => hourToMinutes(a.endHour) - hourToMinutes(b.endHour))
     let candidateStart = start
     for (const event of sameDayAndLocation) {
-      const eventStart = toMinutes(event.startTime)
-      const eventEnd = toMinutes(event.endTime)
+      const eventStart = hourToMinutes(event.startHour)
+      const eventEnd = hourToMinutes(event.endHour)
       if (eventStart !== null && eventEnd !== null && candidateStart < eventEnd && eventStart < candidateStart + duration) {
         candidateStart = eventEnd
       }
     }
-    return `${toHHMM(candidateStart)} - ${toHHMM(candidateStart + duration)}`
+    return `${toHour(candidateStart)} - ${toHour(candidateStart + duration)}`
   }
 
   async function submitEvent(event) {
@@ -169,31 +190,25 @@ function OrganizerDashboard() {
     setEventConflict(conflict)
     if (conflict) return
 
-    if (!eventForm.addressLine1 || !eventForm.city || !eventForm.state || !eventForm.postalCode) {
-      setError('Please fill detailed location: address, city, state and postal code')
+    if (!eventForm.address) {
+      setError('Please fill the event address')
       return
     }
 
-    const payload = {
-      ...eventForm,
-      requiredSkills: eventForm.requiredSkills.split(',').map((item) => item.trim()).filter(Boolean),
-      volunteerSlots: Number(eventForm.volunteerSlots || 0),
-      category: 'environment',
-      detailedLocation: {
-        addressLine1: eventForm.addressLine1,
-        area: eventForm.area,
-        city: eventForm.city,
-        state: eventForm.state,
-        postalCode: eventForm.postalCode,
-        landmark: eventForm.landmark,
-      },
+    const payload = new FormData()
+    Object.entries(eventForm).forEach(([key, value]) => {
+      if (key === 'permissionPdf') return
+      payload.append(key, value)
+    })
+    if (eventForm.permissionPdf) {
+      payload.append('permissionPdf', eventForm.permissionPdf)
     }
 
     const endpoint = editingEvent
       ? `http://localhost:4000/api/organizer/events/${editingEvent._id}`
       : 'http://localhost:4000/api/organizer/events'
     const method = editingEvent ? 'PUT' : 'POST'
-    const res = await fetch(endpoint, { method, headers, body: JSON.stringify(payload) })
+    const res = await fetch(endpoint, { method, headers: uploadHeaders, body: payload })
     const data = await res.json()
     if (!res.ok) {
       setEventConflict(data.conflict ? { message: data.message, event: data.conflict } : null)
@@ -206,6 +221,7 @@ function OrganizerDashboard() {
     setEventForm(EMPTY_EVENT_FORM)
     await fetchDashboard()
     setError('')
+    setActionStatus('Event saved. It will appear for volunteers after admin approval and posting.')
   }
 
   async function deleteEvent(eventId) {
@@ -221,6 +237,24 @@ function OrganizerDashboard() {
       setApplications([])
     }
     await fetchDashboard()
+    setActionStatus('Event deleted.')
+  }
+
+  async function togglePublish(eventId, publish) {
+    setActionStatus('')
+    const res = await fetch(`http://localhost:4000/api/events/${eventId}/publish`, {
+      method: 'PUT',
+      headers,
+      body: JSON.stringify({ publish }),
+    })
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}))
+      setError(data.message || 'Could not update dashboard posting status')
+      return
+    }
+    await fetchDashboard()
+    setError('')
+    setActionStatus(publish ? 'Event posted to the volunteer dashboard.' : 'Event removed from the volunteer dashboard.')
   }
 
   async function updateApplicationStatus(appId, status) {
@@ -235,20 +269,6 @@ function OrganizerDashboard() {
     }
     if (selectedEvent?._id) await fetchApplications(selectedEvent._id)
     await fetchDashboard()
-  }
-
-  async function assignRole(appId, assignedRole) {
-    const assignedTask = window.prompt('Assign task (optional):', '')
-    const res = await fetch(`http://localhost:4000/api/organizer/application/${appId}/assign-role`, {
-      method: 'PATCH',
-      headers,
-      body: JSON.stringify({ assignedRole, assignedTask: assignedTask || '' }),
-    })
-    if (!res.ok) {
-      setError('Could not assign volunteer role')
-      return
-    }
-    if (selectedEvent?._id) await fetchApplications(selectedEvent._id)
   }
 
   async function sendAnnouncement() {
@@ -277,20 +297,20 @@ function OrganizerDashboard() {
     setEditingEvent(event)
     setEventForm({
       title: event.title || '',
-      description: event.description || '',
-      dateISO: event.dateISO || '',
-      startTime: event.startTime || '',
-      endTime: event.endTime || '',
+      organizationName: event.organizationName || user?.name || '',
+      category: event.category || 'cleanup',
       location: event.location || '',
-      addressLine1: event.detailedLocation?.addressLine1 || '',
-      area: event.detailedLocation?.area || '',
-      city: event.detailedLocation?.city || '',
-      state: event.detailedLocation?.state || '',
-      postalCode: event.detailedLocation?.postalCode || '',
-      landmark: event.detailedLocation?.landmark || '',
+      address: event.address || '',
+      description: event.description || '',
+      startDateISO: event.startDateISO || event.dateISO || '',
+      endDateISO: event.endDateISO || event.startDateISO || event.dateISO || '',
+      startHour: event.startHour || 9,
+      endHour: event.endHour || 17,
+      points: event.points || 50,
+      distanceKm: event.distanceKm || 0,
       requiredSkills: (event.requiredSkills || []).join(', '),
       volunteerSlots: event.volunteerSlots || 0,
-      imageUrl: event.imageUrl || '',
+      permissionPdf: null,
     })
     setEventConflict(null)
     setShowEventModal(true)
@@ -309,14 +329,6 @@ function OrganizerDashboard() {
   function getNotificationCount() {
     return notifications.length
   }
-
-  const filteredApplications = applications.filter((application) => {
-    const skills = (application.skills || []).join(' ').toLowerCase()
-    const availability = (application.availability || '').toLowerCase()
-    const matchesSkills = appSkillFilter ? skills.includes(appSkillFilter.toLowerCase()) : true
-    const matchesAvailability = appAvailabilityFilter ? availability.includes(appAvailabilityFilter.toLowerCase()) : true
-    return matchesSkills && matchesAvailability
-  })
 
   if (loading) return <div className="organizer-loading">Loading organizer dashboard...</div>
 
@@ -350,6 +362,7 @@ function OrganizerDashboard() {
 
       <main className="dashboard-main">
         {error && <div className="organizer-error-banner">{error}</div>}
+        {actionStatus && <div className="organizer-success-banner">{actionStatus}</div>}
 
         <header className="dashboard-header">
           <div className="header-title">
@@ -384,28 +397,18 @@ function OrganizerDashboard() {
               <div className="stat-card stat-blue"><div className="stat-info"><h3>{stats?.totalEvents || 0}</h3><p>Total Events</p></div></div>
               <div className="stat-card stat-green"><div className="stat-info"><h3>{stats?.upcomingEvents || 0}</h3><p>Upcoming Events</p></div></div>
               <div className="stat-card stat-orange"><div className="stat-info"><h3>{stats?.pastEvents || 0}</h3><p>Past Events</p></div></div>
-              <div className="stat-card stat-pink"><div className="stat-info"><h3>{stats?.appStats?.pending || 0}</h3><p>Pending Applications</p></div></div>
             </div>
-
-            <section className="organizer-section">
-              <h3>Application Pipeline</h3>
-              <div className="organizer-status-cards">
-                <div className="organizer-status-card pending"><div className="status-number">{stats?.appStats?.pending || 0}</div><div className="status-label">Pending</div></div>
-                <div className="organizer-status-card approved"><div className="status-number">{stats?.appStats?.approved || 0}</div><div className="status-label">Approved</div></div>
-                <div className="organizer-status-card rejected"><div className="status-number">{stats?.appStats?.rejected || 0}</div><div className="status-label">Rejected</div></div>
-              </div>
-            </section>
 
             <section className="organizer-section">
               <h3>Upcoming and Past Events</h3>
               <div className="organizer-dual-list">
                 <div>
                   <h4>Upcoming</h4>
-                  {(stats?.upcomingEventsList || []).map((event) => <p key={event._id}>{event.title} - {event.dateISO} ({event.startTime}-{event.endTime})</p>)}
+                  {(stats?.upcomingEventsList || []).map((event) => <p key={event._id}>{event.title} - {formatEventDate(event)} ({event.startHour}:00-{event.endHour}:00)</p>)}
                 </div>
                 <div>
                   <h4>Past</h4>
-                  {(stats?.pastEventsList || []).map((event) => <p key={event._id}>{event.title} - {event.dateISO}</p>)}
+                  {(stats?.pastEventsList || []).map((event) => <p key={event._id}>{event.title} - {formatEventDate(event)}</p>)}
                 </div>
               </div>
             </section>
@@ -427,37 +430,75 @@ function OrganizerDashboard() {
                   tileClassName={({ date, view }) => {
                     if (view !== 'month') return ''
                     const iso = date.toISOString().split('T')[0]
-                    return events.some((event) => event.dateISO === iso) ? 'has-event-date' : ''
+                    return calendarEvents.some((event) => isEventOnDate(event, iso)) ? 'has-event-date' : ''
                   }}
                 />
               </div>
               <div className="organizer-date-events-card">
                 <h4>Events on {calendarDate.toDateString()}</h4>
-                {eventsForSelectedDate.length === 0 ? (
-                  <p className="organizer-date-empty">No scheduled events for this day.</p>
-                ) : (
-                  eventsForSelectedDate.map((event) => (
-                    <div key={event._id} className="organizer-date-event-item">
-                      <strong>{event.title}</strong>
-                      <span>{event.startTime} - {event.endTime}</span>
-                      <small>{event.location}</small>
-                    </div>
-                  ))
-                )}
+                <div className="organizer-date-subsection">
+                  <h5>All Events Happening</h5>
+                  {eventsForSelectedDate.length === 0 ? (
+                    <p className="organizer-date-empty">No scheduled events for this day.</p>
+                  ) : (
+                    eventsForSelectedDate.map((event) => (
+                      <div key={event._id} className="organizer-date-event-item">
+                        <strong>{event.title}</strong>
+                        <span>{formatEventDate(event)} | {event.startHour}:00 - {event.endHour}:00</span>
+                        <small>{event.location}</small>
+                      </div>
+                    ))
+                  )}
+                </div>
+                <div className="organizer-date-subsection">
+                  <h5>My Created Events</h5>
+                  {createdEventsForSelectedDate.length === 0 ? (
+                    <p className="organizer-date-empty">You have not created events for this day.</p>
+                  ) : (
+                    createdEventsForSelectedDate.map((event) => (
+                      <div key={event._id} className="organizer-date-event-item created">
+                        <strong>{event.title}</strong>
+                        <span>{formatEventDate(event)} | {event.startHour}:00 - {event.endHour}:00</span>
+                        <small>{event.location} | {event.status || 'pending'}</small>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
+            <h4 className="organizer-list-title">My Created Events</h4>
             <div className="organizer-calendar-list">
               {events.map((event) => (
                 <div key={event._id} className="organizer-event-row">
                   <div>
                     <strong>{event.title}</strong>
-                    <p>{event.location} | {event.dateISO} | {event.startTime}-{event.endTime}</p>
-                    <small>Skills: {(event.requiredSkills || []).join(', ') || 'Not specified'}</small>
+                    <p>{event.location} | {formatEventDate(event)} | {event.startHour}:00-{event.endHour}:00</p>
+                    <small>
+                      Status: {event.status || 'pending'} | {event.isPublished ? 'Posted to dashboard' : 'Not posted'} | Skills: {(event.requiredSkills || []).join(', ') || 'Not specified'}
+                    </small>
                   </div>
                   <div className="organizer-row-actions">
-                    <button className="event-card-btn" onClick={() => openEditModal(event)}>Edit</button>
-                    <button className="event-card-btn danger" onClick={() => deleteEvent(event._id)}>Delete</button>
-                    <button className="event-card-btn" onClick={() => { setActiveTab('volunteers'); fetchApplications(event._id) }}>Applicants</button>
+                    <button type="button" className="event-card-btn" onClick={() => openEditModal(event)}>Edit</button>
+                    <button type="button" className="event-card-btn danger" onClick={() => deleteEvent(event._id)}>Delete</button>
+                    <button type="button" className="event-card-btn" onClick={() => { setActiveTab('volunteers'); fetchApplications(event._id) }}>Applicants</button>
+                    <button
+                      type="button"
+                      className="event-card-btn"
+                      disabled={!event.approved || event.isPublished}
+                      title={!event.approved ? 'Admin approval is required before posting' : event.isPublished ? 'Already posted' : 'Post to volunteer dashboard'}
+                      onClick={() => togglePublish(event._id, true)}
+                    >
+                      Post to Dashboard
+                    </button>
+                    <button
+                      type="button"
+                      className="event-card-btn danger"
+                      disabled={!event.isPublished}
+                      title={!event.isPublished ? 'This event is not posted yet' : 'Remove from volunteer dashboard'}
+                      onClick={() => togglePublish(event._id, false)}
+                    >
+                      Unpost
+                    </button>
                   </div>
                 </div>
               ))}
@@ -468,10 +509,12 @@ function OrganizerDashboard() {
         {activeTab === 'volunteers' && (
           <section className="organizer-section">
             <h3>Volunteer Management</h3>
-            <div className="applications-filter-bar">
-              <input className="search-input" placeholder="Filter by skill" value={appSkillFilter} onChange={(e) => setAppSkillFilter(e.target.value)} />
-              <input className="search-input" placeholder="Filter by availability" value={appAvailabilityFilter} onChange={(e) => setAppAvailabilityFilter(e.target.value)} />
-            </div>
+            {selectedEvent && (
+              <div className="selected-event-summary">
+                <strong>{selectedEvent.title}</strong>
+                <p>{selectedEvent.location} | {formatEventDate(selectedEvent)}</p>
+              </div>
+            )}
 
             {!selectedEvent ? (
               <div className="event-list">
@@ -484,27 +527,33 @@ function OrganizerDashboard() {
               </div>
             ) : (
               <div className="applications-list">
-                {filteredApplications.map((application) => (
-                  <div key={application._id} className="application-item">
-                    <div className="app-header">
-                      <div className="app-info">
-                        <h4>{application.volunteerName}</h4>
-                        <p>{application.volunteerEmail}</p>
+                <div className="applications-controls">
+                  <button type="button" className="event-card-btn" onClick={() => { setSelectedEvent(null); setApplications([]); setActionStatus(''); }}>
+                    ← Back to my events
+                  </button>
+                  <span className="applications-summary">Showing {applications.length} volunteer{applications.length === 1 ? '' : 's'}</span>
+                </div>
+                {applications.length === 0 ? (
+                  <div className="no-applications">No volunteer applications found for this event.</div>
+                ) : (
+                  applications.map((application) => (
+                    <div key={application._id} className="application-item">
+                      <div className="app-header">
+                        <div className="app-info">
+                          <h4>{application.volunteerName}</h4>
+                          <p>{application.volunteerEmail}</p>
+                        </div>
+                        <div className="app-status">
+                          {application.status === 'withdrawn' && (
+                            <span className="app-status-badge withdrawn">Withdrawn</span>
+                          )}
+                          {application.attended && <span className="app-status-badge attended">Attended</span>}
+                        </div>
                       </div>
-                      <span className={`app-status-badge ${application.status}`}>{application.status}</span>
+                      {application.notes && <p className="app-notes">{application.notes}</p>}
                     </div>
-                    <div className="app-details">
-                      <p><strong>Skills:</strong> {(application.skills || []).join(', ') || 'N/A'}</p>
-                      <p><strong>Availability:</strong> {application.availability || 'N/A'}</p>
-                      <p><strong>Assigned role:</strong> {application.assignedRole || 'Not assigned'}</p>
-                    </div>
-                    <div className="app-actions">
-                      <button className="action-btn approve" onClick={() => updateApplicationStatus(application._id, 'approved')}>Approve</button>
-                      <button className="action-btn reject" onClick={() => updateApplicationStatus(application._id, 'rejected')}>Reject</button>
-                      <button className="action-btn" onClick={() => assignRole(application._id, 'Team Lead')}>Assign Role</button>
-                    </div>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             )}
           </section>
@@ -535,33 +584,39 @@ function OrganizerDashboard() {
             <h2>{editingEvent ? 'Edit Event' : 'Create New Event'}</h2>
             <div className="organizer-form-grid">
               <input name="title" value={eventForm.title} onChange={handleEventFormChange} placeholder="Title" required />
-              <input name="location" value={eventForm.location} onChange={handleEventFormChange} placeholder="Venue name (e.g., City Park)" required />
-              <input type="date" name="dateISO" value={eventForm.dateISO} onChange={handleEventFormChange} required />
-              <input type="time" name="startTime" value={eventForm.startTime} onChange={handleEventFormChange} required />
-              <input type="time" name="endTime" value={eventForm.endTime} onChange={handleEventFormChange} required />
-              <input name="addressLine1" value={eventForm.addressLine1} onChange={handleEventFormChange} placeholder="Address line 1" required />
-              <input name="area" value={eventForm.area} onChange={handleEventFormChange} placeholder="Area / locality" />
-              <input name="city" value={eventForm.city} onChange={handleEventFormChange} placeholder="City" required />
-              <input name="state" value={eventForm.state} onChange={handleEventFormChange} placeholder="State" required />
-              <input name="postalCode" value={eventForm.postalCode} onChange={handleEventFormChange} placeholder="Postal code" required />
-              <input name="landmark" value={eventForm.landmark} onChange={handleEventFormChange} placeholder="Landmark (optional)" />
+              <input name="organizationName" value={eventForm.organizationName} onChange={handleEventFormChange} placeholder="Organization Name" required />
+              <select name="category" value={eventForm.category} onChange={handleEventFormChange} required>
+                <option value="cleanup">Cleanup</option>
+                <option value="planting">Planting</option>
+                <option value="recycling">Recycling</option>
+                <option value="awareness">Awareness</option>
+              </select>
+              <input name="location" value={eventForm.location} onChange={handleEventFormChange} placeholder="Location (Area Name, City, State)" required />
+              <input type="date" name="startDateISO" value={eventForm.startDateISO} onChange={handleEventFormChange} required />
+              <input type="date" name="endDateISO" value={eventForm.endDateISO} onChange={handleEventFormChange} required />
+              <input type="number" name="startHour" value={eventForm.startHour} onChange={handleEventFormChange} placeholder="Start Hour (1-24)" min="1" max="24" required />
+              <input type="number" name="endHour" value={eventForm.endHour} onChange={handleEventFormChange} placeholder="End Hour (1-24)" min="1" max="24" required />
+              <input type="number" name="points" value={eventForm.points} onChange={handleEventFormChange} placeholder="Points" min="0" required />
+              <input type="number" name="distanceKm" value={eventForm.distanceKm} onChange={handleEventFormChange} placeholder="Distance km" min="0" step="0.1" />
               <input type="number" name="volunteerSlots" value={eventForm.volunteerSlots} onChange={handleEventFormChange} placeholder="Volunteer slots" min="0" />
               <input name="requiredSkills" value={eventForm.requiredSkills} onChange={handleEventFormChange} placeholder="Required skills (comma separated)" />
-              <input name="imageUrl" value={eventForm.imageUrl} onChange={handleEventFormChange} placeholder="Image URL" />
             </div>
             <textarea name="description" value={eventForm.description} onChange={handleEventFormChange} placeholder="Description" required />
+            <textarea name="address" value={eventForm.address} onChange={handleEventFormChange} placeholder="Address" required />
+            <input type="file" accept="application/pdf" onChange={handleEventFileChange} />
+            {eventForm.permissionPdf && <span className="file-name">Selected: {eventForm.permissionPdf.name}</span>}
 
             <div className="organizer-conflict-preview">
               <h4>Existing events (same organizer)</h4>
               {events.map((event) => (
-                <p key={event._id}>{event.location} | {event.dateISO} | {event.startTime}-{event.endTime}</p>
+                <p key={event._id}>{event.location} | {formatEventDate(event)} | {event.startHour}:00-{event.endHour}:00</p>
               ))}
             </div>
 
             {eventConflict && (
               <div className="organizer-conflict-alert">
                 <strong>{eventConflict.message}</strong>
-                {eventConflict.event && <p>Conflicts with: {eventConflict.event.title} ({eventConflict.event.startTime}-{eventConflict.event.endTime})</p>}
+                {eventConflict.event && <p>Conflicts with: {eventConflict.event.title} ({eventConflict.event.startHour}:00-{eventConflict.event.endHour}:00)</p>}
                 {eventConflict.suggestion && <p>Suggested slot: {eventConflict.suggestion}</p>}
               </div>
             )}
@@ -577,17 +632,30 @@ function OrganizerDashboard() {
   )
 }
 
-function toMinutes(value) {
-  if (!value || !/^\d{2}:\d{2}$/.test(value)) return null
-  const [hours, minutes] = value.split(':').map(Number)
-  return hours * 60 + minutes
+function hourToMinutes(value) {
+  const hour = Number(value)
+  if (!Number.isFinite(hour)) return null
+  return Math.min(24, Math.max(1, Math.floor(hour))) * 60
 }
 
-function toHHMM(totalMinutes) {
-  const safeMinutes = Math.max(0, Math.min(totalMinutes, 1439))
-  const hh = String(Math.floor(safeMinutes / 60)).padStart(2, '0')
-  const mm = String(safeMinutes % 60).padStart(2, '0')
-  return `${hh}:${mm}`
+function toHour(totalMinutes) {
+  const safeMinutes = Math.max(60, Math.min(totalMinutes, 1440))
+  return `${Math.floor(safeMinutes / 60)}:00`
+}
+
+function formatEventDate(event) {
+  const start = event.startDateISO || event.dateISO || ''
+  const end = event.endDateISO || event.startDateISO || event.dateISO || ''
+  if (!start) return 'Date not set'
+  if (!end || start === end) return start
+  return `${start} - ${end}`
+}
+
+function isEventOnDate(event, isoDate) {
+  const start = event.startDateISO || event.dateISO || ''
+  const end = event.endDateISO || event.startDateISO || event.dateISO || ''
+  if (!start) return false
+  return start <= isoDate && isoDate <= (end || start)
 }
 
 export default OrganizerDashboard

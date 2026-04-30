@@ -13,6 +13,7 @@ function AdminPage() {
   const [activeTab, setActiveTab] = useState('events')
   const [events, setEvents] = useState([])
   const [grievances, setGrievances] = useState([])
+  const [pendingOrganizers, setPendingOrganizers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
 
@@ -27,21 +28,25 @@ function AdminPage() {
       }
 
       try {
-        const [eventsRes, grievancesRes] = await Promise.all([
+        const [eventsRes, grievancesRes, organizersRes] = await Promise.all([
           apiFetch('/api/events/admin', { headers: { Authorization: `Bearer ${token}` } }),
-          apiFetch('/api/grievances/admin', { headers: { Authorization: `Bearer ${token}` } })
+          apiFetch('/api/grievances/admin', { headers: { Authorization: `Bearer ${token}` } }),
+          apiFetch('/api/auth/admin/organizers/pending', { headers: { Authorization: `Bearer ${token}` } })
         ])
 
-        if (!eventsRes.ok || !grievancesRes.ok) {
+        if (!eventsRes.ok || !grievancesRes.ok || !organizersRes.ok) {
           const errorBody = !eventsRes.ok
             ? await eventsRes.json().catch(() => null)
-            : await grievancesRes.json().catch(() => null)
+            : !grievancesRes.ok
+            ? await grievancesRes.json().catch(() => null)
+            : await organizersRes.json().catch(() => null)
           setError(errorBody?.message || 'Failed to load admin data')
           return
         }
 
         setEvents(await eventsRes.json())
         setGrievances(await grievancesRes.json())
+        setPendingOrganizers(await organizersRes.json())
       } catch (err) {
         setError(err.message || 'Failed to load admin data')
       } finally {
@@ -63,10 +68,11 @@ function AdminPage() {
     const now = new Date()
 
     events.forEach((event) => {
-      if (!event.approved) {
+      if (!event.approved && event.status !== 'rejected') {
         categories['To Be Approved'].push(event)
         return
       }
+      if (event.status === 'rejected') return
       const start = new Date(event.startDateISO)
       const end = new Date(event.endDateISO)
       if (now > end) {
@@ -85,19 +91,23 @@ function AdminPage() {
     setLoading(true)
     setError('')
     try {
-      const [eventsRes, grievancesRes] = await Promise.all([
+      const [eventsRes, grievancesRes, organizersRes] = await Promise.all([
         apiFetch('/api/events/admin', { headers: { Authorization: `Bearer ${token}` } }),
-        apiFetch('/api/grievances/admin', { headers: { Authorization: `Bearer ${token}` } })
+        apiFetch('/api/grievances/admin', { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch('/api/auth/admin/organizers/pending', { headers: { Authorization: `Bearer ${token}` } })
       ])
-      if (!eventsRes.ok || !grievancesRes.ok) {
+      if (!eventsRes.ok || !grievancesRes.ok || !organizersRes.ok) {
         const errorBody = !eventsRes.ok
           ? await eventsRes.json().catch(() => null)
-          : await grievancesRes.json().catch(() => null)
+          : !grievancesRes.ok
+          ? await grievancesRes.json().catch(() => null)
+          : await organizersRes.json().catch(() => null)
         setError(errorBody?.message || 'Unable to refresh admin data')
         return
       }
       setEvents(await eventsRes.json())
       setGrievances(await grievancesRes.json())
+      setPendingOrganizers(await organizersRes.json())
     } catch (err) {
       setError(err.message || 'Unable to refresh admin data')
     } finally {
@@ -107,25 +117,81 @@ function AdminPage() {
 
   const handleApprove = async (eventId) => {
     try {
-      await apiFetch(`/api/events/admin/${eventId}/approve`, {
+      const res = await apiFetch(`/api/events/admin/${eventId}/approve`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       })
+      if (!res.ok) {
+        const body = await res.json().catch(() => null)
+        throw new Error(body?.message || 'Unable to approve event')
+      }
       refreshAdminData()
     } catch (err) {
       setError(err.message || 'Unable to approve event')
     }
   }
 
-  const handleClose = async (eventId) => {
+  const handleDecline = async (eventId) => {
     try {
-      await apiFetch(`/api/events/admin/${eventId}/close`, {
+      const res = await apiFetch(`/api/events/admin/${eventId}/reject`, {
         method: 'PUT',
         headers: { Authorization: `Bearer ${token}` }
       })
+      if (!res.ok) {
+        const body = await res.json().catch(() => null)
+        throw new Error(body?.message || 'Unable to decline event')
+      }
+      refreshAdminData()
+    } catch (err) {
+      setError(err.message || 'Unable to decline event')
+    }
+  }
+
+  const handleClose = async (eventId) => {
+    try {
+      const res = await apiFetch(`/api/events/admin/${eventId}/close`, {
+        method: 'PUT',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => null)
+        throw new Error(body?.message || 'Unable to close event')
+      }
       refreshAdminData()
     } catch (err) {
       setError(err.message || 'Unable to close event')
+    }
+  }
+
+  const handleApproveOrganizer = async (userId) => {
+    try {
+      const res = await apiFetch(`/api/auth/admin/organizers/${userId}/verify`, {
+        method: 'PATCH',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => null)
+        throw new Error(body?.message || 'Unable to approve organizer')
+      }
+      refreshAdminData()
+    } catch (err) {
+      setError(err.message || 'Unable to approve organizer')
+    }
+  }
+
+  const handleDeclineOrganizer = async (userId) => {
+    try {
+      const res = await apiFetch(`/api/auth/admin/organizers/${userId}`, {
+        method: 'DELETE',
+        headers: { Authorization: `Bearer ${token}` }
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => null)
+        throw new Error(body?.message || 'Unable to decline organizer')
+      }
+      refreshAdminData()
+    } catch (err) {
+      setError(err.message || 'Unable to decline organizer')
     }
   }
 
@@ -167,6 +233,10 @@ function AdminPage() {
             <button type="button" className={`nav-item ${activeTab === 'events' ? 'active' : ''}`} onClick={() => setActiveTab('events')}>
               <span className="nav-icon">🗂️</span>
               <span>Events</span>
+            </button>
+            <button type="button" className={`nav-item ${activeTab === 'organizers' ? 'active' : ''}`} onClick={() => setActiveTab('organizers')}>
+              <span className="nav-icon">🧑‍🤝‍🧑</span>
+              <span>Organizers</span>
             </button>
             <button type="button" className={`nav-item ${activeTab === 'grievances' ? 'active' : ''}`} onClick={() => setActiveTab('grievances')}>
               <span className="nav-icon">⚠️</span>
@@ -240,7 +310,10 @@ function AdminPage() {
                         </div>
                         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
                           {!event.approved && (
-                            <button className="join-btn" onClick={() => handleApprove(event._id)}>Approve</button>
+                            <>
+                              <button className="join-btn" onClick={() => handleApprove(event._id)}>Approve</button>
+                              <button className="join-btn decline-btn" onClick={() => handleDecline(event._id)}>Decline</button>
+                            </>
                           )}
                           {event.approved && categoryTitle !== 'Closed' && (
                             <button className="join-btn" onClick={() => handleClose(event._id)}>Close</button>
@@ -251,6 +324,43 @@ function AdminPage() {
                   )}
                 </div>
               ))}
+            </div>
+          </div>
+        ) : activeTab === 'organizers' ? (
+          <div>
+            <div className="search-filter-bar">
+              <h3>Pending Organizer Approvals</h3>
+              <p>Review organizer requests and approve accounts once verified.</p>
+            </div>
+
+            <div className="events-grid">
+              {pendingOrganizers.length === 0 ? (
+                <p>No pending organizer requests.</p>
+              ) : (
+                pendingOrganizers.map((organizer) => (
+                  <div key={organizer._id} className="event-card">
+                    <div className="event-card-header">
+                      <h4>{organizer.name}</h4>
+                      <span className="event-badge">Pending</span>
+                    </div>
+                    <div className="event-details">
+                      <p><strong>Email:</strong> {organizer.email}</p>
+                      <p><strong>City:</strong> {organizer.city}</p>
+                      <p><strong>Role:</strong> {organizer.role}</p>
+                      {organizer.permissionSlipUrl && (
+                        <p>
+                          <strong>Permission Slip:</strong>{' '}
+                          <a href={organizer.permissionSlipUrl} target="_blank" rel="noreferrer">View document</a>
+                        </p>
+                      )}
+                    </div>
+                    <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+                      <button className="join-btn" onClick={() => handleApproveOrganizer(organizer._id)}>Approve</button>
+                      <button className="join-btn decline-btn" onClick={() => handleDeclineOrganizer(organizer._id)}>Decline</button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         ) : (

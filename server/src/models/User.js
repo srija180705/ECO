@@ -8,6 +8,7 @@ const UserSchema = new mongoose.Schema(
     city: { type: String, default: "Hyderabad" },
     role: { type: String, enum: ["volunteer", "organizer", "admin", "user"], default: "volunteer" },
     isVerified: { type: Boolean, default: true },
+    permissionSlipUrl: { type: String, default: null },
     points: { type: Number, default: 0 },
     badges: { type: [String], default: [] },
     joinedEvents: { type: [String], default: [] },
