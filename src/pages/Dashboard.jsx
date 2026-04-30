@@ -1,7 +1,8 @@
-import React, { useState, useMemo, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import { mockDB } from '../data/mockData';
+import { apiFetch } from '../api.js';
 import Rewards from './Rewards';
 import Community from './community';
 
@@ -25,38 +26,201 @@ function readInitialTotalPoints() {
   }
 }
 
+function normalizeJoinedEvents(ids) {
+  if (!Array.isArray(ids)) return [];
+  const mockIds = mockDB.events.map((event) => event.id);
+  const hasEveryMockEvent = mockIds.length > 0 && mockIds.every((id) => ids.includes(id));
+  return hasEveryMockEvent ? [] : ids;
+}
+
+function normalizeEvent(event) {
+  const id = String(event._id || event.id);
+  const dateISO = event.dateISO || event.startDateISO || event.endDateISO || '';
+  return {
+    ...event,
+    id,
+    dateISO,
+    category: event.category || 'cleanup',
+    location: event.location || 'Hyderabad',
+    distanceKm: Number(event.distanceKm) || 0,
+    points: Number(event.points) || 0,
+  };
+}
+
+function mergeEvents(primaryEvents, fallbackEvents) {
+  const byId = new Map();
+  [...primaryEvents, ...fallbackEvents].forEach((event) => {
+    const normalized = normalizeEvent(event);
+    byId.set(normalized.id, normalized);
+  });
+  return Array.from(byId.values());
+}
+
+function parseDateOnly(iso) {
+  if (!iso) return null;
+  const [year, month, day] = iso.split('-').map(Number);
+  if (!year || !month || !day) return null;
+  return new Date(year, month - 1, day);
+}
+
+function startOfToday() {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  return today;
+}
+
+function getEventDateRange(event) {
+  const start = parseDateOnly(event.startDateISO || event.dateISO);
+  const end = parseDateOnly(event.endDateISO || event.dateISO || event.startDateISO);
+  return { start, end };
+}
+
+function getEventTiming(event) {
+  const { start, end } = getEventDateRange(event);
+  const today = startOfToday();
+  if (!start || !end) return 'upcoming';
+  if (start <= today && end >= today) return 'ongoing';
+  if (start > today) return 'upcoming';
+  return 'past';
+}
+
+function formatEventDate(event) {
+  const { start, end } = getEventDateRange(event);
+  if (!start) return 'Date not set';
+  if (!end || start.getTime() === end.getTime()) return start.toDateString();
+  return `${start.toDateString()} - ${end.toDateString()}`;
+}
+
 function Dashboard() {
   const location = useLocation();
   const navigate = useNavigate();
-  const user = location.state?.user ?? readStoredUser();
+  const initialUser = location.state?.user ?? readStoredUser();
+  const [user, setUser] = useState(initialUser);
   const firstName = user?.name ? user.name.split(' ')[0] : 'Volunteer';
 
   const [q, setQ] = useState("");
   const [category, setCategory] = useState("all");
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showNotifications, setShowNotifications] = useState(false);
+  const [createStatus, setCreateStatus] = useState('');
+  const [createError, setCreateError] = useState('');
+  const [eventForm, setEventForm] = useState({
+    title: '',
+    organizationName: '',
+    category: 'cleanup',
+    location: '',
+    address: '',
+    description: '',
+    startDateISO: '',
+    endDateISO: '',
+    startHour: 9,
+    endHour: 17,
+    points: 50,
+    permissionPdf: null,
+  });
 
   const [notifications, setNotifications] = useState([
     { id: 1, text: 'New event in your area: Beach Cleanup', time: '2 hours ago' },
     { id: 2, text: 'You earned 50 points!', time: '1 day ago' },
   ]);
+  const [events, setEvents] = useState(() => mockDB.events.map(normalizeEvent));
+  const [submittedEvents, setSubmittedEvents] = useState([]);
+  const [eventsMetaError, setEventsMetaError] = useState('');
+  const [dashboardError, setDashboardError] = useState('');
 
-  // Join event state management with localStorage persistence and MongoDB sync
   const [joinedEvents, setJoinedEvents] = useState(() => {
-    if (user?.joinedEvents && user.joinedEvents.length > 0) return user.joinedEvents;
+    if (user?.joinedEvents && user.joinedEvents.length > 0) return normalizeJoinedEvents(user.joinedEvents);
     const saved = localStorage.getItem('eco_joined_events');
-    return saved ? JSON.parse(saved) : [];
+    return saved ? normalizeJoinedEvents(JSON.parse(saved)) : [];
   });
 
   const [attendedEvents, setAttendedEvents] = useState(() => {
-    if (user?.attendedEvents && user.attendedEvents.length > 0) return user.attendedEvents;
+    if (initialUser?.attendedEvents && initialUser.attendedEvents.length > 0) return initialUser.attendedEvents;
     const saved = localStorage.getItem('eco_attended_events');
     return saved ? JSON.parse(saved) : [];
   });
 
   const [totalPoints, setTotalPoints] = useState(readInitialTotalPoints);
 
-  // Persist to localStorage whenever state changes
+  const syncUserLocal = (updated) => {
+    try {
+      const current = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({ ...current, ...updated }));
+    } catch {
+      /* noop */
+    }
+  };
+
+  const loadEventMeta = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const mineRes = await apiFetch('/api/events/mine', { headers: { Authorization: `Bearer ${token}` } });
+
+      if (mineRes.ok) {
+        setSubmittedEvents(await mineRes.json());
+      }
+      if (!mineRes.ok) {
+        setEventsMetaError('Could not load event status data.');
+      } else {
+        setEventsMetaError('');
+      }
+    } catch {
+      setEventsMetaError('Could not load event status data.');
+    }
+  };
+
+  const loadDashboardData = async () => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+
+    try {
+      const [profileRes, eventsRes] = await Promise.all([
+        apiFetch('/api/users/me', { headers: { Authorization: `Bearer ${token}` } }),
+        apiFetch('/api/events', { headers: { Authorization: `Bearer ${token}` } }),
+      ]);
+
+      if (profileRes.ok) {
+        const profileData = await profileRes.json();
+        setUser(profileData);
+        syncUserLocal(profileData);
+        if (Array.isArray(profileData.joinedEvents)) {
+          setJoinedEvents(normalizeJoinedEvents(profileData.joinedEvents));
+        }
+        if (Array.isArray(profileData.attendedEvents)) {
+          setAttendedEvents(profileData.attendedEvents);
+        }
+        if (typeof profileData.points === 'number') {
+          setTotalPoints(profileData.points);
+        }
+      }
+
+      if (eventsRes.ok) {
+        const eventData = await eventsRes.json();
+        setEvents(
+          Array.isArray(eventData) && eventData.length > 0
+            ? mergeEvents(eventData, mockDB.events)
+            : mockDB.events.map(normalizeEvent)
+        );
+        setDashboardError('');
+      } else {
+        const errorData = await eventsRes.json().catch(() => ({}));
+        setDashboardError(errorData.message || 'Unable to load events.');
+        setEvents(mockDB.events.map(normalizeEvent));
+      }
+
+      await loadEventMeta();
+    } catch {
+      setDashboardError('Unable to load dashboard data.');
+      setEvents(mockDB.events.map(normalizeEvent));
+      await loadEventMeta();
+    }
+  };
+
+  useEffect(() => {
+    loadDashboardData();
+  }, []);
+
   useEffect(() => {
     localStorage.setItem('eco_joined_events', JSON.stringify(joinedEvents));
   }, [joinedEvents]);
@@ -70,19 +234,17 @@ function Dashboard() {
   }, [totalPoints]);
 
   useEffect(() => {
-    const u = readStoredUser();
-    if (!u?._id) return;
+    if (!user?._id) return;
     const token = localStorage.getItem('token');
     if (!token) return;
 
     const timer = setTimeout(() => {
-      fetch(`http://localhost:4000/api/users/${u._id}`, {
+      fetch(`http://localhost:4000/api/users/${user._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        // Send points and event engagement data directly to MongoDB User Document
         body: JSON.stringify({ points: totalPoints, joinedEvents, attendedEvents }),
       })
         .then((res) => (res.ok ? res.json() : null))
@@ -105,81 +267,149 @@ function Dashboard() {
     }, 450);
 
     return () => clearTimeout(timer);
-  }, [totalPoints, joinedEvents, attendedEvents]);
+  }, [user, totalPoints, joinedEvents, attendedEvents]);
 
-  // Calculate user stats
-  const userStats = useMemo(() => {
-    const mockUser = mockDB.users[0];
-    return {
-      totalPoints: totalPoints,
-      eventsJoined: joinedEvents.length,
-      nearbyEvents: 0,
-      badgesEarned: user?.badges?.length ?? 0,
-    };
-  }, [totalPoints, joinedEvents, user]);
-
-  const filteredEvents = useMemo(() => {
-    return mockDB.events.filter((ev) => {
-      // Show only events user hasn't registered for yet
+  const availableEvents = useMemo(() => {
+    return events.filter((ev) => {
       const isNotJoined = !joinedEvents.includes(ev.id);
       const matchQ =
         ev.title.toLowerCase().includes(q.toLowerCase()) ||
         ev.location.toLowerCase().includes(q.toLowerCase()) ||
         ev.category.toLowerCase().includes(q.toLowerCase());
       const matchCat = category === "all" || ev.category.toLowerCase() === category.toLowerCase();
-      return isNotJoined && matchQ && matchCat;
+      const isDiscoverable = getEventTiming(ev) !== 'past';
+      return isNotJoined && matchQ && matchCat && isDiscoverable;
     });
-  }, [q, category, joinedEvents]);
+  }, [q, category, joinedEvents, events]);
+
+  const ongoingEvents = useMemo(() => {
+    return availableEvents.filter((event) => getEventTiming(event) === 'ongoing');
+  }, [availableEvents]);
+
+  const upcomingEvents = useMemo(() => {
+    return availableEvents.filter((event) => getEventTiming(event) === 'upcoming');
+  }, [availableEvents]);
+
+  const userStats = useMemo(() => {
+    return {
+      totalPoints: totalPoints,
+      eventsJoined: joinedEvents.length,
+      nearbyEvents: availableEvents.length,
+      badgesEarned: user?.badges?.length ?? 0,
+    };
+  }, [totalPoints, joinedEvents, availableEvents, user]);
 
   const registeredEventsData = useMemo(() => {
-    return mockDB.events.filter(ev => joinedEvents.includes(ev.id) && !attendedEvents.includes(ev.id));
-  }, [joinedEvents, attendedEvents]);
+    return events.filter(ev => joinedEvents.includes(ev.id) && !attendedEvents.includes(ev.id));
+  }, [events, joinedEvents, attendedEvents]);
 
   const attendedEventsData = useMemo(() => {
-    return mockDB.events.filter(ev => attendedEvents.includes(ev.id));
-  }, [attendedEvents]);
+    return events.filter(ev => attendedEvents.includes(ev.id));
+  }, [events, attendedEvents]);
 
-  // Handle join event
-  const handleJoinEvent = (eventId) => {
-    if (!joinedEvents.includes(eventId)) {
-      setJoinedEvents([...joinedEvents, eventId]);
-      alert('✓ Event registered successfully!');
-    }
-  };
+  const handleJoinEvent = async (eventId) => {
+    if (joinedEvents.includes(eventId)) return;
 
-  // Handle unjoin event
-  const handleUnjoinEvent = (eventId) => {
-    setJoinedEvents(joinedEvents.filter(id => id !== eventId));
-    // Also remove from attended if they attended and unjoin
-    setAttendedEvents(attendedEvents.filter(id => id !== eventId));
-    alert('✓ You have cancelled this event registration.');
-  };
-
-  // Handle mark as attended - with date validation
-  const handleMarkAttended = (eventId) => {
-    const event = mockDB.events.find(e => e.id === eventId);
-    if (!event) return;
-
-    const eventDate = new Date(event.dateISO);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    eventDate.setHours(0, 0, 0, 0);
-
-    // Only allow marking as attended if event date has passed
-    if (eventDate >= today) {
-      alert(`❌ You can only mark this event as attended after ${eventDate.toDateString()}!`);
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to join events.');
       return;
     }
 
-    // Mark as attended
-    setAttendedEvents([...attendedEvents, eventId]);
-    // Award points
-    const points = event.points || 0;
-    setTotalPoints(totalPoints + points);
-    alert(`✓ Attendance confirmed! You earned ${points} points!`);
+    try {
+      const response = await apiFetch(`/api/events/${eventId}/join`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.message || 'Unable to join event.');
+        return;
+      }
+      setJoinedEvents([...joinedEvents, eventId]);
+      setUser((prev) => prev ? { ...prev, joinedEvents: [...(prev.joinedEvents || []), eventId] } : prev);
+      alert('✓ Event registered successfully!');
+    } catch {
+      alert('Unable to join event. Please try again.');
+    }
   };
 
-  // Handle reset points
+  const handleUnjoinEvent = async (eventId) => {
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to cancel event registration.');
+      return;
+    }
+
+    try {
+      const response = await apiFetch(`/api/events/${eventId}/unjoin`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.message || 'Unable to cancel registration.');
+        return;
+      }
+
+      setJoinedEvents(joinedEvents.filter(id => id !== eventId));
+      setAttendedEvents(attendedEvents.filter(id => id !== eventId));
+      setUser((prev) => prev ? {
+        ...prev,
+        joinedEvents: (prev.joinedEvents || []).filter((id) => String(id) !== String(eventId)),
+        attendedEvents: (prev.attendedEvents || []).filter((id) => String(id) !== String(eventId)),
+      } : prev);
+      alert('✓ You have cancelled this event registration.');
+    } catch {
+      alert('Unable to cancel registration. Please try again.');
+    }
+  };
+
+  const handleMarkAttended = async (eventId) => {
+    const event = events.find(e => e.id === eventId || String(e._id) === String(eventId));
+    if (!event) return;
+
+    const { end } = getEventDateRange(event);
+    const today = startOfToday();
+
+    if (!end || end >= today) {
+      alert(`❌ You can only mark this event as attended after ${end ? end.toDateString() : 'the event ends'}!`);
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please log in to mark attendance.');
+      return;
+    }
+
+    try {
+      const response = await apiFetch(`/api/events/${eventId}/attend`, {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        alert(errorData.message || 'Unable to mark attendance.');
+        return;
+      }
+
+      const points = event.points || 0;
+      setAttendedEvents([...attendedEvents, eventId]);
+      setTotalPoints(totalPoints + points);
+      setUser((prev) => prev ? {
+        ...prev,
+        attendedEvents: [...(prev.attendedEvents || []), eventId],
+        points: (Number(prev.points) || 0) + points,
+      } : prev);
+      alert(`✓ Attendance confirmed! You earned ${points} points!`);
+    } catch {
+      alert('Unable to mark attendance. Please try again.');
+    }
+  };
+
   const handleResetPoints = () => {
     if (window.confirm('Are you sure you want to reset all points and clear all registered events? This cannot be undone.')) {
       setJoinedEvents([]);
@@ -199,9 +429,111 @@ function Dashboard() {
     navigate('/map', { state: { fromAuth: true, user } });
   };
 
+  const handleEventChange = (e) => {
+    const { name, value } = e.target;
+    setEventForm((prev) => ({ ...prev, [name]: value }));
+    setCreateStatus('');
+    setCreateError('');
+  };
+
+  const handleFileChange = (e) => {
+    setEventForm((prev) => ({ ...prev, permissionPdf: e.target.files[0] || null }));
+    setCreateStatus('');
+    setCreateError('');
+  };
+
+  const handleCreateEvent = async (e) => {
+    e.preventDefault();
+    setCreateError('');
+    setCreateStatus('');
+
+    const token = localStorage.getItem('token');
+    if (!token) {
+      setCreateError('Login required to submit an event.');
+      return;
+    }
+
+    const formData = new FormData();
+    formData.append('title', eventForm.title);
+    formData.append('organizationName', eventForm.organizationName);
+    formData.append('category', eventForm.category);
+    formData.append('location', eventForm.location);
+    formData.append('address', eventForm.address);
+    formData.append('description', eventForm.description);
+    formData.append('startDateISO', eventForm.startDateISO);
+    formData.append('endDateISO', eventForm.endDateISO);
+    formData.append('startHour', eventForm.startHour);
+    formData.append('endHour', eventForm.endHour);
+    formData.append('points', eventForm.points);
+    if (eventForm.permissionPdf) {
+      formData.append('permissionPdf', eventForm.permissionPdf);
+    }
+
+    try {
+      const response = await apiFetch('/api/events', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setCreateError(errorData.message || 'Unable to submit event.');
+        return;
+      }
+
+      setCreateStatus('Event submitted successfully and is awaiting admin approval.');
+      setEventForm({
+        title: '',
+        organizationName: '',
+        category: 'cleanup',
+        location: '',
+        address: '',
+        description: '',
+        startDateISO: '',
+        endDateISO: '',
+        startHour: 9,
+        endHour: 17,
+        points: 50,
+        permissionPdf: null,
+      });
+      await loadEventMeta();
+    } catch (err) {
+      setCreateError(err.message || 'Unable to submit event.');
+    }
+  };
+
+  const handlePublishToggle = async (eventId, publish) => {
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    try {
+      const response = await apiFetch(`/api/events/${eventId}/publish`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify({ publish })
+      });
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        setCreateError(errorData.message || 'Unable to update publish status.');
+        return;
+      }
+      await loadEventMeta();
+      setCreateStatus(publish ? 'Event posted to dashboard successfully.' : 'Event removed from dashboard.');
+    } catch {
+      setCreateError('Unable to update publish status.');
+    }
+  };
+
+  const statusLabel = (event) => {
+    if (event.approved) return 'approved';
+    return event.status || 'pending';
+  };
+
   return (
     <div className="dashboard-layout">
-      {/* Sidebar */}
       <aside className="sidebar">
         <div className="sidebar-top">
           <div className="sidebar-brand">
@@ -224,6 +556,10 @@ function Dashboard() {
             <button type="button" className={`nav-item ${activeTab === 'community' ? 'active' : ''}`} onClick={() => setActiveTab('community')}>
               <span className="nav-icon">👥</span>
               <span>Community</span>
+            </button>
+            <button type="button" className={`nav-item ${activeTab === 'create' ? 'active' : ''}`} onClick={() => setActiveTab('create')}>
+              <span className="nav-icon">📝</span>
+              <span>Create Event</span>
             </button>
             <button
               type="button"
@@ -280,7 +616,6 @@ function Dashboard() {
         </div>
       </aside>
 
-      {/* Main Content */}
       <main className="dashboard-main">
         {activeTab === 'rewards' ? (
           <Rewards
@@ -296,7 +631,6 @@ function Dashboard() {
                 <p>Find your next volunteering opportunity</p>
               </div>
               <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                {/* Notification Bell */}
                 <div style={{ position: 'relative' }}>
                   <button
                     style={{ background: 'none', border: 'none', cursor: 'pointer', position: 'relative', display: 'flex', color: '#4b5563' }}
@@ -385,7 +719,8 @@ function Dashboard() {
               </select>
             </div>
 
-            {/* Stats Cards */}
+            {dashboardError && <div className="feedback feedback-error">{dashboardError}</div>}
+
             <div className="stats-grid">
               <div className="stat-card stat-green">
                 <div className="stat-icon-wrapper">🏅</div>
@@ -417,16 +752,15 @@ function Dashboard() {
               </div>
             </div>
 
-            {/* Upcoming Events */}
             <section className="upcoming-events">
-              <h2>Upcoming Events Near You</h2>
-              {filteredEvents.length === 0 ? (
+              <h2>Ongoing Events</h2>
+              {ongoingEvents.length === 0 ? (
                 <div className="no-events">
-                  <p>No more available events. You've registered for all!</p>
+                  <p>No ongoing events right now.</p>
                 </div>
               ) : (
                 <div className="events-grid">
-                  {filteredEvents.map(event => (
+                  {ongoingEvents.map(event => (
                     <div className="event-card" key={event.id}>
                       <div className="event-card-header">
                         <h3>{event.title}</h3>
@@ -435,9 +769,9 @@ function Dashboard() {
                           <span className="reward-points">{event.points} pts</span>
                         </div>
                       </div>
-                      <span className="event-badge">{event.category}</span>
+                      <span className="event-badge attended-badge">Ongoing</span>
                       <div className="event-details">
-                        <p>📅 {new Date(event.dateISO).toDateString()}</p>
+                        <p>📅 {formatEventDate(event)}</p>
                         <p>📍 {event.location}</p>
                         <p>📏 {event.distanceKm} km away</p>
                       </div>
@@ -448,17 +782,43 @@ function Dashboard() {
               )}
             </section>
 
-            {/* My Registered Events */}
+            <section className="upcoming-events">
+              <h2>Upcoming Events Near You</h2>
+              {upcomingEvents.length === 0 ? (
+                <div className="no-events">
+                  <p>No more available events. You&apos;ve registered for all!</p>
+                </div>
+              ) : (
+                <div className="events-grid">
+                  {upcomingEvents.map(event => (
+                    <div className="event-card" key={event.id}>
+                      <div className="event-card-header">
+                        <h3>{event.title}</h3>
+                        <div className="event-reward">
+                          <span>⭐</span>
+                          <span className="reward-points">{event.points} pts</span>
+                        </div>
+                      </div>
+                      <span className="event-badge">{event.category}</span>
+                      <div className="event-details">
+                        <p>📅 {formatEventDate(event)}</p>
+                        <p>📍 {event.location}</p>
+                        <p>📏 {event.distanceKm} km away</p>
+                      </div>
+                      <button className="join-btn" onClick={() => handleJoinEvent(event.id)}>Join Event</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+
             {joinedEvents.length > 0 && (
               <section className="registered-events">
                 <h2>My Registered Events</h2>
                 <div className="events-grid">
                   {registeredEventsData.map(event => {
-                    const eventDate = new Date(event.dateISO);
-                    const today = new Date();
-                    today.setHours(0, 0, 0, 0);
-                    eventDate.setHours(0, 0, 0, 0);
-                    const isPastEvent = eventDate < today;
+                    const { end } = getEventDateRange(event);
+                    const isPastEvent = end ? end < startOfToday() : false;
 
                     return (
                       <div className="event-card registered" key={event.id}>
@@ -471,7 +831,7 @@ function Dashboard() {
                         </div>
                         <span className="event-badge registered-badge">{event.category}</span>
                         <div className="event-details">
-                          <p>📅 {new Date(event.dateISO).toDateString()}</p>
+                          <p>📅 {formatEventDate(event)}</p>
                           <p>📍 {event.location}</p>
                           <p>📏 {event.distanceKm} km away</p>
                         </div>
@@ -494,7 +854,6 @@ function Dashboard() {
               </section>
             )}
 
-            {/* Events Attended */}
             {attendedEvents.length > 0 && (
               <section className="attended-events">
                 <h2>Events Attended ✓</h2>
@@ -510,7 +869,7 @@ function Dashboard() {
                       </div>
                       <span className="event-badge attended-badge">{event.category}</span>
                       <div className="event-details">
-                        <p>📅 {new Date(event.dateISO).toDateString()}</p>
+                        <p>📅 {formatEventDate(event)}</p>
                         <p>📍 {event.location}</p>
                         <p>📏 {event.distanceKm} km away</p>
                       </div>
@@ -523,6 +882,125 @@ function Dashboard() {
               </section>
             )}
           </>
+        ) : activeTab === 'create' ? (
+          <section className="create-event-section">
+            <header className="dashboard-header create-header">
+              <div className="header-title">
+                <h2>Submit a New Event</h2>
+                <p>Provide the event details and attach permission documentation for admin review.</p>
+              </div>
+            </header>
+
+            <div className="form-card">
+              <form className="create-event-form" onSubmit={handleCreateEvent}>
+                <div className="form-grid">
+                  <label>
+                    Event Title
+                    <input name="title" value={eventForm.title} onChange={handleEventChange} required />
+                  </label>
+                  <label>
+                    Organization Name
+                    <input name="organizationName" value={eventForm.organizationName} onChange={handleEventChange} required />
+                  </label>
+                  <label>
+                    Category
+                    <select name="category" value={eventForm.category} onChange={handleEventChange} required>
+                      <option value="cleanup">Cleanup</option>
+                      <option value="planting">Planting</option>
+                      <option value="recycling">Recycling</option>
+                      <option value="awareness">Awareness</option>
+                    </select>
+                  </label>
+                  <label>
+                    Location (Area Name, City, State)
+                    <input name="location" value={eventForm.location} onChange={handleEventChange} required />
+                  </label>
+                  <label className="full-width">
+                    Description
+                    <textarea name="description" value={eventForm.description} onChange={handleEventChange} rows="4" required />
+                  </label>
+                  <label>
+                    Start Date
+                    <input type="date" name="startDateISO" value={eventForm.startDateISO} onChange={handleEventChange} required />
+                  </label>
+                  <label>
+                    End Date
+                    <input type="date" name="endDateISO" value={eventForm.endDateISO} onChange={handleEventChange} required />
+                  </label>
+                  <label>
+                    Start Hour (1-24)
+                    <input type="number" name="startHour" value={eventForm.startHour} onChange={handleEventChange} min="1" max="24" required />
+                  </label>
+                  <label>
+                    End Hour (1-24)
+                    <input type="number" name="endHour" value={eventForm.endHour} onChange={handleEventChange} min="1" max="24" required />
+                  </label>
+                  <label>
+                    Points
+                    <input type="number" name="points" value={eventForm.points} onChange={handleEventChange} min="0" required />
+                  </label>
+                  <label className="full-width">
+                    Address
+                    <textarea name="address" value={eventForm.address} onChange={handleEventChange} rows="3" required />
+                  </label>
+                </div>
+
+                <div className="file-upload-card">
+                  <h3>Permission Document</h3>
+                  <p>Attach the PDF permission letter for the event.</p>
+                  <input type="file" accept="application/pdf" onChange={handleFileChange} className="file-input" />
+                  {eventForm.permissionPdf && <span className="file-name">Selected: {eventForm.permissionPdf.name}</span>}
+                </div>
+
+                {createError && <div className="feedback feedback-error">{createError}</div>}
+                {createStatus && <div className="feedback feedback-success">{createStatus}</div>}
+                {eventsMetaError && <div className="feedback feedback-error">{eventsMetaError}</div>}
+
+                <button className="primary-btn" type="submit">Submit for Approval</button>
+              </form>
+            </div>
+
+            <section className="registered-events">
+              <h2>My Submitted Events</h2>
+              {submittedEvents.length === 0 ? (
+                <div className="no-events">
+                  <p>You have not submitted any events yet.</p>
+                </div>
+              ) : (
+                <div className="events-grid">
+                  {submittedEvents.map((event) => (
+                    <div className="event-card" key={event._id}>
+                      <div className="event-card-header">
+                        <h3>{event.title}</h3>
+                        <span className="event-badge">{statusLabel(event)}</span>
+                      </div>
+                      <div className="event-details">
+                        <p>📅 {new Date(event.startDateISO).toDateString()} - {new Date(event.endDateISO).toDateString()}</p>
+                        <p>📍 {event.location}</p>
+                        <p>📣 {event.isPublished ? 'Published on dashboard' : 'Not posted to dashboard'}</p>
+                      </div>
+                      <div className="event-actions">
+                        <button
+                          className="join-btn"
+                          disabled={!event.approved || event.isPublished}
+                          onClick={() => handlePublishToggle(event._id, true)}
+                        >
+                          Post as Happening
+                        </button>
+                        <button
+                          className="cancel-btn"
+                          disabled={!event.isPublished}
+                          onClick={() => handlePublishToggle(event._id, false)}
+                        >
+                          Remove Post
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </section>
+          </section>
         ) : activeTab === 'community' ? (
           <Community />
         ) : (
@@ -530,7 +1008,7 @@ function Dashboard() {
             <div className="coming-soon-icon">🚧</div>
             <h2 className="coming-soon-title">{activeTab.charAt(0).toUpperCase() + activeTab.slice(1)}</h2>
             <p className="coming-soon-text">Coming Soon</p>
-            <p className="coming-soon-subtext">We're working hard to bring this feature to you. Stay tuned!</p>
+            <p className="coming-soon-subtext">We&apos;re working hard to bring this feature to you. Stay tuned!</p>
             <button className="coming-soon-btn" onClick={() => setActiveTab('dashboard')}>Back to Dashboard</button>
           </div>
         )}

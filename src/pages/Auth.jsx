@@ -1,16 +1,19 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { apiFetch } from '../api.js'
 
 function Auth() {
   const navigate = useNavigate()
   const [isLogin, setIsLogin] = useState(true)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    role: 'volunteer'
+    role: 'volunteer',
+    permissionSlip: null
   })
 
   const handleChange = (e) => {
@@ -20,13 +23,14 @@ function Auth() {
       [name]: value
     }))
     setError('')
+    setSuccess('')
   }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
     setError('')
+    setSuccess('')
 
-    // Basic validation
     if (!formData.email || !formData.password) {
       setError('Please fill in all required fields')
       return
@@ -37,53 +41,67 @@ function Auth() {
       return
     }
 
+    if (!isLogin && formData.role === 'organizer' && !formData.permissionSlip) {
+      setError('Please upload the permission slip to register as an organizer')
+      return
+    }
+
     try {
       setLoading(true)
 
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
-      const body = isLogin
-        ? { email: formData.email, password: formData.password }
-        : { name: formData.name, email: formData.email, password: formData.password, role: formData.role }
+      let options = { method: 'POST' }
 
-      const res = await fetch(`http://localhost:4000${endpoint}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(body),
-      })
-
-      const data = await res.json()
-
-      if (!res.ok) {
-        setError(data.message || 'Authentication failed')
-        return
+      if (isLogin) {
+        options.headers = { 'Content-Type': 'application/json' }
+        options.body = JSON.stringify({ email: formData.email, password: formData.password })
+      } else {
+        const formPayload = new FormData()
+        formPayload.append('name', formData.name)
+        formPayload.append('email', formData.email)
+        formPayload.append('password', formData.password)
+        formPayload.append('role', formData.role)
+        if (formData.role === 'organizer' && formData.permissionSlip) {
+          formPayload.append('permissionSlip', formData.permissionSlip)
+        }
+        options.body = formPayload
       }
 
-      // Store token in localStorage
-      localStorage.setItem('token', data.token)
+      const response = await apiFetch(endpoint, options)
 
-      const user = {
-        _id: data.user._id,
-        id: data.user._id,
-        name: data.user.name,
-        email: data.user.email,
-        role: data.user.role || 'volunteer',
-        isVerified: data.user.isVerified ?? true,
-        city: data.user.city || 'Hyderabad',
-        points: data.user.points ?? 0,
-        badges: [],
-        joinedEventIds: [],
-        interests: [],
+      if (response.ok) {
+        const data = await response.json()
+        if (data.token) {
+          localStorage.setItem('token', data.token)
+          localStorage.setItem('user', JSON.stringify(data.user))
+          const user = {
+            _id: data.user._id,
+            id: data.user._id,
+            name: data.user.name,
+            email: data.user.email,
+            role: data.user.role === 'user' ? 'volunteer' : (data.user.role || 'volunteer'),
+            isVerified: data.user.isVerified ?? true,
+            city: data.user.city || 'Hyderabad',
+            points: data.user.points ?? 0,
+            badges: [],
+            joinedEventIds: [],
+            interests: [],
+          }
+          localStorage.setItem('user', JSON.stringify(user))
+          setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null })
+          const redirectPath = user.role === 'organizer' ? '/organizer-dashboard' : (user.role === 'admin' ? '/admin' : '/dashboard')
+          navigate(redirectPath, { state: { fromAuth: true, user } })
+        } else {
+          setSuccess(data.message || 'Registration submitted. Please wait for admin approval.')
+          setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null })
+        }
+      } else {
+        const errorData = await response.json()
+        setError(errorData.message || 'Authentication failed')
       }
-
-      localStorage.setItem('user', JSON.stringify(user))
-      setFormData({ name: '', email: '', password: '', role: 'volunteer' })
-      
-      // Redirect based on role
-      const redirectPath = user.role === 'organizer' ? '/organizer-dashboard' : '/dashboard'
-      navigate(redirectPath, { state: { fromAuth: true, user } })
 
     } catch (err) {
-      setError('Unable to connect to server. Please try again.')
+      setError('Authentication failed. Please try again.')
       console.error('Auth error:', err)
     } finally {
       setLoading(false)
@@ -119,6 +137,7 @@ function Auth() {
         </div>
 
         {error && <div className="error-message">{error}</div>}
+        {success && <div className="success-message">{success}</div>}
 
         <form onSubmit={handleSubmit}>
           {!isLogin && (
@@ -162,6 +181,18 @@ function Auth() {
             />
           </div>
 
+          {!isLogin && formData.role === 'organizer' && (
+            <div className="form-group">
+              <label htmlFor="permissionSlip">Permission Slip (PDF)</label>
+              <input
+                type="file"
+                id="permissionSlip"
+                name="permissionSlip"
+                accept="application/pdf"
+                onChange={(e) => setFormData((prev) => ({ ...prev, permissionSlip: e.target.files[0] || null }))}
+              />
+            </div>
+          )}
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -173,8 +204,6 @@ function Auth() {
               placeholder="Enter your password"
             />
           </div>
-
-
 
           <button type="submit" className="btn-primary" disabled={loading}>
             {loading ? 'Processing...' : isLogin ? 'Login' : 'Create Account'}

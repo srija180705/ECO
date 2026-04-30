@@ -462,6 +462,123 @@
   gap: 20px;
 }
 
+.create-event-section {
+  margin-top: 24px;
+}
+
+.form-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 20px;
+  background-color: #ffffff;
+  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.04);
+  padding: 28px;
+}
+
+.create-event-form {
+  display: grid;
+  gap: 24px;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.form-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 14px;
+  color: #374151;
+  font-weight: 600;
+}
+
+.form-grid input,
+.form-grid textarea,
+.form-grid select {
+  width: 100%;
+  border: 1px solid #e5e7eb;
+  background-color: #f9fafb;
+  border-radius: 14px;
+  padding: 14px 16px;
+  font-size: 14px;
+  color: #111827;
+  outline: none;
+  font-family: inherit;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.form-grid input:focus,
+.form-grid textarea:focus,
+.form-grid select:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.08);
+}
+
+.full-width {
+  grid-column: 1 / -1;
+}
+
+.file-upload-card {
+  border: 1px dashed #d1d5db;
+  border-radius: 18px;
+  padding: 22px;
+  background-color: #f8fafc;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.file-input {
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 12px 14px;
+  background-color: #ffffff;
+  cursor: pointer;
+}
+
+.file-name {
+  color: #374151;
+  font-size: 13px;
+}
+
+.feedback {
+  border-radius: 14px;
+  padding: 14px 18px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.feedback-error {
+  background-color: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.feedback-success {
+  background-color: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #d1fae5;
+}
+
+.primary-btn {
+  padding: 14px 22px;
+  border-radius: 14px;
+  background-color: #10b981;
+  color: #ffffff;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  transition: background-color 0.2s ease, transform 0.2s ease;
+  width: fit-content;
+}
+
+.primary-btn:hover {
+  background-color: #059669;
+  transform: translateY(-1px);
+}
+
 .event-card {
   border: 1px solid #e5e7eb;
   border-radius: 14px;
@@ -566,6 +683,17 @@
   background-color: #ecfdf5;
   border-color: #10b981;
   color: #059669;
+}
+
+.decline-btn {
+  border-color: #fecaca;
+  color: #b91c1c;
+}
+
+.decline-btn:hover {
+  background-color: #fee2e2;
+  border-color: #ef4444;
+  color: #991b1b;
 }
 
 /* ===== Responsive ===== */
