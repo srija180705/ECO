@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
-import { mockDB } from '../data/mockData';
 import { apiFetch } from '../api.js';
 import L from 'leaflet';
 import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
@@ -23,7 +22,7 @@ function MapView() {
   const selectedEvent = location.state && location.state.selectedEvent;
   const firstName = user?.name ? user.name.split(' ')[0] : 'Volunteer';
 
-  const [events, setEvents] = useState(() => mockDB.events);
+  const [events, setEvents] = useState([]);
   const [userLocation, setUserLocation] = useState(null);
   const [geoError, setGeoError] = useState(null);
   const [selectedPosition, setSelectedPosition] = useState(null);
@@ -37,31 +36,22 @@ function MapView() {
     id: String(event._id || event.id),
   });
 
-  const mergeEvents = (primaryEvents, fallbackEvents) => {
-    const byId = new Map();
-    [...primaryEvents, ...fallbackEvents].forEach((event) => {
-      const normalized = normalizeEvent(event);
-      byId.set(normalized.id, normalized);
-    });
-    return Array.from(byId.values());
+  const mergeEvents = (primaryEvents) => {
+    return Array.isArray(primaryEvents) ? primaryEvents.map(normalizeEvent) : [];
   };
 
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (!token) {
-      setEvents(mockDB.events);
+      setEvents([]);
     } else {
       apiFetch('/api/events', { headers: { Authorization: `Bearer ${token}` } })
         .then((res) => res.ok ? res.json() : Promise.reject())
         .then((data) => {
-          if (Array.isArray(data) && data.length > 0) {
-            setEvents(mergeEvents(data, mockDB.events));
-          } else {
-            setEvents(mockDB.events);
-          }
+          setEvents(Array.isArray(data) ? mergeEvents(data) : []);
         })
         .catch(() => {
-          setEvents(mockDB.events);
+          setEvents([]);
         });
     }
 

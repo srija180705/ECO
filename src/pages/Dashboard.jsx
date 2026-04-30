@@ -1,7 +1,6 @@
 ﻿import { useState, useMemo, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
-import { mockDB } from '../data/mockData';
 import { apiFetch } from '../api.js';
 import Rewards from './Rewards';
 import Community from './community';
@@ -28,9 +27,7 @@ function readInitialTotalPoints() {
 
 function normalizeJoinedEvents(ids) {
   if (!Array.isArray(ids)) return [];
-  const mockIds = mockDB.events.map((event) => event.id);
-  const hasEveryMockEvent = mockIds.length > 0 && mockIds.every((id) => ids.includes(id));
-  return hasEveryMockEvent ? [] : ids;
+  return ids;
 }
 
 function normalizeEvent(event) {
@@ -127,7 +124,7 @@ function Dashboard() {
     { id: 1, text: 'New event in your area: Beach Cleanup', time: '2 hours ago' },
     { id: 2, text: 'You earned 50 points!', time: '1 day ago' },
   ]);
-  const [events, setEvents] = useState(() => mockDB.events.map(normalizeEvent));
+  const [events, setEvents] = useState([]);
   const [submittedEvents, setSubmittedEvents] = useState([]);
   const [eventsMetaError, setEventsMetaError] = useState('');
   const [dashboardError, setDashboardError] = useState('');
@@ -201,22 +198,18 @@ function Dashboard() {
 
       if (eventsRes.ok) {
         const eventData = await eventsRes.json();
-        setEvents(
-          Array.isArray(eventData) && eventData.length > 0
-            ? mergeEvents(eventData, mockDB.events)
-            : mockDB.events.map(normalizeEvent)
-        );
+        setEvents(Array.isArray(eventData) && eventData.length > 0 ? eventData.map(normalizeEvent) : []);
         setDashboardError('');
       } else {
         const errorData = await eventsRes.json().catch(() => ({}));
         setDashboardError(errorData.message || 'Unable to load events.');
-        setEvents(mockDB.events.map(normalizeEvent));
+        setEvents([]);
       }
 
       await loadEventMeta();
     } catch {
       setDashboardError('Unable to load dashboard data.');
-      setEvents(mockDB.events.map(normalizeEvent));
+      setEvents([]);
       await loadEventMeta();
     }
   };

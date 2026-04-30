@@ -13,45 +13,161 @@ const adminUsers = [
   { name: "Sneha Suravajjula", email: "snehasuravajjula@gmail.com", password: "Sneha012" }
 ];
 
-const sampleEvents = [
+const organizerUsers = [
+  { name: "GreenTree Events", email: "organizer1@ecoapp.com", password: "Org12345" },
+  { name: "CleanCity Organizers", email: "organizer2@ecoapp.com", password: "Org23456" }
+];
+
+const organizerEvents = [
   {
-    title: "Community Green Campus",
-    organizationName: "Eco Campus Foundation",
+    title: "Lakeside Cleanup Drive",
+    organizationName: "GreenTree Events",
     category: "cleanup",
-    location: "Barkatpura, Hyderabad",
-    address: "Barkatpura Community Ground, Hyderabad, Telangana",
-    description: "Campus cleanup drive with student volunteers and local partners.",
-    startDateISO: "2026-05-15",
-    endDateISO: "2026-05-17",
-    points: 60,
-    distanceKm: 3.2,
-    approved: false
-  },
-  {
-    title: "Riverbank Conservation",
-    organizationName: "RiverCare Org",
-    category: "planting",
-    location: "Godavari River, Rajahmundry",
-    address: "Godavari Riverbank Volunteer Point, Rajahmundry, Andhra Pradesh",
-    description: "Planting native saplings along the riverbank with local NGOs.",
+    location: "Hussain Sagar Lake, Hyderabad",
+    address: "Hussain Sagar Lakefront, Hyderabad, Telangana",
+    description: "Volunteer to remove litter, plastic, and debris from the lake shore.",
     startDateISO: "2026-05-10",
-    endDateISO: "2026-05-12",
-    points: 80,
-    distanceKm: 8.4,
-    approved: true
+    endDateISO: "2026-05-11",
+    startHour: 9,
+    endHour: 14,
+    points: 45,
+    distanceKm: 2.5,
+    organizerIndex: 0
   },
   {
-    title: "Plastic Audit and Workshop",
-    organizationName: "ReCycle India",
+    title: "Botanical Garden Planting",
+    organizationName: "GreenTree Events",
+    category: "planting",
+    location: "Osmania University Botanical Garden, Hyderabad",
+    address: "Osmania University Botanical Garden, Hyderabad, Telangana",
+    description: "Help plant native shrubs and flowers in the botanical garden.",
+    startDateISO: "2026-05-13",
+    endDateISO: "2026-05-13",
+    startHour: 10,
+    endHour: 16,
+    points: 60,
+    distanceKm: 3.0,
+    organizerIndex: 0
+  },
+  {
+    title: "Neighborhood Recycling Workshop",
+    organizationName: "GreenTree Events",
     category: "recycling",
-    location: "Kondapur, Hyderabad",
+    location: "Kondapur Community Hall, Hyderabad",
     address: "Kondapur Community Hall, Hyderabad, Telangana",
-    description: "Audit local waste with an education workshop for citizens.",
-    startDateISO: "2026-04-10",
-    endDateISO: "2026-04-12",
+    description: "Teach local families to separate waste and reuse materials.",
+    startDateISO: "2026-05-14",
+    endDateISO: "2026-05-14",
+    startHour: 11,
+    endHour: 15,
+    points: 35,
+    distanceKm: 4.1,
+    organizerIndex: 0
+  },
+  {
+    title: "City Park Tree Sapling Drive",
+    organizationName: "GreenTree Events",
+    category: "planting",
+    location: "Kondapur Community Park, Hyderabad",
+    address: "Kondapur Community Park, Hyderabad, Telangana",
+    description: "Plant saplings and support native tree growth in the community park.",
+    startDateISO: "2026-05-16",
+    endDateISO: "2026-05-16",
+    startHour: 8,
+    endHour: 12,
+    points: 50,
+    distanceKm: 3.9,
+    organizerIndex: 0
+  },
+  {
+    title: "Plastic Audit & Awareness",
+    organizationName: "GreenTree Events",
+    category: "recycling",
+    location: "Banjara Hills Community Center, Hyderabad",
+    address: "Banjara Hills Community Center, Hyderabad, Telangana",
+    description: "Audit local plastic waste and run a community awareness session.",
+    startDateISO: "2026-05-18",
+    endDateISO: "2026-05-18",
+    startHour: 10,
+    endHour: 14,
+    points: 40,
+    distanceKm: 5.2,
+    organizerIndex: 0
+  },
+  {
+    title: "Riverfront Conservation",
+    organizationName: "CleanCity Organizers",
+    category: "cleanup",
+    location: "Musi Riverbank, Hyderabad",
+    address: "Musi Riverbank Volunteer Point, Hyderabad, Telangana",
+    description: "Clean the riverfront and remove plastic waste from the riverbank.",
+    startDateISO: "2026-05-11",
+    endDateISO: "2026-05-11",
+    startHour: 9,
+    endHour: 13,
+    points: 55,
+    distanceKm: 6.3,
+    organizerIndex: 1
+  },
+  {
+    title: "Community Garden Planting",
+    organizationName: "CleanCity Organizers",
+    category: "planting",
+    location: "Barkatpura Community Garden, Hyderabad",
+    address: "Barkatpura Community Garden, Hyderabad, Telangana",
+    description: "Assist in planting herbs and seasonal flowers in the community garden.",
+    startDateISO: "2026-05-15",
+    endDateISO: "2026-05-15",
+    startHour: 8,
+    endHour: 13,
+    points: 50,
+    distanceKm: 3.1,
+    organizerIndex: 1
+  },
+  {
+    title: "Street Recycling Campaign",
+    organizationName: "CleanCity Organizers",
+    category: "recycling",
+    location: "Secunderabad Clock Tower, Hyderabad",
+    address: "Secunderabad Clock Tower, Hyderabad, Telangana",
+    description: "Collect recyclable waste from local streets and educate residents.",
+    startDateISO: "2026-05-17",
+    endDateISO: "2026-05-17",
+    startHour: 11,
+    endHour: 15,
     points: 45,
-    distanceKm: 4.7,
-    approved: true
+    distanceKm: 2.8,
+    organizerIndex: 1
+  },
+  {
+    title: "Urban Greenbelt Planting",
+    organizationName: "CleanCity Organizers",
+    category: "planting",
+    location: "Gachibowli Stadium Park, Hyderabad",
+    address: "Gachibowli Stadium Park, Hyderabad, Telangana",
+    description: "Plant trees along the greenbelt to improve air quality and shade.",
+    startDateISO: "2026-05-19",
+    endDateISO: "2026-05-19",
+    startHour: 9,
+    endHour: 14,
+    points: 65,
+    distanceKm: 12.0,
+    organizerIndex: 1
+  },
+  {
+    title: "Festival Cleanup Drive",
+    organizationName: "CleanCity Organizers",
+    category: "cleanup",
+    location: "Charminar Pedestrian Zone, Hyderabad",
+    address: "Charminar Pedestrian Zone, Hyderabad, Telangana",
+    description: "Participate in a post-festival cleanup to restore the city center.",
+    startDateISO: "2026-05-20",
+    endDateISO: "2026-05-20",
+    startHour: 8,
+    endHour: 12,
+    points: 60,
+    distanceKm: 2.1,
+    organizerIndex: 1
   }
 ];
 
@@ -96,13 +212,57 @@ async function seedDatabase() {
       }
     }
 
-    for (const event of sampleEvents) {
+    const organizerDocs = [];
+    for (const organizer of organizerUsers) {
+      const email = organizer.email.toLowerCase();
+      let user = await User.findOne({ email });
+      if (!user) {
+        const passwordHash = await bcrypt.hash(organizer.password, 10);
+        user = await User.create({
+          name: organizer.name,
+          email,
+          passwordHash,
+          role: "organizer",
+          city: "Hyderabad",
+          isVerified: true,
+          points: 0,
+          badges: [],
+          interests: []
+        });
+        console.log(`[SEED] Created organizer user: ${email}`);
+      } else {
+        console.log(`[SEED] Organizer user already exists: ${email}`);
+      }
+      organizerDocs.push(user);
+    }
+
+    for (const event of organizerEvents) {
       const exists = await Event.findOne({ title: event.title, organizationName: event.organizationName });
       if (!exists) {
-        await Event.create(event);
-        console.log(`[SEED] Created event: ${event.title}`);
+        const organizer = organizerDocs[event.organizerIndex];
+        await Event.create({
+          title: event.title,
+          organizationName: event.organizationName,
+          category: event.category,
+          location: event.location,
+          address: event.address,
+          description: event.description,
+          startDateISO: event.startDateISO,
+          endDateISO: event.endDateISO,
+          startHour: event.startHour,
+          endHour: event.endHour,
+          points: event.points,
+          distanceKm: event.distanceKm,
+          approved: true,
+          status: "approved",
+          isPublished: true,
+          publishedAt: new Date(),
+          createdBy: organizer._id,
+          organizerId: organizer._id
+        });
+        console.log(`[SEED] Created organizer event: ${event.title}`);
       } else {
-        console.log(`[SEED] Event already exists: ${event.title}`);
+        console.log(`[SEED] Organizer event already exists: ${event.title}`);
       }
     }
 
