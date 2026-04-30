@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import './Dashboard.css'
-import { apiFetch } from '../api.js'
+import { apiFetch, API_BASE } from '../api.js'
 
 function AdminPage() {
   const location = useLocation()
@@ -9,6 +9,11 @@ function AdminPage() {
   const storedUser = JSON.parse(localStorage.getItem('user') || 'null')
   const user = location.state?.user || storedUser
   const firstName = user?.name ? user.name.split(' ')[0] : 'Admin'
+
+  const resolveUploadUrl = (url) => {
+    if (!url) return url
+    return url.startsWith('http') ? url : `${API_BASE}${url}`
+  }
 
   const [activeTab, setActiveTab] = useState('events')
   const [events, setEvents] = useState([])
@@ -304,7 +309,7 @@ function AdminPage() {
                           {event.permissionPdf && (
                             <p>
                               <strong>Permission PDF:</strong>{' '}
-                              <a href={event.permissionPdf} target="_blank" rel="noreferrer">View document</a>
+                              <a href={resolveUploadUrl(event.permissionPdf)} target="_blank" rel="noreferrer">View document</a>
                             </p>
                           )}
                         </div>
@@ -350,7 +355,7 @@ function AdminPage() {
                       {organizer.permissionSlipUrl && (
                         <p>
                           <strong>Permission Slip:</strong>{' '}
-                          <a href={organizer.permissionSlipUrl} target="_blank" rel="noreferrer">View document</a>
+                          <a href={resolveUploadUrl(organizer.permissionSlipUrl)} target="_blank" rel="noreferrer">View document</a>
                         </p>
                       )}
                     </div>
