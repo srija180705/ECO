@@ -48,10 +48,14 @@ function normalizeEvent(event) {
 }
 
 function mergeEvents(primaryEvents, fallbackEvents) {
+  const normalizedPrimary = Array.isArray(primaryEvents) && primaryEvents.length > 0
+    ? primaryEvents.map(normalizeEvent)
+    : [];
+  const normalizedFallback = Array.isArray(fallbackEvents) ? fallbackEvents.map(normalizeEvent) : [];
+  const eventsToUse = normalizedPrimary.length > 0 ? normalizedPrimary : normalizedFallback;
   const byId = new Map();
-  [...primaryEvents, ...fallbackEvents].forEach((event) => {
-    const normalized = normalizeEvent(event);
-    byId.set(normalized.id, normalized);
+  eventsToUse.forEach((event) => {
+    byId.set(event.id, event);
   });
   return Array.from(byId.values());
 }
