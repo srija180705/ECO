@@ -239,7 +239,7 @@ function Dashboard() {
     if (!token) return;
 
     const timer = setTimeout(() => {
-      fetch(`http://localhost:4000/api/users/${user._id}`, {
+      apiFetch(`/api/users/${user._id}`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

@@ -1,12 +1,13 @@
 import { useEffect, useMemo, useState } from "react";
 import { MessageSquarePlus, ThumbsUp, Send, Image as ImageIcon, X, Trash2 } from "lucide-react";
+import { apiFetch } from '../api';
 import './community.css';
-const API_URL = 'http://localhost:4000/api/posts';
+const API_URL = '/api/posts';
 
 const api = {
   listPosts: async () => {
     const token = localStorage.getItem('token');
-    const res = await fetch(API_URL, {
+    const res = await apiFetch(API_URL, {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (!res.ok) throw new Error("Failed to load posts");
@@ -23,7 +24,7 @@ const api = {
     }
 
     const token = localStorage.getItem('token');
-    const res = await fetch(API_URL, {
+    const res = await apiFetch(API_URL, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -36,7 +37,7 @@ const api = {
   },
   likePost: async (postId) => {
     const token = localStorage.getItem('token');
-    const res = await fetch(`${API_URL}/${postId}/like`, {
+    const res = await apiFetch(`${API_URL}/${postId}/like`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${token}`,
@@ -47,7 +48,7 @@ const api = {
   },
   deletePost: async (postId) => {
     const token = localStorage.getItem('token');
-    const res = await fetch(`${API_URL}/${postId}`, {
+    const res = await apiFetch(`${API_URL}/${postId}`, {
       method: 'DELETE',
       headers: {
         Authorization: `Bearer ${token}`,

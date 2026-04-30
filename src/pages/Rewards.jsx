@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
+import { apiFetch } from '../api';
 import './Rewards.css';
 
-const API = 'http://localhost:4000/api/rewards';
+const API = '/api/rewards';
 
 function Rewards({ userId, userPoints, onPointsUpdated }) {
   const [rewards, setRewards] = useState([]);
@@ -14,7 +15,7 @@ function Rewards({ userId, userPoints, onPointsUpdated }) {
     let cancelled = false;
     (async () => {
       try {
-        const res = await fetch(API);
+        const res = await apiFetch(API);
         if (!res.ok) throw new Error('Failed to load rewards');
         const data = await res.json();
         if (!cancelled) setRewards(Array.isArray(data) ? data : []);
@@ -38,7 +39,7 @@ function Rewards({ userId, userPoints, onPointsUpdated }) {
     setRedeemingId(r._id);
     setBanner(null);
     try {
-      const res = await fetch(`${API}/redeem`, {
+      const res = await apiFetch(`${API}/redeem`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ userId, rewardId: r._id }),

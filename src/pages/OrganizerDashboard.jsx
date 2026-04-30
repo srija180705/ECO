@@ -4,6 +4,7 @@ import Calendar from 'react-calendar'
 import 'react-calendar/dist/Calendar.css'
 import './Dashboard.css'
 import './OrganizerDashboard.css'
+import { apiFetch } from '../api'
 
 const EMPTY_EVENT_FORM = {
   title: '',
@@ -92,10 +93,10 @@ function OrganizerDashboard() {
     try {
       setLoading(true)
       const [statsRes, eventsRes, reportsRes, calendarRes] = await Promise.all([
-        fetch('http://localhost:4000/api/organizer/stats', { headers }),
-        fetch('http://localhost:4000/api/organizer/events', { headers }),
-        fetch('http://localhost:4000/api/organizer/reports', { headers }),
-        fetch('http://localhost:4000/api/organizer/calendar-events', { headers }),
+        apiFetch('/api/organizer/stats', { headers }),
+        apiFetch('/api/organizer/events', { headers }),
+        apiFetch('/api/organizer/reports', { headers }),
+        apiFetch('/api/organizer/calendar-events', { headers }),
       ])
 
       if (!statsRes.ok || !eventsRes.ok || !reportsRes.ok || !calendarRes.ok) {
@@ -115,7 +116,7 @@ function OrganizerDashboard() {
   }
 
   async function fetchApplications(eventId) {
-    const res = await fetch(`http://localhost:4000/api/organizer/event/${eventId}/applications`, { headers })
+    const res = await apiFetch(`/api/organizer/event/${eventId}/applications`, { headers })
     if (!res.ok) {
       setError('Unable to fetch applications for selected event')
       return
@@ -205,10 +206,10 @@ function OrganizerDashboard() {
     }
 
     const endpoint = editingEvent
-      ? `http://localhost:4000/api/organizer/events/${editingEvent._id}`
-      : 'http://localhost:4000/api/organizer/events'
+      ? `/api/organizer/events/${editingEvent._id}`
+      : '/api/organizer/events'
     const method = editingEvent ? 'PUT' : 'POST'
-    const res = await fetch(endpoint, { method, headers: uploadHeaders, body: payload })
+    const res = await apiFetch(endpoint, { method, headers: uploadHeaders, body: payload })
     const data = await res.json()
     if (!res.ok) {
       setEventConflict(data.conflict ? { message: data.message, event: data.conflict } : null)
@@ -227,7 +228,7 @@ function OrganizerDashboard() {
   async function deleteEvent(eventId) {
     const confirmed = window.confirm('Delete this event and all related applications?')
     if (!confirmed) return
-    const res = await fetch(`http://localhost:4000/api/organizer/events/${eventId}`, { method: 'DELETE', headers })
+    const res = await apiFetch(`/api/organizer/events/${eventId}`, { method: 'DELETE', headers })
     if (!res.ok) {
       setError('Could not delete event')
       return
@@ -242,7 +243,7 @@ function OrganizerDashboard() {
 
   async function togglePublish(eventId, publish) {
     setActionStatus('')
-    const res = await fetch(`http://localhost:4000/api/events/${eventId}/publish`, {
+    const res = await apiFetch(`/api/events/${eventId}/publish`, {
       method: 'PUT',
       headers,
       body: JSON.stringify({ publish }),
@@ -258,7 +259,7 @@ function OrganizerDashboard() {
   }
 
   async function updateApplicationStatus(appId, status) {
-    const res = await fetch(`http://localhost:4000/api/organizer/application/${appId}/status`, {
+    const res = await apiFetch(`/api/organizer/application/${appId}/status`, {
       method: 'PATCH',
       headers,
       body: JSON.stringify({ status }),
@@ -273,7 +274,7 @@ function OrganizerDashboard() {
 
   async function sendAnnouncement() {
     if (!announcementMessage.trim()) return
-    const res = await fetch('http://localhost:4000/api/organizer/communications/announcement', {
+    const res = await apiFetch('/api/organizer/communications/announcement', {
       method: 'POST',
       headers,
       body: JSON.stringify({ message: announcementMessage, eventId: selectedEvent?._id || null }),
