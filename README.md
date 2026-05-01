@@ -62,6 +62,9 @@ npm run dev
 
 The app will open automatically at `http://localhost:5173`
 
+> Local dev uses Vite proxy for `/api` requests, so the frontend does not need `VITE_API_BASE` while running on `http://localhost:5173`.
+> For production builds using a separate backend host, set `VITE_API_BASE` in the frontend environment to the backend base URL.
+
 ---
 
 ## ✨ Features
