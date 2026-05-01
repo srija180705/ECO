@@ -4,7 +4,6 @@ const jwt = require("jsonwebtoken");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
-const crypto = require("crypto");
 const User = require("../models/User");
 const { adminAuth } = require("../middleware/auth");
 
@@ -165,55 +164,6 @@ router.post("/login", async (req, res, next) => {
         isVerified: user.isVerified
       } 
     });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.post('/forgot-password', async (req, res, next) => {
-  try {
-    const { email } = req.body;
-    if (!email) return res.status(400).json({ message: 'Email is required' });
-
-    const user = await User.findOne({ email: email.toLowerCase() });
-    if (user) {
-      const token = crypto.randomBytes(32).toString('hex');
-      user.passwordResetToken = token;
-      user.passwordResetExpires = Date.now() + 3600000;
-      await user.save();
-
-      const frontendUrl = process.env.FRONTEND_URL || req.headers.origin || 'http://localhost:5173';
-      const resetUrl = `${frontendUrl}/reset-password?token=${token}&email=${encodeURIComponent(user.email)}`;
-      const subject = 'Eco Volunteer Match Password Reset Request';
-      const message = `You requested a password reset. Use the link below to set a new password:\n\n${resetUrl}\n\nThis link will expire in 1 hour. If you did not request a password reset, please ignore this email.`;
-      const htmlMessage = `You requested a password reset. Click the link below to set a new password:<br/><br/><a href="${resetUrl}">${resetUrl}</a><br/><br/>This link will expire in 1 hour. If you did not request a password reset, please ignore this email.`;
-
-      await sendMail(user.email, subject, htmlMessage, message);
-    }
-
-    res.json({ message: 'If an account exists with that email, a reset link has been sent.' });
-  } catch (error) {
-    next(error);
-  }
-});
-
-router.post('/reset-password', async (req, res, next) => {
-  try {
-    const { email, token, password } = req.body;
-    if (!email || !token || !password) return res.status(400).json({ message: 'Email, token, and password are required' });
-
-    const user = await User.findOne({ email: email.toLowerCase(), passwordResetToken: token });
-    if (!user || !user.passwordResetExpires || user.passwordResetExpires < Date.now()) {
-      return res.status(400).json({ message: 'Invalid or expired password reset token' });
-    }
-
-    user.passwordHash = await bcrypt.hash(password, 10);
-    user.passwordResetToken = undefined;
-    user.passwordResetExpires = undefined;
-    await user.save();
-
-    await sendMail(user.email, 'Password reset successful', '<p>Your password has been updated successfully.</p>', 'Your password has been updated successfully.');
-    res.json({ message: 'Password reset successful' });
   } catch (error) {
     next(error);
   }

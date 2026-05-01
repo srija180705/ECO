@@ -24,7 +24,12 @@ if (missing.length > 0) {
 
 const app = express();
 
-app.use(express.json({ limit: '50mb' }));
+app.use(express.json({
+  limit: '50mb',
+  verify: (req, res, buf) => {
+    req.rawBody = buf.toString('utf8');
+  }
+}));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 app.use(
   cors({
@@ -54,6 +59,9 @@ app.get("/api/admin/dashboard", adminAuth, (req, res) => {
 // Global error handler middleware
 app.use((err, req, res, next) => {
   console.error("[ERROR]", err);
+  if (err.type === 'entity.parse.failed') {
+    console.error('[ERROR] Raw request body:', req.rawBody);
+  }
   res.status(err.status || 500).json({
     message: err.message || "Internal server error"
   });

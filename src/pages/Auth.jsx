@@ -50,7 +50,7 @@ function Auth() {
       setLoading(true)
 
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
-      let options = { method: 'POST' }
+      const options = { method: 'POST' }
 
       if (isLogin) {
         options.headers = { 'Content-Type': 'application/json' }
@@ -72,8 +72,6 @@ function Auth() {
       if (response.ok) {
         const data = await response.json()
         if (data.token) {
-          localStorage.setItem('token', data.token)
-          localStorage.setItem('user', JSON.stringify(data.user))
           const user = {
             _id: data.user._id,
             id: data.user._id,
@@ -87,6 +85,7 @@ function Auth() {
             joinedEventIds: [],
             interests: [],
           }
+          localStorage.setItem('token', data.token)
           localStorage.setItem('user', JSON.stringify(user))
           setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null })
           const redirectPath = user.role === 'organizer' ? '/organizer-dashboard' : (user.role === 'admin' ? '/admin' : '/dashboard')
@@ -99,7 +98,6 @@ function Auth() {
         const errorData = await response.json()
         setError(errorData.message || 'Authentication failed')
       }
-
     } catch (err) {
       setError('Authentication failed. Please try again.')
       console.error('Auth error:', err)
@@ -116,20 +114,24 @@ function Auth() {
         <div className="tabs">
           <button
             className={`tab ${isLogin ? 'active' : ''}`}
+            type="button"
             onClick={() => {
               setIsLogin(true)
-              setFormData({ name: '', email: '', password: '', role: 'volunteer' })
               setError('')
+              setSuccess('')
+              setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null })
             }}
           >
             Login
           </button>
           <button
             className={`tab ${!isLogin ? 'active' : ''}`}
+            type="button"
             onClick={() => {
               setIsLogin(false)
-              setFormData({ name: '', email: '', password: '', role: 'volunteer' })
               setError('')
+              setSuccess('')
+              setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null })
             }}
           >
             Register
@@ -193,6 +195,7 @@ function Auth() {
               />
             </div>
           )}
+
           <div className="form-group">
             <label htmlFor="password">Password</label>
             <input
@@ -206,24 +209,31 @@ function Auth() {
           </div>
 
           <button type="submit" className="btn-primary" disabled={loading}>
-            {loading ? 'Processing...' : isLogin ? 'Login' : 'Create Account'}
+            {loading
+              ? 'Processing...'
+              : isLogin
+                ? 'Login'
+                : 'Create Account'}
           </button>
         </form>
 
-        <p className="auth-footer">
-          {isLogin ? "Don't have an account? " : 'Already have an account? '}
-          <button
-            type="button"
-            className="link-btn"
-            onClick={() => {
-              setIsLogin(!isLogin)
-              setFormData({ name: '', email: '', password: '', role: 'volunteer' })
-              setError('')
-            }}
-          >
-            {isLogin ? 'Register' : 'Login'}
-          </button>
-        </p>
+        <div className="auth-footer">
+          <p>
+            {isLogin ? "Don't have an account? " : 'Already have an account? '}
+            <button
+              type="button"
+              className="link-btn"
+              onClick={() => {
+                setIsLogin(!isLogin)
+                setError('')
+                setSuccess('')
+                setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null })
+              }}
+            >
+              {isLogin ? 'Register' : 'Login'}
+            </button>
+          </p>
+        </div>
       </div>
     </div>
   )
