@@ -21,6 +21,13 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+const EMAIL_FORMAT_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
+
+function getNormalizedEmail(email) {
+  const normalizedEmail = (email || "").trim().toLowerCase();
+  if (!EMAIL_FORMAT_REGEX.test(normalizedEmail)) return null;
+  return normalizedEmail;
+}
 
 async function sendMail(to, subject, html, text) {
   const nodemailer = require("nodemailer");
@@ -74,8 +81,10 @@ router.post("/register", upload.single('permissionSlip'), async (req, res, next)
   try {
     const { name, email, password, city, role } = req.body;
     if (!email || !password) return res.status(400).json({ message: "email/password required" });
+    const normalizedEmail = getNormalizedEmail(email);
+    if (!normalizedEmail) return res.status(400).json({ message: "Invalid email format" });
 
-    const exists = await User.findOne({ email: email.toLowerCase() });
+    const exists = await User.findOne({ email: normalizedEmail });
     if (exists) return res.status(409).json({ message: "Email already exists" });
 
     const normalizedRole = role === "organizer" ? "organizer" : "volunteer";
@@ -90,7 +99,7 @@ router.post("/register", upload.single('permissionSlip'), async (req, res, next)
 
     const user = await User.create({
       name: name || "Volunteer",
-      email: email.toLowerCase(),
+      email: normalizedEmail,
       passwordHash,
       role: normalizedRole,
       city: city || "Hyderabad",
@@ -142,7 +151,9 @@ router.post("/login", async (req, res, next) => {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: "email/password required" });
 
-    const user = await User.findOne({ email: email.toLowerCase() });
+    const normalizedEmail = getNormalizedEmail(email);
+    if (!normalizedEmail) return res.status(400).json({ message: "Invalid email format" });
+    const user = await User.findOne({ email: normalizedEmail });
     if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
     const ok = await bcrypt.compare(password, user.passwordHash);
