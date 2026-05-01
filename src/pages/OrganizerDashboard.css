@@ -1420,6 +1420,37 @@
   font-size: 12px;
 }
 
+.organizer-permission-help {
+  margin-top: 10px;
+  border: 1px solid #bfdbfe;
+  background: #eff6ff;
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.organizer-permission-help h4 {
+  margin: 0 0 6px;
+  color: #1e3a8a;
+  font-size: 14px;
+}
+
+.organizer-permission-help p {
+  margin: 0 0 6px;
+  font-size: 13px;
+  color: #1f2937;
+}
+
+.organizer-permission-help ul {
+  margin: 0 0 0 20px;
+  padding: 0;
+}
+
+.organizer-permission-help li {
+  margin-bottom: 4px;
+  font-size: 13px;
+  color: #1f2937;
+}
+
 .organizer-conflict-alert {
   margin-top: 10px;
   border-radius: 8px;

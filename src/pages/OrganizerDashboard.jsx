@@ -590,6 +590,16 @@ function OrganizerDashboard() {
             </div>
             <textarea name="description" value={eventForm.description} onChange={handleEventFormChange} placeholder="Description" required />
             <textarea name="address" value={eventForm.address} onChange={handleEventFormChange} placeholder="Address" required />
+            <div className="organizer-permission-help">
+              <h4>Event permission slip guidance</h4>
+              <p>This event will require admin review and approval before it can be published to volunteers.</p>
+              <p>Please include the following details in your event permission slip PDF:</p>
+              <ul>
+                <li>When the event is conducted: start date, end date, and timing.</li>
+                <li>Where the event is conducted: location and full address.</li>
+                <li>How the event is conducted: activity plan, expected process, and organizer contact responsibility.</li>
+              </ul>
+            </div>
             <input type="file" accept="application/pdf" onChange={handleEventFileChange} />
             {eventForm.permissionPdf && <span className="file-name">Selected: {eventForm.permissionPdf.name}</span>}
 
