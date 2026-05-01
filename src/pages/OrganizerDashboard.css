@@ -996,8 +996,10 @@
   background: white;
   border-radius: 8px;
   padding: 24px;
-  max-width: 400px;
-  width: 90%;
+  max-width: min(780px, 95vw);
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
   box-shadow: 0 16px 36px rgba(0, 0, 0, 0.15);
 }
 
