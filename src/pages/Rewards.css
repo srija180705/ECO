@@ -169,3 +169,119 @@
 .reward-hint--muted {
   color: #6b7280;
 }
+
+.rewards-stats-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin: -8px 0 20px;
+}
+
+.rewards-stat {
+  flex: 1;
+  min-width: 140px;
+  padding: 12px 14px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #f0fdf4 0%, #ecfdf5 100%);
+  border: 1px solid #bbf7d0;
+}
+
+.rewards-stat-label {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #047857;
+  font-weight: 600;
+}
+
+.rewards-stat-value {
+  display: block;
+  margin-top: 4px;
+  font-size: 20px;
+  color: #065f46;
+}
+
+.rewards-stat--badges .rewards-stat-value {
+  color: #5b21b6;
+}
+
+.rewards-stat--badges {
+  background: linear-gradient(135deg, #f5f3ff 0%, #ede9fe 100%);
+  border-color: #c4b5fd;
+}
+
+.rewards-stat--badges .rewards-stat-label {
+  color: #6d28d9;
+}
+
+.rewards-code {
+  font-size: 13px;
+  background: #f3f4f6;
+  padding: 2px 6px;
+  border-radius: 6px;
+}
+
+.reward-emoji {
+  font-size: 32px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+
+.reward-card-headings {
+  flex: 1;
+  min-width: 0;
+}
+
+.reward-requirement {
+  margin: 4px 0 0;
+  font-size: 12px;
+  font-weight: 600;
+  color: #059669;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.reward-card--unlocked {
+  border-color: #a78bfa;
+  background: linear-gradient(145deg, #faf5ff 0%, #ffffff 55%);
+}
+
+.reward-card--unlocked::before {
+  background: linear-gradient(180deg, #8b5cf6, #6366f1);
+}
+
+.reward-progress-wrap {
+  margin-top: 14px;
+}
+
+.reward-progress-bar {
+  height: 8px;
+  border-radius: 999px;
+  background: #e5e7eb;
+  overflow: hidden;
+}
+
+.reward-progress-fill {
+  height: 100%;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #10b981, #34d399);
+  transition: width 0.35s ease;
+}
+
+.reward-progress-text {
+  margin: 6px 0 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+.reward-unlocked-pill {
+  margin: 14px 0 0;
+  padding: 8px 12px;
+  border-radius: 10px;
+  background: #ede9fe;
+  color: #5b21b6;
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}

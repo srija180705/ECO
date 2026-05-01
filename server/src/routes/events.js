@@ -6,6 +6,7 @@ const { auth, adminAuth } = require("../middleware/auth");
 const Event = require("../models/Event");
 const User = require("../models/User");
 const Application = require("../models/Application");
+const { syncAchievementBadges } = require("../lib/achievementSync");
 
 const uploadPath = path.join(__dirname, '..', '..', 'uploads');
 fs.mkdirSync(uploadPath, { recursive: true });
@@ -301,10 +302,18 @@ router.post("/:id/attend", auth, async (req, res, next) => {
     const event = await Event.findById(req.params.id);
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const eventEnd = event.endDateISO ? new Date(`${event.endDateISO}T23:59:59`) : null;
-    if (!eventEnd || eventEnd >= today) {
+    const eventEndDate = event.endDateISO ? new Date(event.endDateISO) : null;
+    if (eventEndDate && !Number.isNaN(eventEndDate.getTime())) {
+      const hourRaw = Number(event.endHour);
+      const hour = Number.isFinite(hourRaw) ? Math.min(Math.max(Math.floor(hourRaw), 1), 24) : 23;
+      if (hour >= 24) {
+        eventEndDate.setHours(23, 59, 59, 999);
+      } else {
+        eventEndDate.setHours(hour, 0, 0, 0);
+      }
+    }
+
+    if (!eventEndDate || Number.isNaN(eventEndDate.getTime()) || eventEndDate > new Date()) {
       return res.status(400).json({ message: "Attendance can only be marked after the event has ended." });
     }
 
@@ -316,8 +325,8 @@ router.post("/:id/attend", auth, async (req, res, next) => {
       return res.status(400).json({ message: "You must join this event before marking attendance." });
     }
 
-    if (application.status !== "approved") {
-      return res.status(400).json({ message: "Attendance can only be recorded for approved volunteers." });
+    if (application.status === "withdrawn" || application.status === "rejected") {
+      return res.status(400).json({ message: "This registration is not eligible for attendance marking." });
     }
 
     if (application.attended) {
@@ -334,12 +343,16 @@ router.post("/:id/attend", auth, async (req, res, next) => {
     user.points = Number(user.points || 0) + pointsToAdd;
     await user.save();
 
+    await syncAchievementBadges(user._id);
+    const fresh = await User.findById(user._id).select("points attendedEvents badges");
+
     res.json({
       message: `Attendance recorded for ${event.title}.`,
       eventId: String(event._id),
       attended: true,
-      points: user.points,
-      attendedEvents: user.attendedEvents,
+      points: fresh.points,
+      attendedEvents: fresh.attendedEvents,
+      badges: fresh.badges,
     });
   } catch (error) {
     next(error);

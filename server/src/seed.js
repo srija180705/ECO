@@ -203,7 +203,7 @@ async function seedDatabase() {
           role: "admin",
           city: "Hyderabad",
           points: 0,
-          badges: ["b1"],
+          badges: [],
           interests: []
         });
         console.log(`[SEED] Created admin user: ${admin.email}`);

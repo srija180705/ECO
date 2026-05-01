@@ -258,20 +258,6 @@ function OrganizerDashboard() {
     setActionStatus(publish ? 'Event posted to the volunteer dashboard.' : 'Event removed from the volunteer dashboard.')
   }
 
-  async function updateApplicationStatus(appId, status) {
-    const res = await apiFetch(`/api/organizer/application/${appId}/status`, {
-      method: 'PATCH',
-      headers,
-      body: JSON.stringify({ status }),
-    })
-    if (!res.ok) {
-      setError('Could not update application status')
-      return
-    }
-    if (selectedEvent?._id) await fetchApplications(selectedEvent._id)
-    await fetchDashboard()
-  }
-
   async function sendAnnouncement() {
     if (!announcementMessage.trim()) return
     const res = await apiFetch('/api/organizer/communications/announcement', {

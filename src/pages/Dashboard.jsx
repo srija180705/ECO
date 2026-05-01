@@ -1,4 +1,4 @@
-﻿import { useState, useMemo, useEffect } from 'react';
+﻿import { useState, useMemo, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 import { apiFetch } from '../api.js';
@@ -44,19 +44,6 @@ function normalizeEvent(event) {
   };
 }
 
-function mergeEvents(primaryEvents, fallbackEvents) {
-  const normalizedPrimary = Array.isArray(primaryEvents) && primaryEvents.length > 0
-    ? primaryEvents.map(normalizeEvent)
-    : [];
-  const normalizedFallback = Array.isArray(fallbackEvents) ? fallbackEvents.map(normalizeEvent) : [];
-  const eventsToUse = normalizedPrimary.length > 0 ? normalizedPrimary : normalizedFallback;
-  const byId = new Map();
-  eventsToUse.forEach((event) => {
-    byId.set(event.id, event);
-  });
-  return Array.from(byId.values());
-}
-
 function parseDateOnly(iso) {
   if (!iso) return null;
   const [year, month, day] = iso.split('-').map(Number);
@@ -74,6 +61,20 @@ function getEventDateRange(event) {
   const start = parseDateOnly(event.startDateISO || event.dateISO);
   const end = parseDateOnly(event.endDateISO || event.dateISO || event.startDateISO);
   return { start, end };
+}
+
+function getEventEndDateTime(event) {
+  const { end } = getEventDateRange(event);
+  if (!end) return null;
+  const hourRaw = Number(event.endHour);
+  const hour = Number.isFinite(hourRaw) ? Math.min(Math.max(Math.floor(hourRaw), 1), 24) : 23;
+  const endDateTime = new Date(end);
+  if (hour >= 24) {
+    endDateTime.setHours(23, 59, 59, 999);
+  } else {
+    endDateTime.setHours(hour, 0, 0, 0);
+  }
+  return endDateTime;
 }
 
 function getEventTiming(event) {
@@ -151,6 +152,16 @@ function Dashboard() {
       /* noop */
     }
   };
+
+  const handleAchievementBadges = useCallback((badges) => {
+    setUser((prev) => (prev ? { ...prev, badges } : prev));
+    try {
+      const cur = JSON.parse(localStorage.getItem('user') || '{}');
+      localStorage.setItem('user', JSON.stringify({ ...cur, badges }));
+    } catch {
+      /* noop */
+    }
+  }, []);
 
   const loadEventMeta = async () => {
     const token = localStorage.getItem('token');
@@ -367,11 +378,11 @@ function Dashboard() {
     const event = events.find(e => e.id === eventId || String(e._id) === String(eventId));
     if (!event) return;
 
-    const { end } = getEventDateRange(event);
-    const today = startOfToday();
+    const endDateTime = getEventEndDateTime(event);
+    const now = new Date();
 
-    if (!end || end >= today) {
-      alert(`❌ You can only mark this event as attended after ${end ? end.toDateString() : 'the event ends'}!`);
+    if (!endDateTime || endDateTime > now) {
+      alert(`❌ You can only mark this event as attended after ${endDateTime ? endDateTime.toLocaleString() : 'the event ends'}!`);
       return;
     }
 
@@ -393,14 +404,21 @@ function Dashboard() {
         return;
       }
 
+      const data = await response.json().catch(() => ({}));
       const points = event.points || 0;
       setAttendedEvents([...attendedEvents, eventId]);
-      setTotalPoints(totalPoints + points);
+      const nextPoints =
+        typeof data.points === 'number' ? data.points : totalPoints + points;
+      setTotalPoints(nextPoints);
       setUser((prev) => prev ? {
         ...prev,
         attendedEvents: [...(prev.attendedEvents || []), eventId],
-        points: (Number(prev.points) || 0) + points,
+        points: nextPoints,
+        ...(Array.isArray(data.badges) ? { badges: data.badges } : {}),
       } : prev);
+      if (Array.isArray(data.badges)) {
+        syncUserLocal({ badges: data.badges, points: nextPoints, attendedEvents: [...attendedEvents, eventId] });
+      }
       alert(`✓ Attendance confirmed! You earned ${points} points!`);
     } catch {
       alert('Unable to mark attendance. Please try again.');
@@ -618,7 +636,8 @@ function Dashboard() {
           <Rewards
             userId={user?._id ? String(user._id) : null}
             userPoints={totalPoints}
-            onPointsUpdated={setTotalPoints}
+            attendedCount={Array.isArray(attendedEvents) ? attendedEvents.length : 0}
+            onBadgesUpdated={handleAchievementBadges}
           />
         ) : activeTab === 'dashboard' ? (
           <>
@@ -814,8 +833,8 @@ function Dashboard() {
                 <h2>My Registered Events</h2>
                 <div className="events-grid">
                   {registeredEventsData.map(event => {
-                    const { end } = getEventDateRange(event);
-                    const isPastEvent = end ? end < startOfToday() : false;
+                    const endDateTime = getEventEndDateTime(event);
+                    const isPastEvent = endDateTime ? endDateTime <= new Date() : false;
 
                     return (
                       <div className="event-card registered" key={event.id}>

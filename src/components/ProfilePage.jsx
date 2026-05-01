@@ -193,18 +193,6 @@ const ProfilePage = () => {
           )}
         </div>
 
-        {/* Profile Summary */}
-        <div className="profile-highlights">
-          <div className="highlight-card">
-            <h3>Points</h3>
-            <p>{profile.points || '0'} pts</p>
-          </div>
-          <div className="highlight-card">
-            <h3>Rewards</h3>
-            <p>{profile.badges || 'No badges earned yet'}</p>
-          </div>
-        </div>
-
         {/* Profile Fields */}
         <div className="profile-container">
           {[

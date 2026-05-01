@@ -1,6 +1,7 @@
 const express = require("express");
 const { auth } = require("../middleware/auth");
 const User = require("../models/User");
+const { syncAchievementBadges } = require("../lib/achievementSync");
 
 const router = express.Router();
 
@@ -54,8 +55,10 @@ router.patch("/:id", auth, async (req, res, next) => {
       const p = Number(points);
       if (Number.isFinite(p) && p >= 0) patch.points = Math.floor(p);
     }
-    const user = await User.findByIdAndUpdate(req.params.id, patch, { new: true }).select("-passwordHash");
-
+    await User.findByIdAndUpdate(req.params.id, patch, { new: true });
+    await syncAchievementBadges(req.params.id);
+    const user = await User.findById(req.params.id).select("-passwordHash");
+    if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (error) {
     next(error);

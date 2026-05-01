@@ -12,6 +12,22 @@ const grievanceRoutes = require("./routes/grievances");
 const organizerRoutes = require("./routes/organizer");
 const rewardRoutes = require("./routes/rewards");
 const postRoutes = require("./routes/posts");
+const Reward = require("./models/Reward");
+const { SEED_ACHIEVEMENTS } = require("./lib/achievementDefinitions");
+
+async function ensureAchievementsOnBoot() {
+  try {
+    const withBadgeId = await Reward.countDocuments({
+      badgeId: { $exists: true, $nin: [null, ""] },
+    });
+    if (withBadgeId > 0) return;
+    await rewardRoutes.purgeLegacyRewards();
+    await rewardRoutes.upsertAchievementSeeds(SEED_ACHIEVEMENTS);
+    console.log("[API] Seeded default achievement badges (migrated legacy catalog if needed)");
+  } catch (e) {
+    console.warn("[API] Achievement auto-seed skipped:", e.message);
+  }
+}
 
 // Validate required environment variables
 const requiredEnvVars = ["JWT_SECRET", "MONGODB_URI"];
@@ -72,6 +88,7 @@ const PORT = process.env.PORT || 4000;
 (async () => {
   try {
     await connectDB(process.env.MONGODB_URI);
+    await ensureAchievementsOnBoot();
     app.listen(PORT, '0.0.0.0', () => console.log(`[API] running on http://0.0.0.0:${PORT}`));
   } catch (error) {
     console.error("[ERROR] Failed to start server:", error);

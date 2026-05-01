@@ -95,7 +95,7 @@ router.post("/register", upload.single('permissionSlip'), async (req, res, next)
       role: normalizedRole,
       city: city || "Hyderabad",
       points: 0,
-      badges: ["b1"],
+      badges: [],
       interests: [],
       isVerified: isOrganizerRequest ? false : true,
       permissionSlipUrl
