@@ -86,19 +86,17 @@ function Auth() {
       setLoading(true)
 
       const endpoint = isLogin ? '/api/auth/login' : '/api/auth/register'
-      const options = { method: 'POST' }
-
-      if (isLogin) {
-        options.headers = { 'Content-Type': 'application/json' }
-        options.body = JSON.stringify({ email: formData.email, password: formData.password })
-      } else {
-        const formPayload = new FormData()
-        formPayload.append('name', formData.name)
-        formPayload.append('email', formData.email)
-        formPayload.append('password', formData.password)
-        formPayload.append('role', formData.role)
-        options.body = formPayload
+      const options = {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
       }
+
+      options.body = JSON.stringify({
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        role: formData.role
+      })
 
       const response = await apiFetch(endpoint, options)
 
