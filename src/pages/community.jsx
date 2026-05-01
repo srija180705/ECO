@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { MessageSquarePlus, ThumbsUp, Send, Image as ImageIcon, X, Trash2 } from "lucide-react";
-import { apiFetch } from '../api';
+import { MessageSquarePlus, ThumbsUp, Send, Image as ImageIcon, X, Trash2, Pencil } from "lucide-react";
+import { apiFetch, API_BASE } from '../api';
+import { io } from 'socket.io-client';
 import './community.css';
 const API_URL = '/api/posts';
 
@@ -56,6 +57,19 @@ const api = {
     });
     if (!res.ok) throw new Error("Failed to delete post");
     return res.json();
+  },
+  updatePost: async (postId, content) => {
+    const token = localStorage.getItem('token');
+    const res = await apiFetch(`${API_URL}/${postId}`, {
+      method: 'PATCH',
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify({ content }),
+    });
+    if (!res.ok) throw new Error("Failed to edit post");
+    return res.json();
   }
 };
 
@@ -90,6 +104,8 @@ export default function Community() {
   const [loading, setLoading] = useState(true);
   const [err, setErr] = useState("");
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
+  const [editingPostId, setEditingPostId] = useState(null);
+  const [editingText, setEditingText] = useState("");
 
   async function load() {
     setLoading(true);
@@ -106,6 +122,43 @@ export default function Community() {
 
   useEffect(() => {
     load();
+  }, []);
+
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (!token) return undefined;
+
+    const socketUrl = API_BASE || window.location.origin;
+    const socket = io(socketUrl, {
+      auth: { token },
+      withCredentials: true,
+      transports: ['websocket', 'polling'],
+    });
+
+    socket.on('community:post_created', (post) => {
+      setPosts((prev) => {
+        if (prev.some((item) => String(item._id) === String(post._id))) return prev;
+        return [post, ...prev];
+      });
+    });
+
+    socket.on('community:post_updated', (post) => {
+      setPosts((prev) =>
+        prev.map((item) => (String(item._id) === String(post._id) ? post : item))
+      );
+    });
+
+    socket.on('community:post_deleted', ({ _id }) => {
+      setPosts((prev) => prev.filter((item) => String(item._id) !== String(_id)));
+    });
+
+    socket.on('connect_error', (error) => {
+      console.warn('Community realtime connection failed:', error.message);
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, []);
 
   const canPost = useMemo(() => text.trim().length > 0 || imageFile !== null, [text, imageFile]);
@@ -174,8 +227,9 @@ export default function Community() {
   }
 
   function isPostOwner(post) {
-    if (!me?._id) return false;
-    return String(post.userId?._id || post.userId) === String(me._id);
+    const myId = me?._id || me?.id;
+    if (!myId) return false;
+    return String(post.userId?._id || post.userId) === String(myId);
   }
 
   async function handleDelete(postId) {
@@ -187,6 +241,34 @@ export default function Community() {
     } catch (error) {
       console.error("Failed to delete post:", error);
       setErr(error?.message || "Failed to delete post");
+    }
+  }
+
+  function startEdit(post) {
+    setEditingPostId(post._id || post.id);
+    setEditingText(post.content || "");
+  }
+
+  function cancelEdit() {
+    setEditingPostId(null);
+    setEditingText("");
+  }
+
+  async function saveEdit(postId) {
+    const nextContent = editingText.trim();
+    if (!nextContent) {
+      setErr("Post content cannot be empty");
+      return;
+    }
+    try {
+      const updatedPost = await api.updatePost(postId, nextContent);
+      setPosts((prev) =>
+        prev.map((item) => (String(item._id || item.id) === String(postId) ? updatedPost : item))
+      );
+      cancelEdit();
+      setErr("");
+    } catch (error) {
+      setErr(error?.message || "Failed to edit post");
     }
   }
 
@@ -373,33 +455,71 @@ export default function Community() {
                 </div>
 
                 {isPostOwner(p) && (
-                  <button
-                    type="button"
-                    onClick={() => handleDelete(p._id || p.id)}
-                    style={{
-                      background: "transparent",
-                      border: "1px solid rgba(185, 28, 28, 0.2)",
-                      borderRadius: "8px",
-                      padding: "6px 10px",
-                      cursor: "pointer",
-                      color: "#b91c1c",
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "6px",
-                      fontSize: "14px",
-                      fontWeight: 600
-                    }}
-                    title="Delete post"
-                  >
-                    <Trash2 size={14} />
-                    Delete
-                  </button>
+                  <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
+                    <button
+                      type="button"
+                      onClick={() => startEdit(p)}
+                      style={{
+                        background: "transparent",
+                        border: "1px solid rgba(15, 23, 42, 0.2)",
+                        borderRadius: "8px",
+                        padding: "6px 10px",
+                        cursor: "pointer",
+                        color: "#334155",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontSize: "14px",
+                        fontWeight: 600
+                      }}
+                      title="Edit post"
+                    >
+                      <Pencil size={14} />
+                      Edit
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => handleDelete(p._id || p.id)}
+                      style={{
+                        background: "transparent",
+                        border: "1px solid rgba(185, 28, 28, 0.2)",
+                        borderRadius: "8px",
+                        padding: "6px 10px",
+                        cursor: "pointer",
+                        color: "#b91c1c",
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "6px",
+                        fontSize: "14px",
+                        fontWeight: 600
+                      }}
+                      title="Delete post"
+                    >
+                      <Trash2 size={14} />
+                      Delete
+                    </button>
+                  </div>
                 )}
               </div>
 
-              <div style={{ marginTop: 12, fontSize: 16, lineHeight: 1.5 }}>
-                {p.content}
-              </div>
+              {String(editingPostId) === String(p._id || p.id) ? (
+                <div style={{ marginTop: 12 }}>
+                  <textarea
+                    className="textarea"
+                    value={editingText}
+                    onChange={(e) => setEditingText(e.target.value)}
+                    rows={3}
+                  />
+                  <div style={{ marginTop: 8, display: "flex", gap: 8 }}>
+                    <button type="button" className="primaryBtn smallBtn" onClick={() => saveEdit(p._id || p.id)}>Save</button>
+                    <button type="button" className="pillBtn" onClick={cancelEdit}>Cancel</button>
+                  </div>
+                </div>
+              ) : (
+                <div style={{ marginTop: 12, fontSize: 16, lineHeight: 1.5 }}>
+                  {p.content}
+                </div>
+              )}
 
               {p.imageUrl && (
                 <div style={{ marginTop: 12 }}>

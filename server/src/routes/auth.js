@@ -1,26 +1,12 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const multer = require("multer");
-const path = require("path");
-const fs = require("fs");
+const crypto = require("crypto");
 const User = require("../models/User");
 const { adminAuth } = require("../middleware/auth");
 
 const router = express.Router();
 
-const uploadPath = path.join(__dirname, '..', '..', 'uploads');
-fs.mkdirSync(uploadPath, { recursive: true });
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, uploadPath),
-  filename: (req, file, cb) => {
-    const uniqueName = `${Date.now()}-${file.originalname.replace(/\s+/g, '-')}`;
-    cb(null, uniqueName);
-  }
-});
-
-const upload = multer({ storage });
 const EMAIL_FORMAT_REGEX = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
 function getNormalizedEmail(email) {
@@ -77,7 +63,7 @@ async function notifyOrganizer(user, subject, message) {
   await sendMail(user.email, subject, `<p>${message}</p>`, message);
 }
 
-router.post("/register", upload.single('permissionSlip'), async (req, res, next) => {
+router.post("/register", async (req, res, next) => {
   try {
     const { name, email, password, city, role } = req.body;
     if (!email || !password) return res.status(400).json({ message: "email/password required" });
@@ -88,13 +74,6 @@ router.post("/register", upload.single('permissionSlip'), async (req, res, next)
     if (exists) return res.status(409).json({ message: "Email already exists" });
 
     const normalizedRole = role === "organizer" ? "organizer" : "volunteer";
-    const isOrganizerRequest = normalizedRole === "organizer";
-
-    if (isOrganizerRequest && !req.file) {
-      return res.status(400).json({ message: 'Organizer registration requires a permission slip upload.' });
-    }
-
-    const permissionSlipUrl = req.file ? `/uploads/${req.file.filename}` : null;
     const passwordHash = await bcrypt.hash(password, 10);
 
     const user = await User.create({
@@ -106,28 +85,9 @@ router.post("/register", upload.single('permissionSlip'), async (req, res, next)
       points: 0,
       badges: [],
       interests: [],
-      isVerified: isOrganizerRequest ? false : true,
-      permissionSlipUrl
+      isVerified: true,
+      permissionSlipUrl: null
     });
-
-    if (isOrganizerRequest) {
-      await notifyAdmins(
-        'New organizer approval request',
-        `A new organizer has registered with name ${user.name} and email ${user.email}. Please review their request and approve the account before they can sign in as an organizer.`
-      );
-      return res.status(201).json({
-        message: 'Your organizer request has been submitted. Admin approval is required before you can log in.',
-        user: {
-          _id: user._id,
-          name: user.name,
-          email: user.email,
-          role: 'organizer',
-          city: user.city,
-          isVerified: false,
-          permissionSlipUrl: user.permissionSlipUrl
-        }
-      });
-    }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
     res.json({ 
@@ -150,18 +110,14 @@ router.post("/login", async (req, res, next) => {
   try {
     const { email, password } = req.body;
     if (!email || !password) return res.status(400).json({ message: "email/password required" });
-
     const normalizedEmail = getNormalizedEmail(email);
     if (!normalizedEmail) return res.status(400).json({ message: "Invalid email format" });
+
     const user = await User.findOne({ email: normalizedEmail });
     if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
     const ok = await bcrypt.compare(password, user.passwordHash);
     if (!ok) return res.status(401).json({ message: "Invalid credentials" });
-
-    if (user.role === 'organizer' && user.isVerified === false) {
-      return res.status(403).json({ message: 'Organizer account pending admin approval. Please wait for approval before logging in.' });
-    }
 
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, { expiresIn: "7d" });
     res.json({ 
@@ -180,37 +136,63 @@ router.post("/login", async (req, res, next) => {
   }
 });
 
-router.post('/organizer/permission-slip', upload.single('permissionSlip'), async (req, res, next) => {
+router.post('/forgot-password', async (req, res, next) => {
   try {
-    const token = req.headers.authorization?.split(' ')[1];
-    if (!token) return res.status(401).json({ message: 'Authorization required' });
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: 'Email is required' });
+    const normalizedEmail = getNormalizedEmail(email);
+    if (!normalizedEmail) return res.status(400).json({ message: 'Invalid email format' });
 
-    const payload = jwt.verify(token, process.env.JWT_SECRET);
-    const user = await User.findById(payload.userId);
-    if (!user) return res.status(404).json({ message: 'User not found' });
-    if (user.role !== 'organizer') return res.status(403).json({ message: 'Only organizer accounts can upload permission slips' });
+    const user = await User.findOne({ email: normalizedEmail });
+    if (user) {
+      const token = crypto.randomBytes(32).toString('hex');
+      user.passwordResetToken = token;
+      user.passwordResetExpires = Date.now() + 3600000;
+      await user.save();
 
-    if (!req.file) return res.status(400).json({ message: 'Permission slip file is required' });
+      const frontendUrl = process.env.FRONTEND_URL || req.headers.origin || 'http://localhost:5173';
+      const resetUrl = `${frontendUrl}/reset-password?token=${token}&email=${encodeURIComponent(user.email)}`;
+      const subject = 'Eco Volunteer Match Password Reset Request';
+      const message = `You requested a password reset. Use the link below to set a new password:\n\n${resetUrl}\n\nThis link will expire in 1 hour. If you did not request a password reset, please ignore this email.`;
+      const htmlMessage = `You requested a password reset. Click the link below to set a new password:<br/><br/><a href="${resetUrl}">${resetUrl}</a><br/><br/>This link will expire in 1 hour. If you did not request a password reset, please ignore this email.`;
 
-    user.permissionSlipUrl = `/uploads/${req.file.filename}`;
-    user.isVerified = false;
-    await user.save();
+      await sendMail(user.email, subject, htmlMessage, message);
+    }
 
-    await notifyAdmins(
-      'Organizer permission slip received',
-      `Organizer ${user.name} (${user.email}) has uploaded a permission slip. Review the document and approve the account when ready.`
-    );
-
-    res.json({ message: 'Permission slip submitted. Admin will review your request.', permissionSlipUrl: user.permissionSlipUrl });
+    res.json({ message: 'If an account exists with that email, a reset link has been sent.' });
   } catch (error) {
     next(error);
   }
 });
 
-router.get('/admin/organizers/pending', adminAuth, async (req, res, next) => {
+router.post('/reset-password', async (req, res, next) => {
   try {
-    const pendingOrganizers = await User.find({ role: 'organizer', isVerified: false }).select('-passwordHash');
-    res.json(pendingOrganizers);
+    const { email, token, password } = req.body;
+    if (!email || !token || !password) return res.status(400).json({ message: 'Email, token, and password are required' });
+    const normalizedEmail = getNormalizedEmail(email);
+    if (!normalizedEmail) return res.status(400).json({ message: 'Invalid email format' });
+
+    const user = await User.findOne({ email: normalizedEmail, passwordResetToken: token });
+    if (!user || !user.passwordResetExpires || user.passwordResetExpires < Date.now()) {
+      return res.status(400).json({ message: 'Invalid or expired password reset token' });
+    }
+
+    user.passwordHash = await bcrypt.hash(password, 10);
+    user.passwordResetToken = undefined;
+    user.passwordResetExpires = undefined;
+    await user.save();
+
+    await sendMail(user.email, 'Password reset successful', '<p>Your password has been updated successfully.</p>', 'Your password has been updated successfully.');
+    res.json({ message: 'Password reset successful' });
+  } catch (error) {
+    next(error);
+  }
+});
+
+router.get('/admin/organizers', adminAuth, async (req, res, next) => {
+  try {
+    const organizers = await User.find({ role: 'organizer' }).select('-passwordHash').sort({ createdAt: -1 });
+    res.json(organizers);
   } catch (error) {
     next(error);
   }

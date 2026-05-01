@@ -3,20 +3,23 @@ const router = express.Router();
 const Post = require('../models/Post');
 const { auth } = require('../middleware/auth');
 
+function toPostResponse(postDoc) {
+    return {
+        _id: postDoc._id,
+        content: postDoc.content,
+        createdAtISO: postDoc.createdAt,
+        userId: postDoc.userId,
+        likes: postDoc.likes,
+        likedBy: postDoc.likedBy || [],
+        imageUrl: postDoc.imageUrl,
+    };
+}
+
 // Get all posts
 router.get('/', auth, async (req, res, next) => {
     try {
         const posts = await Post.find().populate('userId', 'name email').sort({ createdAt: -1 });
-        // Transform to match frontend expected format
-        const transformed = posts.map(p => ({
-            _id: p._id,
-            content: p.content,
-            createdAtISO: p.createdAt,
-            userId: p.userId,
-            likes: p.likes,
-            likedBy: p.likedBy || [],
-            imageUrl: p.imageUrl,
-        }));
+        const transformed = posts.map(toPostResponse);
         res.json(transformed);
     } catch (err) {
         next(err);
@@ -35,16 +38,14 @@ router.post('/', auth, async (req, res, next) => {
 
         await newPost.save();
         await newPost.populate('userId', 'name email');
+        const payload = toPostResponse(newPost);
 
-        res.status(201).json({
-            _id: newPost._id,
-            content: newPost.content,
-            createdAtISO: newPost.createdAt,
-            userId: newPost.userId,
-            likes: newPost.likes,
-            likedBy: newPost.likedBy || [],
-            imageUrl: newPost.imageUrl,
-        });
+        const io = req.app.get('io');
+        if (io) {
+            io.to('community').emit('community:post_created', payload);
+        }
+
+        res.status(201).json(payload);
     } catch (err) {
         next(err);
     }
@@ -71,16 +72,44 @@ router.post('/:id/like', auth, async (req, res, next) => {
 
         await post.save();
         await post.populate('userId', 'name email');
+        const payload = toPostResponse(post);
 
-        res.json({
-            _id: post._id,
-            content: post.content,
-            createdAtISO: post.createdAt,
-            userId: post.userId,
-            likes: post.likes,
-            likedBy: post.likedBy || [],
-            imageUrl: post.imageUrl,
-        });
+        const io = req.app.get('io');
+        if (io) {
+            io.to('community').emit('community:post_updated', payload);
+        }
+
+        res.json(payload);
+    } catch (err) {
+        next(err);
+    }
+});
+
+// Edit post (owner only)
+router.patch('/:id', auth, async (req, res, next) => {
+    try {
+        const { content } = req.body;
+        if (!content || !String(content).trim()) {
+            return res.status(400).json({ message: 'Post content is required' });
+        }
+
+        const post = await Post.findById(req.params.id);
+        if (!post) return res.status(404).json({ message: 'Post not found' });
+        if (post.userId.toString() !== req.user.userId) {
+            return res.status(403).json({ message: 'Not authorized to edit this post' });
+        }
+
+        post.content = String(content).trim();
+        await post.save();
+        await post.populate('userId', 'name email');
+        const payload = toPostResponse(post);
+
+        const io = req.app.get('io');
+        if (io) {
+            io.to('community').emit('community:post_updated', payload);
+        }
+
+        res.json(payload);
     } catch (err) {
         next(err);
     }
@@ -98,7 +127,14 @@ router.delete('/:id', auth, async (req, res, next) => {
             return res.status(403).json({ message: 'Not authorized to delete this post' });
         }
 
+        const postId = post._id.toString();
         await post.deleteOne();
+
+        const io = req.app.get('io');
+        if (io) {
+            io.to('community').emit('community:post_deleted', { _id: postId });
+        }
+
         res.json({ message: 'Post deleted successfully' });
     } catch (err) {
         next(err);

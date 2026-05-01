@@ -2,6 +2,9 @@ require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
 const path = require("path");
+const http = require("http");
+const jwt = require("jsonwebtoken");
+const { Server } = require("socket.io");
 const { connectDB } = require("./db");
 const { adminAuth } = require("./middleware/auth");
 
@@ -39,6 +42,32 @@ if (missing.length > 0) {
 }
 
 const app = express();
+const server = http.createServer(app);
+
+const io = new Server(server, {
+  cors: {
+    origin: true,
+    credentials: true,
+  },
+});
+
+io.use((socket, next) => {
+  try {
+    const token = socket.handshake.auth?.token;
+    if (!token) return next(new Error("Authentication token is required"));
+    const payload = jwt.verify(token, process.env.JWT_SECRET);
+    socket.user = payload;
+    next();
+  } catch (error) {
+    next(new Error("Invalid authentication token"));
+  }
+});
+
+io.on("connection", (socket) => {
+  socket.join("community");
+});
+
+app.set("io", io);
 
 app.use(express.json({
   limit: '50mb',
@@ -89,7 +118,7 @@ const PORT = process.env.PORT || 4000;
   try {
     await connectDB(process.env.MONGODB_URI);
     await ensureAchievementsOnBoot();
-    app.listen(PORT, '0.0.0.0', () => console.log(`[API] running on http://0.0.0.0:${PORT}`));
+    server.listen(PORT, "0.0.0.0", () => console.log(`[API] running on http://0.0.0.0:${PORT}`));
   } catch (error) {
     console.error("[ERROR] Failed to start server:", error);
     process.exit(1);

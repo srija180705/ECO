@@ -104,30 +104,12 @@ function Dashboard() {
   const [category, setCategory] = useState("all");
   const [activeTab, setActiveTab] = useState("dashboard");
   const [showNotifications, setShowNotifications] = useState(false);
-  const [createStatus, setCreateStatus] = useState('');
-  const [createError, setCreateError] = useState('');
-  const [eventForm, setEventForm] = useState({
-    title: '',
-    organizationName: '',
-    category: 'cleanup',
-    location: '',
-    address: '',
-    description: '',
-    startDateISO: '',
-    endDateISO: '',
-    startHour: 9,
-    endHour: 17,
-    points: 50,
-    permissionPdf: null,
-  });
 
   const [notifications, setNotifications] = useState([
     { id: 1, text: 'New event in your area: Beach Cleanup', time: '2 hours ago' },
     { id: 2, text: 'You earned 50 points!', time: '1 day ago' },
   ]);
   const [events, setEvents] = useState([]);
-  const [submittedEvents, setSubmittedEvents] = useState([]);
-  const [eventsMetaError, setEventsMetaError] = useState('');
   const [dashboardError, setDashboardError] = useState('');
 
   const [joinedEvents, setJoinedEvents] = useState(() => {
@@ -162,25 +144,6 @@ function Dashboard() {
       /* noop */
     }
   }, []);
-
-  const loadEventMeta = async () => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    try {
-      const mineRes = await apiFetch('/api/events/mine', { headers: { Authorization: `Bearer ${token}` } });
-
-      if (mineRes.ok) {
-        setSubmittedEvents(await mineRes.json());
-      }
-      if (!mineRes.ok) {
-        setEventsMetaError('Could not load event status data.');
-      } else {
-        setEventsMetaError('');
-      }
-    } catch {
-      setEventsMetaError('Could not load event status data.');
-    }
-  };
 
   const loadDashboardData = async () => {
     const token = localStorage.getItem('token');
@@ -217,11 +180,9 @@ function Dashboard() {
         setEvents([]);
       }
 
-      await loadEventMeta();
     } catch {
       setDashboardError('Unable to load dashboard data.');
       setEvents([]);
-      await loadEventMeta();
     }
   };
 
@@ -444,109 +405,6 @@ function Dashboard() {
     navigate('/map', { state: { fromAuth: true, user } });
   };
 
-  const handleEventChange = (e) => {
-    const { name, value } = e.target;
-    setEventForm((prev) => ({ ...prev, [name]: value }));
-    setCreateStatus('');
-    setCreateError('');
-  };
-
-  const handleFileChange = (e) => {
-    setEventForm((prev) => ({ ...prev, permissionPdf: e.target.files[0] || null }));
-    setCreateStatus('');
-    setCreateError('');
-  };
-
-  const handleCreateEvent = async (e) => {
-    e.preventDefault();
-    setCreateError('');
-    setCreateStatus('');
-
-    const token = localStorage.getItem('token');
-    if (!token) {
-      setCreateError('Login required to submit an event.');
-      return;
-    }
-
-    const formData = new FormData();
-    formData.append('title', eventForm.title);
-    formData.append('organizationName', eventForm.organizationName);
-    formData.append('category', eventForm.category);
-    formData.append('location', eventForm.location);
-    formData.append('address', eventForm.address);
-    formData.append('description', eventForm.description);
-    formData.append('startDateISO', eventForm.startDateISO);
-    formData.append('endDateISO', eventForm.endDateISO);
-    formData.append('startHour', eventForm.startHour);
-    formData.append('endHour', eventForm.endHour);
-    formData.append('points', eventForm.points);
-    if (eventForm.permissionPdf) {
-      formData.append('permissionPdf', eventForm.permissionPdf);
-    }
-
-    try {
-      const response = await apiFetch('/api/events', {
-        method: 'POST',
-        headers: { Authorization: `Bearer ${token}` },
-        body: formData,
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        setCreateError(errorData.message || 'Unable to submit event.');
-        return;
-      }
-
-      setCreateStatus('Event submitted successfully and is awaiting admin approval.');
-      setEventForm({
-        title: '',
-        organizationName: '',
-        category: 'cleanup',
-        location: '',
-        address: '',
-        description: '',
-        startDateISO: '',
-        endDateISO: '',
-        startHour: 9,
-        endHour: 17,
-        points: 50,
-        permissionPdf: null,
-      });
-      await loadEventMeta();
-    } catch (err) {
-      setCreateError(err.message || 'Unable to submit event.');
-    }
-  };
-
-  const handlePublishToggle = async (eventId, publish) => {
-    const token = localStorage.getItem('token');
-    if (!token) return;
-    try {
-      const response = await apiFetch(`/api/events/${eventId}/publish`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`
-        },
-        body: JSON.stringify({ publish })
-      });
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        setCreateError(errorData.message || 'Unable to update publish status.');
-        return;
-      }
-      await loadEventMeta();
-      setCreateStatus(publish ? 'Event posted to dashboard successfully.' : 'Event removed from dashboard.');
-    } catch {
-      setCreateError('Unable to update publish status.');
-    }
-  };
-
-  const statusLabel = (event) => {
-    if (event.approved) return 'approved';
-    return event.status || 'pending';
-  };
-
   return (
     <div className="dashboard-layout">
       <aside className="sidebar">
@@ -571,10 +429,6 @@ function Dashboard() {
             <button type="button" className={`nav-item ${activeTab === 'community' ? 'active' : ''}`} onClick={() => setActiveTab('community')}>
               <span className="nav-icon">👥</span>
               <span>Community</span>
-            </button>
-            <button type="button" className={`nav-item ${activeTab === 'create' ? 'active' : ''}`} onClick={() => setActiveTab('create')}>
-              <span className="nav-icon">📝</span>
-              <span>Create Event</span>
             </button>
             <button
               type="button"
@@ -898,125 +752,6 @@ function Dashboard() {
               </section>
             )}
           </>
-        ) : activeTab === 'create' ? (
-          <section className="create-event-section">
-            <header className="dashboard-header create-header">
-              <div className="header-title">
-                <h2>Submit a New Event</h2>
-                <p>Provide the event details and attach permission documentation for admin review.</p>
-              </div>
-            </header>
-
-            <div className="form-card">
-              <form className="create-event-form" onSubmit={handleCreateEvent}>
-                <div className="form-grid">
-                  <label>
-                    Event Title
-                    <input name="title" value={eventForm.title} onChange={handleEventChange} required />
-                  </label>
-                  <label>
-                    Organization Name
-                    <input name="organizationName" value={eventForm.organizationName} onChange={handleEventChange} required />
-                  </label>
-                  <label>
-                    Category
-                    <select name="category" value={eventForm.category} onChange={handleEventChange} required>
-                      <option value="cleanup">Cleanup</option>
-                      <option value="planting">Planting</option>
-                      <option value="recycling">Recycling</option>
-                      <option value="awareness">Awareness</option>
-                    </select>
-                  </label>
-                  <label>
-                    Location (Area Name, City, State)
-                    <input name="location" value={eventForm.location} onChange={handleEventChange} required />
-                  </label>
-                  <label className="full-width">
-                    Description
-                    <textarea name="description" value={eventForm.description} onChange={handleEventChange} rows="4" required />
-                  </label>
-                  <label>
-                    Start Date
-                    <input type="date" name="startDateISO" value={eventForm.startDateISO} onChange={handleEventChange} required />
-                  </label>
-                  <label>
-                    End Date
-                    <input type="date" name="endDateISO" value={eventForm.endDateISO} onChange={handleEventChange} required />
-                  </label>
-                  <label>
-                    Start Hour (1-24)
-                    <input type="number" name="startHour" value={eventForm.startHour} onChange={handleEventChange} min="1" max="24" required />
-                  </label>
-                  <label>
-                    End Hour (1-24)
-                    <input type="number" name="endHour" value={eventForm.endHour} onChange={handleEventChange} min="1" max="24" required />
-                  </label>
-                  <label>
-                    Points
-                    <input type="number" name="points" value={eventForm.points} onChange={handleEventChange} min="0" required />
-                  </label>
-                  <label className="full-width">
-                    Address
-                    <textarea name="address" value={eventForm.address} onChange={handleEventChange} rows="3" required />
-                  </label>
-                </div>
-
-                <div className="file-upload-card">
-                  <h3>Permission Document</h3>
-                  <p>Attach the PDF permission letter for the event.</p>
-                  <input type="file" accept="application/pdf" onChange={handleFileChange} className="file-input" />
-                  {eventForm.permissionPdf && <span className="file-name">Selected: {eventForm.permissionPdf.name}</span>}
-                </div>
-
-                {createError && <div className="feedback feedback-error">{createError}</div>}
-                {createStatus && <div className="feedback feedback-success">{createStatus}</div>}
-                {eventsMetaError && <div className="feedback feedback-error">{eventsMetaError}</div>}
-
-                <button className="primary-btn" type="submit">Submit for Approval</button>
-              </form>
-            </div>
-
-            <section className="registered-events">
-              <h2>My Submitted Events</h2>
-              {submittedEvents.length === 0 ? (
-                <div className="no-events">
-                  <p>You have not submitted any events yet.</p>
-                </div>
-              ) : (
-                <div className="events-grid">
-                  {submittedEvents.map((event) => (
-                    <div className="event-card" key={event._id}>
-                      <div className="event-card-header">
-                        <h3>{event.title}</h3>
-                        <span className="event-badge">{statusLabel(event)}</span>
-                      </div>
-                      <div className="event-details">
-                        <p>📅 {new Date(event.startDateISO).toDateString()} - {new Date(event.endDateISO).toDateString()}</p>
-                        <p>📍 {event.location}</p>
-                        <p>📣 {event.isPublished ? 'Published on dashboard' : 'Not posted to dashboard'}</p>
-                      </div>
-                      <div className="event-actions">
-                        <button
-                          className="join-btn"
-                          disabled={!event.approved || event.isPublished}
-                          onClick={() => handlePublishToggle(event._id, true)}
-                        >
-                          Post as Happening
-                        </button>
-                        <button
-                          className="cancel-btn"
-                          disabled={!event.isPublished}
-                          onClick={() => handlePublishToggle(event._id, false)}
-                        >
-                          Remove Post
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </section>
         ) : activeTab === 'community' ? (
           <Community />
         ) : (

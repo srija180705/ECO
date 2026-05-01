@@ -13,16 +13,14 @@ function Auth() {
     name: '',
     email: '',
     password: '',
-    role: 'volunteer',
-    permissionSlip: null,
-    organizerConsent: false
+    role: 'volunteer'
   })
 
   const handleChange = (e) => {
-    const { name, value, type, checked } = e.target
+    const { name, value } = e.target
     setFormData(prev => ({
       ...prev,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: value
     }))
     setError('')
     setSuccess('')
@@ -84,16 +82,6 @@ function Auth() {
       return
     }
 
-    if (!isLogin && formData.role === 'organizer' && !formData.permissionSlip) {
-      setError('Please upload the permission slip to register as an organizer')
-      return
-    }
-
-    if (!isLogin && formData.role === 'organizer' && !formData.organizerConsent) {
-      setError('Please confirm organizer responsibility terms before registering')
-      return
-    }
-
     try {
       setLoading(true)
 
@@ -109,9 +97,6 @@ function Auth() {
         formPayload.append('email', formData.email)
         formPayload.append('password', formData.password)
         formPayload.append('role', formData.role)
-        if (formData.role === 'organizer' && formData.permissionSlip) {
-          formPayload.append('permissionSlip', formData.permissionSlip)
-        }
         options.body = formPayload
       }
 
@@ -135,12 +120,12 @@ function Auth() {
           }
           localStorage.setItem('token', data.token)
           localStorage.setItem('user', JSON.stringify(user))
-          setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null, organizerConsent: false })
+          setFormData({ name: '', email: '', password: '', role: 'volunteer' })
           const redirectPath = user.role === 'organizer' ? '/organizer-dashboard' : (user.role === 'admin' ? '/admin' : '/dashboard')
           navigate(redirectPath, { state: { fromAuth: true, user } })
         } else {
-          setSuccess(data.message || 'Registration submitted. Please wait for admin approval.')
-          setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null, organizerConsent: false })
+          setSuccess(data.message || 'Registration successful.')
+          setFormData({ name: '', email: '', password: '', role: 'volunteer' })
         }
       } else {
         const errorData = await response.json()
@@ -170,7 +155,7 @@ function Auth() {
                   setForgotMode(false)
                   setError('')
                   setSuccess('')
-                  setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null, organizerConsent: false })
+                  setFormData({ name: '', email: '', password: '', role: 'volunteer' })
                 }}
               >
                 Login
@@ -183,7 +168,7 @@ function Auth() {
                   setForgotMode(false)
                   setError('')
                   setSuccess('')
-                  setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null, organizerConsent: false })
+                  setFormData({ name: '', email: '', password: '', role: 'volunteer' })
                 }}
               >
                 Register
@@ -240,36 +225,6 @@ function Auth() {
             />
           </div>
 
-          {!isLogin && !forgotMode && formData.role === 'organizer' && (
-            <div className="form-group auth-guidance-box">
-              <label htmlFor="permissionSlip">Permission Slip (PDF)</label>
-              <p className="auth-guidance-title">Include these details in the organizer permission slip:</p>
-              <ul className="auth-guidance-list">
-                <li>Aadhaar details (or equivalent government ID details).</li>
-                <li>Organization details, if you are representing an organization.</li>
-                <li>A declaration that all submitted details are true and legal.</li>
-                <li>An acceptance statement that you are responsible for your own actions in case of false or illegal activity.</li>
-              </ul>
-              <p className="auth-guidance-note">This document will be sent to admin for verification before organizer login is approved.</p>
-              <input
-                type="file"
-                id="permissionSlip"
-                name="permissionSlip"
-                accept="application/pdf"
-                onChange={(e) => setFormData((prev) => ({ ...prev, permissionSlip: e.target.files[0] || null }))}
-              />
-              <label className="auth-checkbox">
-                <input
-                  type="checkbox"
-                  name="organizerConsent"
-                  checked={formData.organizerConsent}
-                  onChange={handleChange}
-                />
-                <span>I confirm I have included the required details and agree to these organizer responsibility terms.</span>
-              </label>
-            </div>
-          )}
-
           {!forgotMode && (
             <div className="form-group">
               <label htmlFor="password">Password</label>
@@ -300,11 +255,6 @@ function Auth() {
                   : 'Create Account'}
           </button>
 
-          {!forgotMode && isLogin && (
-            <p className="auth-guidance-note auth-inline-note">
-              Organizer accounts can log in only after admin verifies their permission slip submission.
-            </p>
-          )}
         </form>
 
         <div className="auth-footer">
@@ -317,7 +267,7 @@ function Auth() {
                 setIsLogin(true)
                 setError('')
                 setSuccess('')
-                setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null, organizerConsent: false })
+                setFormData({ name: '', email: '', password: '', role: 'volunteer' })
               }}
             >
               Forgot password?
@@ -333,7 +283,7 @@ function Auth() {
                 setIsLogin(true)
                 setError('')
                 setSuccess('')
-                setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null, organizerConsent: false })
+                setFormData({ name: '', email: '', password: '', role: 'volunteer' })
               }}
             >
               Back to login
@@ -350,7 +300,7 @@ function Auth() {
                   setIsLogin(!isLogin)
                   setError('')
                   setSuccess('')
-                  setFormData({ name: '', email: '', password: '', role: 'volunteer', permissionSlip: null, organizerConsent: false })
+                  setFormData({ name: '', email: '', password: '', role: 'volunteer' })
                 }}
               >
                 {isLogin ? 'Register' : 'Login'}
