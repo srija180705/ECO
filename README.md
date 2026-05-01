@@ -2,36 +2,6 @@
 
 A full-stack demonstration of the Eco Volunteer Match application with integrated frontend and backend authentication.
 
-## 📋 Project Structure
-
-```
-demo-app/
-├── src/                      # Frontend (React + Vite)
-│   ├── pages/
-│   │   ├── Splash.jsx       # Loading screen (auto-navigates to auth)
-│   │   └── Auth.jsx         # Login & Register with backend integration
-│   ├── App.jsx              # Router setup
-│   ├── main.jsx             # React entry point
-│   ├── styles.css           # Global styling
-│   └── assets/
-├── server/                  # Backend (Node.js + Express)
-│   ├── src/
-│   │   ├── index.js         # Express server setup
-│   │   ├── db.js            # MongoDB connection
-│   │   ├── models/
-│   │   │   └── User.js      # User schema (stores registrations)
-│   │   ├── routes/
-│   │   │   ├── auth.js      # Register & Login endpoints
-│   │   │   └── users.js     # User profile endpoints
-│   │   └── middleware/
-│   │       └── auth.js      # JWT authentication
-│   ├── package.json
-│   └── .env                 # Environment variables
-├── index.html               # HTML entry
-├── package.json             # Frontend dependencies
-├── vite.config.js          # Vite configuration
-└── README.md               # This file
-```
 
 ## 🚀 Quick Start (2 Terminals)
 
