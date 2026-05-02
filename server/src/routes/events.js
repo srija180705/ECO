@@ -48,6 +48,7 @@ function enrichVolunteerEventPayload(doc) {
     time,
     volunteerCount,
     maxVolunteers,
+    postedByName: e.createdBy?.name || e.organizationName || "",
   };
 }
 
@@ -60,6 +61,7 @@ router.get("/", auth, async (req, res, next) => {
       endDateISO: { $gte: todayISO() },
     })
       .sort({ startDateISO: 1 })
+      .populate('createdBy', 'name')
       .lean();
 
     res.json(events.map(enrichVolunteerEventPayload));
@@ -117,7 +119,7 @@ router.get("/details", auth, async (req, res, next) => {
       return res.json([]);
     }
 
-    const events = await Event.find({ _id: { $in: requestedIds } }).lean();
+    const events = await Event.find({ _id: { $in: requestedIds } }).populate('createdBy', 'name').lean();
     res.json(events.map(enrichVolunteerEventPayload));
   } catch (error) {
     next(error);

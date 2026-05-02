@@ -86,6 +86,12 @@ function startOfToday() {
   return today;
 }
 
+function isPastEvent(event) {
+  const end = parseDateOnly(event.endDateISO || event.dateISO || event.startDateISO);
+  if (!end) return false;
+  return end < startOfToday();
+}
+
 function getEventDateRange(event) {
   const start = parseDateOnly(event.startDateISO || event.dateISO);
   const end = parseDateOnly(event.endDateISO || event.dateISO || event.startDateISO);
@@ -414,19 +420,21 @@ function Dashboard() {
 
   const registeredEventsData = useMemo(() => {
     return events
-      .filter((ev) => joinedEvents.includes(ev.id) && !attendedEvents.includes(ev.id))
+      .filter((ev) => joinedEvents.includes(ev.id) && (!attendedEvents.includes(ev.id) || !isPastEvent(ev)))
       .sort((a, b) => (a.startDateISO || '').localeCompare(b.startDateISO || ''));
   }, [events, joinedEvents, attendedEvents]);
 
   const attendedEventsData = useMemo(() => {
     const current = events.filter((ev) => attendedEvents.includes(ev.id));
     const allEvents = [...current, ...staleAttendedEvents];
-    return Array.from(new Map(allEvents.map((ev) => [ev.id, ev])).values()).sort((a, b) => {
-      if (a.startDateISO && b.startDateISO) return b.startDateISO.localeCompare(a.startDateISO);
-      if (a.startDateISO) return -1;
-      if (b.startDateISO) return 1;
-      return 0;
-    });
+    return Array.from(new Map(allEvents.map((ev) => [ev.id, ev])).values())
+      .filter((ev) => isPastEvent(ev))
+      .sort((a, b) => {
+        if (a.startDateISO && b.startDateISO) return b.startDateISO.localeCompare(a.startDateISO);
+        if (a.startDateISO) return -1;
+        if (b.startDateISO) return 1;
+        return 0;
+      });
   }, [events, attendedEvents, staleAttendedEvents]);
 
   const handleJoinEvent = async (eventId) => {
@@ -842,6 +850,9 @@ function Dashboard() {
                         {event.organizationName?.trim() ? (
                           <p className="event-org-name">🏢 {event.organizationName.trim()}</p>
                         ) : null}
+                        {event.postedByName ? (
+                          <p className="event-posted-by">📤 Posted by {event.postedByName}</p>
+                        ) : null}
                         <p>📅 {formatEventDate(event)}</p>
                         <p>
                           📍{' '}
@@ -857,12 +868,20 @@ function Dashboard() {
                         <p>📏 {event.distanceKm} km away</p>
                       </div>
                       <div className="event-actions">
-                        <span className="event-badge attended-badge" style={{ cursor: 'default' }}>
-                          ✓ Registered — waiting for the event
-                        </span>
-                        <button type="button" className="cancel-btn" onClick={() => handleUnjoinEvent(event.id)}>
-                          Cancel registration
-                        </button>
+                        {attendedEvents.includes(event.id) ? (
+                          <span className="event-badge attended-badge" style={{ cursor: 'default' }}>
+                            ✓ Marked attended
+                          </span>
+                        ) : (
+                          <>
+                            <span className="event-badge attended-badge" style={{ cursor: 'default' }}>
+                              ✓ Registered — waiting for the event
+                            </span>
+                            <button type="button" className="cancel-btn" onClick={() => handleUnjoinEvent(event.id)}>
+                              Cancel registration
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   ))}
@@ -891,6 +910,9 @@ function Dashboard() {
                       <div className="event-details">
                         {event.organizationName?.trim() ? (
                           <p className="event-org-name">🏢 {event.organizationName.trim()}</p>
+                        ) : null}
+                        {event.postedByName ? (
+                          <p className="event-posted-by">📤 Posted by {event.postedByName}</p>
                         ) : null}
                         <p>📅 {formatEventDate(event)}</p>
                         <p>
@@ -935,6 +957,9 @@ function Dashboard() {
                         {event.organizationName?.trim() ? (
                           <p className="event-org-name">🏢 {event.organizationName.trim()}</p>
                         ) : null}
+                        {event.postedByName ? (
+                          <p className="event-posted-by">📤 Posted by {event.postedByName}</p>
+                        ) : null}
                         <p>📅 {formatEventDate(event)}</p>
                         <p>
                           📍{' '}
@@ -973,6 +998,9 @@ function Dashboard() {
                       <div className="event-details">
                         {event.organizationName?.trim() ? (
                           <p className="event-org-name">🏢 {event.organizationName.trim()}</p>
+                        ) : null}
+                        {event.postedByName ? (
+                          <p className="event-posted-by">📤 Posted by {event.postedByName}</p>
                         ) : null}
                         <p>📅 {formatEventDate(event)}</p>
                         <p>
