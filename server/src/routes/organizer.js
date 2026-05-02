@@ -365,6 +365,10 @@ router.patch("/events/:eventId/confirm-attendance", async (req, res, next) => {
     const event = await Event.findOne(organizerEventQuery(req.organizer._id, { _id: req.params.eventId }));
     if (!event) return res.status(404).json({ message: "Event not found" });
 
+    if (!event.isPublished) {
+      return res.status(400).json({ message: "Cannot confirm attendance for an event that is not posted to volunteers." });
+    }
+
     const outcome = await confirmAttendanceByOrganizer(event, volunteerId);
     const attendedCount = await Application.countDocuments({ eventId: event._id, attended: true });
 

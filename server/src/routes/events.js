@@ -96,6 +96,34 @@ router.get("/mine", auth, async (req, res, next) => {
   }
 });
 
+router.get("/details", auth, async (req, res, next) => {
+  try {
+    const ids = String(req.query.ids || '').split(',').map((id) => id.trim()).filter(Boolean);
+    if (ids.length === 0) {
+      return res.json([]);
+    }
+
+    const user = await User.findById(req.user.userId).select('joinedEvents attendedEvents').lean();
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    const allowedIds = new Set([
+      ...(Array.isArray(user.joinedEvents) ? user.joinedEvents : []).map((id) => String(id)),
+      ...(Array.isArray(user.attendedEvents) ? user.attendedEvents : []).map((id) => String(id)),
+    ]);
+    const requestedIds = ids.filter((id) => allowedIds.has(String(id)));
+    if (requestedIds.length === 0) {
+      return res.json([]);
+    }
+
+    const events = await Event.find({ _id: { $in: requestedIds } }).lean();
+    res.json(events.map(enrichVolunteerEventPayload));
+  } catch (error) {
+    next(error);
+  }
+});
+
 // Admin endpoint: view all events
 router.get("/admin", adminAuth, async (req, res, next) => {
   try {
@@ -259,9 +287,19 @@ router.put("/:id/publish", auth, async (req, res, next) => {
       return res.status(400).json({ message: "Only approved events can be published" });
     }
 
+    const wasPublished = event.isPublished;
     event.isPublished = publish;
     event.publishedAt = publish ? new Date() : null;
     await event.save();
+
+    if (!publish && wasPublished) {
+      setImmediate(() => {
+        notifyVolunteersEventUnpublished(event).catch((e) =>
+          console.error('[notifications] event unpublished:', e.message)
+        );
+      });
+    }
+
     res.json(event);
   } catch (error) {
     next(error);

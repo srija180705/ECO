@@ -125,6 +125,8 @@ function Dashboard() {
   const [notifications, setNotifications] = useState([]);
   const [entryBanner, setEntryBanner] = useState('');
   const [events, setEvents] = useState([]);
+  const [staleAttendedEvents, setStaleAttendedEvents] = useState([]);
+  const [staleRegisteredEventsCount, setStaleRegisteredEventsCount] = useState(0);
 
   const unreadNotificationCount = useMemo(
     () => notifications.filter((n) => !n.read).length,
@@ -191,6 +193,7 @@ function Dashboard() {
 
     setEventsLoading(true);
     try {
+      let profileData = null;
       const [profileRes, eventsRes, notifRes] = await Promise.all([
         apiFetch('/api/users/me', { headers: { Authorization: `Bearer ${token}` } }),
         apiFetch('/api/events', { headers: { Authorization: `Bearer ${token}` } }),
@@ -198,7 +201,7 @@ function Dashboard() {
       ]);
 
       if (profileRes.ok) {
-        const profileData = await profileRes.json();
+        profileData = await profileRes.json();
         setUser(profileData);
         syncUserLocal(profileData);
         if (Array.isArray(profileData.joinedEvents)) {
@@ -223,10 +226,42 @@ function Dashboard() {
         const list = Array.isArray(eventData) ? eventData : [];
         setEvents(list.map(normalizeEvent));
         setDashboardError('');
+
+        const visibleEventIds = list.map((ev) => String(ev._id));
+        const currentJoinedIds = profileData && Array.isArray(profileData.joinedEvents)
+          ? profileData.joinedEvents.map((id) => String(id))
+          : joinedEvents;
+        setStaleRegisteredEventsCount(
+          currentJoinedIds.filter((id) => !visibleEventIds.includes(id)).length,
+        );
+
+        if (profileData && Array.isArray(profileData.attendedEvents)) {
+          const missingAttendedIds = profileData.attendedEvents
+            .map((id) => String(id))
+            .filter((id) => !visibleEventIds.includes(id));
+
+          if (missingAttendedIds.length > 0) {
+            const detailsRes = await apiFetch(`/api/events/details?ids=${missingAttendedIds.join(',')}`, {
+              headers: { Authorization: `Bearer ${token}` },
+            });
+            if (detailsRes.ok) {
+              const extraEvents = await detailsRes.json();
+              setStaleAttendedEvents(Array.isArray(extraEvents) ? extraEvents.map(normalizeEvent) : []);
+            } else {
+              setStaleAttendedEvents([]);
+            }
+          } else {
+            setStaleAttendedEvents([]);
+          }
+        } else {
+          setStaleAttendedEvents([]);
+        }
       } else {
         const errorData = await eventsRes.json().catch(() => ({}));
         setDashboardError(errorData.message || 'Unable to load events.');
         setEvents([]);
+        setStaleAttendedEvents([]);
+        setStaleRegisteredEventsCount(0);
       }
 
       if (notifRes.ok) {
@@ -235,6 +270,7 @@ function Dashboard() {
         setNotifications(
           raw.map((n) => ({
             id: String(n._id),
+            type: n.type || '',
             title: n.title || 'Notification',
             text: n.body || '',
             time: formatTimeAgo(n.createdAt),
@@ -242,18 +278,29 @@ function Dashboard() {
           }))
         );
         const unread = typeof nd.unreadCount === 'number' ? nd.unreadCount : raw.filter((n) => !n.read).length;
-        if (unread > 0) {
+        const unpublishedNotifications = raw.filter((n) => !n.read && n.type === 'event_unpublished');
+        if (unpublishedNotifications.length > 0) {
+          setEntryBanner(
+            unpublishedNotifications.length === 1
+              ? `🔔 ${unpublishedNotifications[0].body}`
+              : `🔔 ${unpublishedNotifications.length} events you registered for are no longer happening.`,
+          );
+        } else if (unread > 0) {
           const previews = raw
             .filter((n) => !n.read)
             .slice(0, 3)
             .map((n) => n.title)
             .join(' · ');
           setEntryBanner(previews ? `${unread} new notification(s): ${previews}` : `${unread} new notification(s) — open the bell.`);
+        } else {
+          setEntryBanner('');
         }
       }
     } catch {
       setDashboardError('Unable to load dashboard data.');
       setEvents([]);
+      setStaleRegisteredEventsCount(0);
+      setStaleAttendedEvents([]);
     } finally {
       setEventsLoading(false);
     }
@@ -261,6 +308,14 @@ function Dashboard() {
 
   useEffect(() => {
     loadDashboardData();
+  }, []);
+
+  useEffect(() => {
+    const onWindowFocus = () => {
+      loadDashboardData();
+    };
+    window.addEventListener('focus', onWindowFocus);
+    return () => window.removeEventListener('focus', onWindowFocus);
   }, []);
 
   useEffect(() => {
@@ -358,12 +413,21 @@ function Dashboard() {
   }, [totalPoints, joinedEvents, availableEvents, user]);
 
   const registeredEventsData = useMemo(() => {
-    return events.filter(ev => joinedEvents.includes(ev.id) && !attendedEvents.includes(ev.id));
+    return events
+      .filter((ev) => joinedEvents.includes(ev.id) && !attendedEvents.includes(ev.id))
+      .sort((a, b) => (a.startDateISO || '').localeCompare(b.startDateISO || ''));
   }, [events, joinedEvents, attendedEvents]);
 
   const attendedEventsData = useMemo(() => {
-    return events.filter(ev => attendedEvents.includes(ev.id));
-  }, [events, attendedEvents]);
+    const current = events.filter((ev) => attendedEvents.includes(ev.id));
+    const allEvents = [...current, ...staleAttendedEvents];
+    return Array.from(new Map(allEvents.map((ev) => [ev.id, ev])).values()).sort((a, b) => {
+      if (a.startDateISO && b.startDateISO) return b.startDateISO.localeCompare(a.startDateISO);
+      if (a.startDateISO) return -1;
+      if (b.startDateISO) return 1;
+      return 0;
+    });
+  }, [events, attendedEvents, staleAttendedEvents]);
 
   const handleJoinEvent = async (eventId) => {
     if (joinedEvents.includes(eventId)) return;
@@ -676,6 +740,12 @@ function Dashboard() {
               </div>
             ) : null}
 
+            {staleRegisteredEventsCount > 0 ? (
+              <div className="feedback" style={{ background: '#fef3c7', borderColor: '#fde68a', color: '#92400e' }}>
+                🔔 Some events you registered for were removed by the organizer and are no longer available on your dashboard.
+              </div>
+            ) : null}
+
             <div className="search-filter-bar">
               <div className="search-wrapper">
                 <span className="search-icon">
@@ -745,6 +815,60 @@ function Dashboard() {
                 </div>
               </div>
             </div>
+
+            {registeredEventsData.length > 0 && (
+              <section className="registered-events">
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 12 }}>
+                  <h2 style={{ margin: 0 }}>My Registered Events</h2>
+                  <button type="button" className="filter-btn" onClick={() => loadDashboardData()}>
+                    Refresh status
+                  </button>
+                </div>
+                <p style={{ color: '#6b7280', fontSize: 14, marginTop: 0 }}>
+                  You&apos;re signed up — when the event runs, take part as planned. After it ends, your organizer confirms attendance and points are added.
+                </p>
+                <div className="events-grid">
+                  {registeredEventsData.map((event) => (
+                    <div className="event-card registered" key={event.id}>
+                      <div className="event-card-header">
+                        <h3>{event.title}</h3>
+                        <div className="event-reward">
+                          <span>⭐</span>
+                          <span className="reward-points">{event.points} pts after the event</span>
+                        </div>
+                      </div>
+                      <span className="event-badge registered-badge">{event.category}</span>
+                      <div className="event-details">
+                        {event.organizationName?.trim() ? (
+                          <p className="event-org-name">🏢 {event.organizationName.trim()}</p>
+                        ) : null}
+                        <p>📅 {formatEventDate(event)}</p>
+                        <p>
+                          📍{' '}
+                          <button
+                            type="button"
+                            className="event-location-link"
+                            onClick={() => openEventLocationOnMap(event)}
+                          >
+                            {event.location}
+                          </button>
+                        </p>
+                        <p>{volunteerSummaryLine(event)}</p>
+                        <p>📏 {event.distanceKm} km away</p>
+                      </div>
+                      <div className="event-actions">
+                        <span className="event-badge attended-badge" style={{ cursor: 'default' }}>
+                          ✓ Registered — waiting for the event
+                        </span>
+                        <button type="button" className="cancel-btn" onClick={() => handleUnjoinEvent(event.id)}>
+                          Cancel registration
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
 
             <section className="upcoming-events">
               <h2>Ongoing Events</h2>
@@ -832,61 +956,7 @@ function Dashboard() {
               )}
             </section>
 
-            {joinedEvents.length > 0 && (
-              <section className="registered-events">
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, flexWrap: 'wrap', marginBottom: 12 }}>
-                  <h2 style={{ margin: 0 }}>My Registered Events</h2>
-                  <button type="button" className="filter-btn" onClick={() => loadDashboardData()}>
-                    Refresh status
-                  </button>
-                </div>
-                <p style={{ color: '#6b7280', fontSize: 14, marginTop: 0 }}>
-                  You&apos;re signed up — when the event runs, take part as planned. After it ends, your organizer confirms attendance and points are added.
-                </p>
-                <div className="events-grid">
-                  {registeredEventsData.map(event => (
-                    <div className="event-card registered" key={event.id}>
-                      <div className="event-card-header">
-                        <h3>{event.title}</h3>
-                        <div className="event-reward">
-                          <span>⭐</span>
-                          <span className="reward-points">{event.points} pts after the event</span>
-                        </div>
-                      </div>
-                      <span className="event-badge registered-badge">{event.category}</span>
-                      <div className="event-details">
-                        {event.organizationName?.trim() ? (
-                          <p className="event-org-name">🏢 {event.organizationName.trim()}</p>
-                        ) : null}
-                        <p>📅 {formatEventDate(event)}</p>
-                        <p>
-                          📍{' '}
-                          <button
-                            type="button"
-                            className="event-location-link"
-                            onClick={() => openEventLocationOnMap(event)}
-                          >
-                            {event.location}
-                          </button>
-                        </p>
-                        <p>{volunteerSummaryLine(event)}</p>
-                        <p>📏 {event.distanceKm} km away</p>
-                      </div>
-                      <div className="event-actions">
-                        <span className="event-badge attended-badge" style={{ cursor: 'default' }}>
-                          ✓ Registered — waiting for the event
-                        </span>
-                        <button type="button" className="cancel-btn" onClick={() => handleUnjoinEvent(event.id)}>
-                          Cancel registration
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {attendedEvents.length > 0 && (
+            {attendedEventsData.length > 0 && (
               <section className="attended-events">
                 <h2>Events Attended ✓</h2>
                 <div className="events-grid">

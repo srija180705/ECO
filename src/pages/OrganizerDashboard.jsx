@@ -626,48 +626,56 @@ function OrganizerDashboard() {
                 {applications.length === 0 ? (
                   <div className="no-applications">No volunteer applications found for this event.</div>
                 ) : (
-                  applications.map((application) => {
-                    const profile = application.volunteerProfile
-                    const vid = application.volunteerId
-                    const canConfirm =
-                      application.status !== 'withdrawn' &&
-                      application.status !== 'rejected' &&
-                      !application.attended
-                    return (
-                      <div key={application._id} className="application-item">
-                        <div className="app-header">
-                          <div className="app-info">
-                            <h4>{application.volunteerName}</h4>
-                            <p>{application.volunteerEmail}</p>
-                          </div>
-                          <div className="app-status">
-                            {application.status === 'withdrawn' && (
-                              <span className="app-status-badge withdrawn">Withdrawn</span>
-                            )}
-                            {application.attended && <span className="app-status-badge attended">Attended</span>}
-                          </div>
-                        </div>
-                        {profile && (
-                          <div className="app-notes">
-                            <p><strong>City:</strong> {profile.city || '—'}</p>
-                            <p><strong>Interests:</strong> {(profile.interests || []).join(', ') || '—'}</p>
-                          </div>
-                        )}
-                        {application.notes && <p className="app-notes">{application.notes}</p>}
-                        <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, cursor: canConfirm ? 'pointer' : 'default' }}>
-                          <input
-                            type="checkbox"
-                            checked={Boolean(application.attended)}
-                            disabled={!canConfirm}
-                            onChange={(e) => {
-                              if (e.target.checked) confirmVolunteerAttendance(vid)
-                            }}
-                          />
-                          <span>Confirm attendance (awards points)</span>
-                        </label>
+                  <>
+                    {!selectedEvent?.isPublished ? (
+                      <div className="organizer-error-banner" style={{ marginBottom: 16 }}>
+                        This event is not posted to volunteers, so attendance cannot be confirmed until it is posted.
                       </div>
-                    )
-                  })
+                    ) : null}
+                    {applications.map((application) => {
+                      const profile = application.volunteerProfile
+                      const vid = application.volunteerId
+                      const canConfirm =
+                        selectedEvent?.isPublished &&
+                        application.status !== 'withdrawn' &&
+                        application.status !== 'rejected' &&
+                        !application.attended
+                      return (
+                        <div key={application._id} className="application-item">
+                          <div className="app-header">
+                            <div className="app-info">
+                              <h4>{application.volunteerName}</h4>
+                              <p>{application.volunteerEmail}</p>
+                            </div>
+                            <div className="app-status">
+                              {application.status === 'withdrawn' && (
+                                <span className="app-status-badge withdrawn">Withdrawn</span>
+                              )}
+                              {application.attended && <span className="app-status-badge attended">Attended</span>}
+                            </div>
+                          </div>
+                          {profile && (
+                            <div className="app-notes">
+                              <p><strong>City:</strong> {profile.city || '—'}</p>
+                              <p><strong>Interests:</strong> {(profile.interests || []).join(', ') || '—'}</p>
+                            </div>
+                          )}
+                          {application.notes && <p className="app-notes">{application.notes}</p>}
+                          <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, cursor: canConfirm ? 'pointer' : 'default' }}>
+                            <input
+                              type="checkbox"
+                              checked={Boolean(application.attended)}
+                              disabled={!canConfirm}
+                              onChange={(e) => {
+                                if (e.target.checked) confirmVolunteerAttendance(vid)
+                              }}
+                            />
+                            <span>Confirm attendance (awards points)</span>
+                          </label>
+                        </div>
+                      )
+                    })}
+                  </>
                 )}
               </div>
             )}

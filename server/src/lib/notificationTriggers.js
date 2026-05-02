@@ -56,6 +56,21 @@ async function notifyOrganizerVolunteerJoined(event, volunteer) {
   });
 }
 
+async function notifyVolunteersEventUnpublished(event) {
+  if (!Array.isArray(event.volunteers) || event.volunteers.length === 0) return;
+  const title = event.title || "Your event";
+  const eventId = String(event._id);
+  const docs = event.volunteers.map((userId) => ({
+    userId,
+    type: "event_unpublished",
+    title: "Event removed from the dashboard",
+    body: `The event "${title}" you registered for is no longer happening and has been removed from your dashboard.`,
+    read: false,
+    meta: { eventId },
+  }));
+  await Notification.insertMany(docs);
+}
+
 async function notifyOrganizerEventApproved(event) {
   if (!event.createdBy) return;
   const title = event.title || "Your event";
