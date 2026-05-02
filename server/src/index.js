@@ -6,6 +6,7 @@ const http = require("http");
 const jwt = require("jsonwebtoken");
 const { Server } = require("socket.io");
 const { connectDB } = require("./db");
+const { useMemoryDb, resolveMongoUri } = require("./memoryMongo");
 const { adminAuth } = require("./middleware/auth");
 
 const authRoutes = require("./routes/auth");
@@ -15,6 +16,7 @@ const grievanceRoutes = require("./routes/grievances");
 const organizerRoutes = require("./routes/organizer");
 const rewardRoutes = require("./routes/rewards");
 const postRoutes = require("./routes/posts");
+const notificationRoutes = require("./routes/notifications");
 const Reward = require("./models/Reward");
 const { SEED_ACHIEVEMENTS } = require("./lib/achievementDefinitions");
 
@@ -33,7 +35,8 @@ async function ensureAchievementsOnBoot() {
 }
 
 // Validate required environment variables
-const requiredEnvVars = ["JWT_SECRET", "MONGODB_URI"];
+const requiredEnvVars = ["JWT_SECRET"];
+if (!useMemoryDb()) requiredEnvVars.push("MONGODB_URI");
 const missing = requiredEnvVars.filter((key) => !process.env[key]);
 if (missing.length > 0) {
   console.error(`[ERROR] Missing required environment variables: ${missing.join(", ")}`);
@@ -95,6 +98,7 @@ app.use("/api/grievances", grievanceRoutes);
 app.use("/api/organizer", organizerRoutes);
 app.use("/api/rewards", rewardRoutes);
 app.use("/api/posts", postRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Admin dashboard route
 app.get("/api/admin/dashboard", adminAuth, (req, res) => {
@@ -116,11 +120,36 @@ const PORT = process.env.PORT || 4000;
 
 (async () => {
   try {
-    await connectDB(process.env.MONGODB_URI);
+    const { uri } = await resolveMongoUri();
+    await connectDB(uri);
+    // In-memory Mongo is a fresh DB each server process; CLI seed targets a different process, so seed here too.
+    if (useMemoryDb()) {
+      const { runSeedContent } = require("./seed");
+      await runSeedContent();
+      console.log("[API] Seed data ensured for in-memory DB (admin login matches server/src/seed.js)");
+    }
     await ensureAchievementsOnBoot();
     server.listen(PORT, "0.0.0.0", () => console.log(`[API] running on http://0.0.0.0:${PORT}`));
   } catch (error) {
-    console.error("[ERROR] Failed to start server:", error);
+    console.error("[ERROR] Failed to start server:", error.message || error);
+    const msg = String(error.message || error);
+    const code = error.code || error.cause?.code;
+    if (
+      code === "ENOTFOUND" ||
+      msg.includes("querySrv") ||
+      msg.includes("_mongodb._tcp")
+    ) {
+      console.error(`
+[MongoDB] DNS lookup failed for mongodb+srv (Atlas). Try another network/VPN, or set USE_MEMORY_DB=1 in server/.env for local dev (run npm install in server/ first).
+`);
+    } else if (
+      msg.includes("ECONNREFUSED") ||
+      msg.includes("connect ECONNREFUSED")
+    ) {
+      console.error(`
+[MongoDB] Connection refused — start MongoDB locally or set USE_MEMORY_DB=1 in server/.env.
+`);
+    }
     process.exit(1);
   }
 })();

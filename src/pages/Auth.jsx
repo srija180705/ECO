@@ -1,6 +1,18 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { ChevronDown, Eye, EyeOff } from 'lucide-react'
 import { apiFetch } from '../api.js'
+
+async function readErrorMessage(response) {
+  const text = await response.text()
+  if (!text) return `Request failed (${response.status})`
+  try {
+    const data = JSON.parse(text)
+    return data.message || text.slice(0, 280)
+  } catch {
+    return text.slice(0, 280)
+  }
+}
 
 function Auth() {
   const navigate = useNavigate()
@@ -9,11 +21,12 @@ function Auth() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
+  const [showPassword, setShowPassword] = useState(false)
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    role: 'volunteer'
+    role: ''
   })
 
   const handleChange = (e) => {
@@ -82,6 +95,11 @@ function Auth() {
       return
     }
 
+    if (!isLogin && !formData.role) {
+      setError('Please select a role')
+      return
+    }
+
     try {
       setLoading(true)
 
@@ -101,7 +119,13 @@ function Auth() {
       const response = await apiFetch(endpoint, options)
 
       if (response.ok) {
-        const data = await response.json()
+        let data
+        try {
+          data = await response.json()
+        } catch {
+          setError('Invalid response from server. Try again or restart the API.')
+          return
+        }
         if (data.token) {
           const user = {
             _id: data.user._id,
@@ -118,19 +142,26 @@ function Auth() {
           }
           localStorage.setItem('token', data.token)
           localStorage.setItem('user', JSON.stringify(user))
-          setFormData({ name: '', email: '', password: '', role: 'volunteer' })
+          setFormData({ name: '', email: '', password: '', role: '' })
           const redirectPath = user.role === 'organizer' ? '/organizer-dashboard' : (user.role === 'admin' ? '/admin' : '/dashboard')
           navigate(redirectPath, { state: { fromAuth: true, user } })
         } else {
           setSuccess(data.message || 'Registration successful.')
-          setFormData({ name: '', email: '', password: '', role: 'volunteer' })
+          setFormData({ name: '', email: '', password: '', role: '' })
         }
       } else {
-        const errorData = await response.json()
-        setError(errorData.message || 'Authentication failed')
+        const message = await readErrorMessage(response)
+        setError(message || 'Authentication failed')
       }
     } catch (err) {
-      setError('Authentication failed. Please try again.')
+      const isNetwork =
+        err instanceof TypeError ||
+        (typeof err?.message === 'string' && err.message.toLowerCase().includes('fetch'))
+      setError(
+        isNetwork
+          ? 'Cannot reach the server. Start the backend (port 4000), ensure MongoDB is connected, and open the app from Vite (http://localhost:5173) so /api requests are proxied.'
+          : (err?.message || 'Authentication failed. Please try again.'),
+      )
       console.error('Auth error:', err)
     } finally {
       setLoading(false)
@@ -166,7 +197,7 @@ function Auth() {
                   setForgotMode(false)
                   setError('')
                   setSuccess('')
-                  setFormData({ name: '', email: '', password: '', role: 'volunteer' })
+                  setFormData({ name: '', email: '', password: '', role: '' })
                 }}
               >
                 Register
@@ -199,15 +230,22 @@ function Auth() {
           {!isLogin && !forgotMode && (
             <div className="form-group">
               <label htmlFor="role">Role</label>
-              <select
-                id="role"
-                name="role"
-                value={formData.role}
-                onChange={handleChange}
-              >
-                <option value="volunteer">Volunteer</option>
-                <option value="organizer">Event Organizer</option>
-              </select>
+              <div className="auth-role-select-wrap">
+                <select
+                  id="role"
+                  name="role"
+                  value={formData.role}
+                  onChange={handleChange}
+                  className="auth-role-select"
+                  required
+                  aria-label="Select your role"
+                >
+                  <option value="" disabled>Select a role</option>
+                  <option value="volunteer">Volunteer</option>
+                  <option value="organizer">Event Organizer</option>
+                </select>
+                <ChevronDown className="auth-role-chevron" size={18} strokeWidth={2} aria-hidden />
+              </div>
             </div>
           )}
 
@@ -226,14 +264,26 @@ function Auth() {
           {!forgotMode && (
             <div className="form-group">
               <label htmlFor="password">Password</label>
-              <input
-                type="password"
-                id="password"
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                placeholder="Enter your password"
-              />
+              <div className="password-field-wrap">
+                <input
+                  type={showPassword ? 'text' : 'password'}
+                  id="password"
+                  name="password"
+                  autoComplete={isLogin ? 'current-password' : 'new-password'}
+                  value={formData.password}
+                  onChange={handleChange}
+                  placeholder="Enter your password"
+                />
+                <button
+                  type="button"
+                  className="password-toggle-btn"
+                  tabIndex={-1}
+                  aria-label={showPassword ? 'Hide password' : 'Show password'}
+                  onClick={() => setShowPassword((v) => !v)}
+                >
+                  {showPassword ? <EyeOff size={20} strokeWidth={2} /> : <Eye size={20} strokeWidth={2} />}
+                </button>
+              </div>
             </div>
           )}
 
@@ -265,7 +315,7 @@ function Auth() {
                 setIsLogin(true)
                 setError('')
                 setSuccess('')
-                setFormData({ name: '', email: '', password: '', role: 'volunteer' })
+                setFormData({ name: '', email: '', password: '', role: '' })
               }}
             >
               Forgot password?
@@ -281,7 +331,7 @@ function Auth() {
                 setIsLogin(true)
                 setError('')
                 setSuccess('')
-                setFormData({ name: '', email: '', password: '', role: 'volunteer' })
+                setFormData({ name: '', email: '', password: '', role: '' })
               }}
             >
               Back to login
@@ -295,10 +345,16 @@ function Auth() {
                 type="button"
                 className="link-btn"
                 onClick={() => {
-                  setIsLogin(!isLogin)
+                  const nextLogin = !isLogin
+                  setIsLogin(nextLogin)
                   setError('')
                   setSuccess('')
-                  setFormData({ name: '', email: '', password: '', role: 'volunteer' })
+                  setFormData({
+                    name: '',
+                    email: '',
+                    password: '',
+                    role: nextLogin ? 'volunteer' : '',
+                  })
                 }}
               >
                 {isLogin ? 'Register' : 'Login'}

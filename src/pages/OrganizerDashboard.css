@@ -1398,13 +1398,75 @@
   margin-bottom: 10px;
 }
 
+.organizer-form-section-title {
+  grid-column: 1 / -1;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #374151;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 14px 0 4px;
+  padding-bottom: 6px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.organizer-form-section-title:first-of-type {
+  margin-top: 0;
+}
+
+.organizer-field-label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  color: #4b5563;
+}
+
+.organizer-field-label span {
+  font-size: 12px;
+}
+
+.organizer-field-full {
+  grid-column: 1 / -1;
+}
+
 .organizer-modal textarea,
-.organizer-modal input {
+.organizer-modal input,
+.organizer-modal select {
   width: 100%;
   border: 1px solid #d1d5db;
   border-radius: 8px;
   padding: 10px;
   font-family: inherit;
+}
+
+.organizer-past-events-section {
+  margin-top: 28px;
+}
+
+.organizer-past-events-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  background: white;
+}
+
+.organizer-past-events-table th,
+.organizer-past-events-table td {
+  border: 1px solid #e5e7eb;
+  padding: 10px 12px;
+  text-align: left;
+}
+
+.organizer-past-events-table th {
+  background: #f9fafb;
+  font-weight: 700;
+  color: #374151;
+}
+
+.organizer-past-events-table tbody tr:nth-child(even) td {
+  background: #fafafa;
 }
 
 .organizer-conflict-preview {

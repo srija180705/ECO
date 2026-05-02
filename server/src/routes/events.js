@@ -6,7 +6,12 @@ const { auth, adminAuth } = require("../middleware/auth");
 const Event = require("../models/Event");
 const User = require("../models/User");
 const Application = require("../models/Application");
-const { syncAchievementBadges } = require("../lib/achievementSync");
+const {
+  notifyVolunteersNewEvent,
+  notifyOrganizerEventApproved,
+  notifyOrganizerVolunteerJoined,
+} = require("../lib/notificationTriggers");
+const { parseCoordinates } = require("../lib/eventCoordinates");
 
 const uploadPath = path.join(__dirname, '..', '..', 'uploads');
 fs.mkdirSync(uploadPath, { recursive: true });
@@ -27,15 +32,37 @@ function todayISO() {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** Volunteer dashboard payload: API aliases + volunteer counts for UI. */
+function enrichVolunteerEventPayload(doc) {
+  const e = doc && typeof doc.toObject === "function" ? doc.toObject() : { ...doc };
+  const joined = Array.isArray(e.volunteers) ? e.volunteers : [];
+  const maxVolunteers = Number(e.maxVolunteers) || Number(e.volunteerSlots) || 0;
+  const volunteerCount = Math.max(joined.length, Number(e.applicantCount) || 0);
+  const time =
+    e.startHour != null && e.endHour != null
+      ? `${e.startHour}:00 – ${e.endHour}:00`
+      : "";
+  return {
+    ...e,
+    date: e.startDateISO,
+    time,
+    volunteerCount,
+    maxVolunteers,
+  };
+}
+
 // Public endpoint for authenticated users: only approved, posted events that have not closed
 router.get("/", auth, async (req, res, next) => {
   try {
     const events = await Event.find({
       approved: true,
       isPublished: true,
-      endDateISO: { $gte: todayISO() }
-    }).sort({ startDateISO: 1 });
-    res.json(events);
+      endDateISO: { $gte: todayISO() },
+    })
+      .sort({ startDateISO: 1 })
+      .lean();
+
+    res.json(events.map(enrichVolunteerEventPayload));
   } catch (error) {
     next(error);
   }
@@ -49,9 +76,11 @@ router.get("/happening", auth, async (req, res, next) => {
       approved: true,
       isPublished: true,
       startDateISO: { $lte: nowISO },
-      endDateISO: { $gte: nowISO }
-    }).sort({ startDateISO: 1, startHour: 1 });
-    res.json(events);
+      endDateISO: { $gte: nowISO },
+    })
+      .sort({ startDateISO: 1, startHour: 1 })
+      .lean();
+    res.json(events.map(enrichVolunteerEventPayload));
   } catch (error) {
     next(error);
   }
@@ -127,10 +156,13 @@ router.post("/", auth, upload.single('permissionPdf'), async (req, res, next) =>
       startHour,
       endHour,
       points,
-      distanceKm
+      distanceKm,
+      volunteerSlots = 0,
     } = req.body;
 
     const pdfPath = req.file ? `/uploads/${req.file.filename}` : null;
+    const coords = parseCoordinates(req.body);
+    const slots = Number(volunteerSlots) || 0;
 
     const event = await Event.create({
       title,
@@ -145,6 +177,9 @@ router.post("/", auth, upload.single('permissionPdf'), async (req, res, next) =>
       endHour: Number(endHour) || 17,
       points: Number(points) || 0,
       distanceKm: Number(distanceKm) || 0,
+      coordinates: coords || undefined,
+      maxVolunteers: slots,
+      volunteerSlots: slots,
       approved: false,
       status: 'pending',
       permissionPdf: pdfPath,
@@ -161,10 +196,23 @@ router.put("/admin/:id/approve", adminAuth, async (req, res, next) => {
   try {
     const event = await Event.findByIdAndUpdate(
       req.params.id,
-      { approved: true, status: "approved" },
+      {
+        approved: true,
+        status: "approved",
+        // Volunteers only query GET /api/events for approved + published events.
+        isPublished: true,
+        publishedAt: new Date(),
+      },
       { new: true }
     );
     if (!event) return res.status(404).json({ message: "Event not found" });
+
+    setImmediate(() => {
+      Promise.all([notifyOrganizerEventApproved(event), notifyVolunteersNewEvent(event)]).catch((e) =>
+        console.error("[notifications] event approved:", e.message)
+      );
+    });
+
     res.json(event);
   } catch (error) {
     next(error);
@@ -228,9 +276,26 @@ router.post("/:id/join", auth, async (req, res, next) => {
     const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
 
+    const max =
+      Number(event.maxVolunteers) > 0
+        ? Number(event.maxVolunteers)
+        : Number(event.volunteerSlots) > 0
+          ? Number(event.volunteerSlots)
+          : 0;
+    const alreadyOnEvent = (event.volunteers || []).some((id) => String(id) === String(user._id));
+    if (!alreadyOnEvent && max > 0 && (event.volunteers || []).length >= max) {
+      return res.status(400).json({ message: "This event has reached its volunteer limit." });
+    }
+
     if (!user.joinedEvents.some((joinedId) => String(joinedId) === String(event._id))) {
       user.joinedEvents.push(event._id);
       await user.save();
+    }
+
+    if (!alreadyOnEvent) {
+      event.volunteers = event.volunteers || [];
+      event.volunteers.push(user._id);
+      await event.save();
     }
 
     await Application.findOneAndUpdate(
@@ -257,6 +322,14 @@ router.post("/:id/join", auth, async (req, res, next) => {
     ]);
     await Event.findByIdAndUpdate(event._id, { applicantCount, approvedVolunteersCount });
 
+    if (!alreadyOnEvent) {
+      setImmediate(() => {
+        notifyOrganizerVolunteerJoined(event, user).catch((e) =>
+          console.error("[notifications] volunteer joined:", e.message)
+        );
+      });
+    }
+
     res.json({ message: `Joined ${event.title} successfully.` });
   } catch (error) {
     next(error);
@@ -270,6 +343,9 @@ router.post("/:id/unjoin", auth, async (req, res, next) => {
 
     const user = await User.findById(req.user.userId);
     if (!user) return res.status(404).json({ message: "User not found" });
+
+    event.volunteers = (event.volunteers || []).filter((id) => String(id) !== String(user._id));
+    await event.save();
 
     user.joinedEvents = user.joinedEvents.filter(
       (joinedId) => String(joinedId) !== String(event._id)
@@ -297,66 +373,11 @@ router.post("/:id/unjoin", auth, async (req, res, next) => {
   }
 });
 
-router.post("/:id/attend", auth, async (req, res, next) => {
-  try {
-    const event = await Event.findById(req.params.id);
-    if (!event) return res.status(404).json({ message: "Event not found" });
-
-    const eventEndDate = event.endDateISO ? new Date(event.endDateISO) : null;
-    if (eventEndDate && !Number.isNaN(eventEndDate.getTime())) {
-      const hourRaw = Number(event.endHour);
-      const hour = Number.isFinite(hourRaw) ? Math.min(Math.max(Math.floor(hourRaw), 1), 24) : 23;
-      if (hour >= 24) {
-        eventEndDate.setHours(23, 59, 59, 999);
-      } else {
-        eventEndDate.setHours(hour, 0, 0, 0);
-      }
-    }
-
-    if (!eventEndDate || Number.isNaN(eventEndDate.getTime()) || eventEndDate > new Date()) {
-      return res.status(400).json({ message: "Attendance can only be marked after the event has ended." });
-    }
-
-    const user = await User.findById(req.user.userId);
-    if (!user) return res.status(404).json({ message: "User not found" });
-
-    const application = await Application.findOne({ eventId: event._id, volunteerId: user._id });
-    if (!application) {
-      return res.status(400).json({ message: "You must join this event before marking attendance." });
-    }
-
-    if (application.status === "withdrawn" || application.status === "rejected") {
-      return res.status(400).json({ message: "This registration is not eligible for attendance marking." });
-    }
-
-    if (application.attended) {
-      return res.status(400).json({ message: "Attendance is already recorded for this event." });
-    }
-
-    application.attended = true;
-    await application.save();
-
-    const pointsToAdd = Number(event.points) || 0;
-    if (!user.attendedEvents.some((attendedId) => String(attendedId) === String(event._id))) {
-      user.attendedEvents.push(event._id);
-    }
-    user.points = Number(user.points || 0) + pointsToAdd;
-    await user.save();
-
-    await syncAchievementBadges(user._id);
-    const fresh = await User.findById(user._id).select("points attendedEvents badges");
-
-    res.json({
-      message: `Attendance recorded for ${event.title}.`,
-      eventId: String(event._id),
-      attended: true,
-      points: fresh.points,
-      attendedEvents: fresh.attendedEvents,
-      badges: fresh.badges,
-    });
-  } catch (error) {
-    next(error);
-  }
+router.post("/:id/attend", auth, async (req, res) => {
+  return res.status(403).json({
+    message:
+      "Attendance is confirmed by the event organizer after you participate. You cannot mark attendance yourself.",
+  });
 });
 
 router.put("/admin/:id/close", adminAuth, async (req, res, next) => {

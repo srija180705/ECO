@@ -113,7 +113,7 @@ function MapView() {
   };
 
   const getEventPosition = (event) => {
-    const targetText = event.address ? event.address.toLowerCase() : event.location.toLowerCase();
+    const targetText = String(event.address || event.location || '').toLowerCase();
     const key = Object.keys(cityCoords).find((city) => targetText.includes(city));
     return key ? cityCoords[key] : null;
   };

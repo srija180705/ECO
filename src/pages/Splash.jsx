@@ -17,7 +17,9 @@ function Splash() {
       <div className="splash-content">
         <div className="splash-leaf">🌿</div>
         <h1>Eco Volunteer Match</h1>
-        <p>Connecting volunteers with environmental opportunities</p>
+        <p className="splash-tagline">
+          Connecting volunteers with environmental opportunities — sign in to explore events near you.
+        </p>
         <div className="loading-dots">
           <span></span>
           <span></span>

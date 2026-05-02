@@ -5,6 +5,7 @@ import 'react-calendar/dist/Calendar.css'
 import './Dashboard.css'
 import './OrganizerDashboard.css'
 import { apiFetch } from '../api'
+import { formatTimeAgo } from '../utils/formatTimeAgo.js'
 
 const EMPTY_EVENT_FORM = {
   title: '',
@@ -21,6 +22,8 @@ const EMPTY_EVENT_FORM = {
   distanceKm: 0,
   requiredSkills: '',
   volunteerSlots: '',
+  latitude: '',
+  longitude: '',
   permissionPdf: null,
 }
 
@@ -47,9 +50,10 @@ function OrganizerDashboard() {
   const [editingEvent, setEditingEvent] = useState(null)
   const [eventForm, setEventForm] = useState(EMPTY_EVENT_FORM)
   const [eventConflict, setEventConflict] = useState(null)
-  const [announcementMessage, setAnnouncementMessage] = useState('')
-  const [annStatus, setAnnStatus] = useState('')
   const [calendarDate, setCalendarDate] = useState(new Date())
+  const [bellNotifications, setBellNotifications] = useState([])
+  const [notifUnread, setNotifUnread] = useState(0)
+  const [entryNotifBanner, setEntryNotifBanner] = useState('')
 
   const headers = useMemo(() => ({
     'Content-Type': 'application/json',
@@ -59,13 +63,6 @@ function OrganizerDashboard() {
   const uploadHeaders = useMemo(() => ({
     Authorization: `Bearer ${token}`,
   }), [token])
-
-  const notifications = useMemo(() => {
-    if (!stats) return []
-    return [
-      { id: 'n1', text: `${stats.upcomingEvents || 0} upcoming events require planning`, time: 'Today' },
-    ]
-  }, [stats])
 
   const eventsForSelectedDate = useMemo(() => {
     const selectedISO = calendarDate.toISOString().split('T')[0]
@@ -89,14 +86,21 @@ function OrganizerDashboard() {
     fetchDashboard()
   }, [])
 
+  useEffect(() => {
+    if (!entryNotifBanner) return undefined
+    const t = setTimeout(() => setEntryNotifBanner(''), 14000)
+    return () => clearTimeout(t)
+  }, [entryNotifBanner])
+
   async function fetchDashboard() {
     try {
       setLoading(true)
-      const [statsRes, eventsRes, reportsRes, calendarRes] = await Promise.all([
+      const [statsRes, eventsRes, reportsRes, calendarRes, notifRes] = await Promise.all([
         apiFetch('/api/organizer/stats', { headers }),
         apiFetch('/api/organizer/events', { headers }),
         apiFetch('/api/organizer/reports', { headers }),
         apiFetch('/api/organizer/calendar-events', { headers }),
+        apiFetch('/api/notifications', { headers }),
       ])
 
       if (!statsRes.ok || !eventsRes.ok || !reportsRes.ok || !calendarRes.ok) {
@@ -107,11 +111,62 @@ function OrganizerDashboard() {
       setEvents(await eventsRes.json())
       setReports(await reportsRes.json())
       setCalendarEvents(await calendarRes.json())
+
+      if (notifRes.ok) {
+        const nd = await notifRes.json()
+        const raw = Array.isArray(nd.items) ? nd.items : []
+        setBellNotifications(
+          raw.map((n) => ({
+            id: String(n._id),
+            type: n.type || '',
+            title: n.title || 'Notification',
+            text: n.body || '',
+            time: formatTimeAgo(n.createdAt),
+            read: Boolean(n.read),
+          })),
+        )
+        const unread =
+          typeof nd.unreadCount === 'number' ? nd.unreadCount : raw.filter((n) => !n.read).length
+        setNotifUnread(unread)
+        if (unread > 0) {
+          const joinUnread = raw.filter((n) => !n.read && n.type === 'volunteer_joined_event').length
+          const previews = raw
+            .filter((n) => !n.read)
+            .slice(0, 3)
+            .map((n) => n.title)
+            .join(' · ')
+          setEntryNotifBanner(
+            joinUnread > 0
+              ? `Volunteers joined your events (${joinUnread} new). Open the bell for details.${previews ? ` ${previews}` : ''}`
+              : previews
+                ? `${unread} new notification(s): ${previews}`
+                : `${unread} new notification(s) — open the bell.`,
+          )
+        } else {
+          setEntryNotifBanner('')
+        }
+      }
+
       setError('')
     } catch (err) {
       setError(err.message || 'Failed to load organizer dashboard')
     } finally {
       setLoading(false)
+    }
+  }
+
+  async function markAllOrganizerNotificationsRead() {
+    if (!token) return
+    try {
+      await apiFetch('/api/notifications/read-all', {
+        method: 'PATCH',
+        headers,
+      })
+      setBellNotifications((prev) => prev.map((n) => ({ ...n, read: true })))
+      setNotifUnread(0)
+      setEntryNotifBanner('')
+    } catch {
+      /* noop */
     }
   }
 
@@ -126,6 +181,26 @@ function OrganizerDashboard() {
     setApplications(data.applications)
     setActionStatus(`Loaded ${data.applications.length} volunteers for ${data.event.title}`)
     setError('')
+  }
+
+  async function confirmVolunteerAttendance(volunteerId) {
+    if (!selectedEvent?._id || !volunteerId) return
+    const res = await apiFetch(`/api/organizer/events/${selectedEvent._id}/confirm-attendance`, {
+      method: 'PATCH',
+      headers,
+      body: JSON.stringify({ volunteerId, confirmed: true }),
+    })
+    const data = await res.json().catch(() => ({}))
+    if (!res.ok) {
+      alert(data.message || 'Could not confirm attendance')
+      return
+    }
+    await fetchApplications(selectedEvent._id)
+    setActionStatus(
+      data.alreadyConfirmed
+        ? 'That volunteer was already marked attended.'
+        : 'Attendance confirmed — points added for this volunteer.',
+    )
   }
 
   function handleEventFormChange(event) {
@@ -222,7 +297,7 @@ function OrganizerDashboard() {
     setEventForm(EMPTY_EVENT_FORM)
     await fetchDashboard()
     setError('')
-    setActionStatus('Event saved. It will appear for volunteers after admin approval and posting.')
+    setActionStatus('Event saved. After admin approval it will appear on the volunteer dashboard automatically.')
   }
 
   async function deleteEvent(eventId) {
@@ -258,21 +333,6 @@ function OrganizerDashboard() {
     setActionStatus(publish ? 'Event posted to the volunteer dashboard.' : 'Event removed from the volunteer dashboard.')
   }
 
-  async function sendAnnouncement() {
-    if (!announcementMessage.trim()) return
-    const res = await apiFetch('/api/organizer/communications/announcement', {
-      method: 'POST',
-      headers,
-      body: JSON.stringify({ message: announcementMessage, eventId: selectedEvent?._id || null }),
-    })
-    if (res.ok) {
-      setAnnStatus('Announcement sent to volunteers')
-      setAnnouncementMessage('')
-      return
-    }
-    setAnnStatus('Failed to send announcement')
-  }
-
   function openCreateModal() {
     setEditingEvent(null)
     setEventForm(EMPTY_EVENT_FORM)
@@ -297,6 +357,8 @@ function OrganizerDashboard() {
       distanceKm: event.distanceKm || 0,
       requiredSkills: (event.requiredSkills || []).join(', '),
       volunteerSlots: event.volunteerSlots || 0,
+      latitude: event.coordinates?.coordinates?.[1] ?? '',
+      longitude: event.coordinates?.coordinates?.[0] ?? '',
       permissionPdf: null,
     })
     setEventConflict(null)
@@ -314,7 +376,7 @@ function OrganizerDashboard() {
   }
 
   function getNotificationCount() {
-    return notifications.length
+    return notifUnread
   }
 
   if (loading) return <div className="organizer-loading">Loading organizer dashboard...</div>
@@ -322,34 +384,54 @@ function OrganizerDashboard() {
   return (
     <div className="dashboard-layout">
       <aside className="sidebar">
-        <div className="sidebar-top">
-          <div className="sidebar-brand">
-            <div className="brand-logo">🌿</div>
-            <div>
-              <h1 className="brand-name">Eco Volunteer</h1>
-              <span className="brand-subtitle">Organizer Panel</span>
+        <div className="sidebar-scroll">
+          <div className="sidebar-top">
+            <div className="sidebar-brand">
+              <div className="brand-logo">🌿</div>
+              <div>
+                <h1 className="brand-name">Eco Volunteer</h1>
+                <span className="brand-subtitle">Organizer Panel</span>
+              </div>
+            </div>
+            <nav className="sidebar-nav">
+              <button type="button" className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>Dashboard</button>
+              <button type="button" className={`nav-item ${activeTab === 'events' ? 'active' : ''}`} onClick={() => setActiveTab('events')}>Events</button>
+              <button type="button" className={`nav-item ${activeTab === 'volunteers' ? 'active' : ''}`} onClick={() => setActiveTab('volunteers')}>Volunteers</button>
+              <button type="button" className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>Reports</button>
+            </nav>
+          </div>
+        </div>
+        <div className="sidebar-footer-portal">
+          <button type="button" className="sidebar-footer-btn sidebar-footer-btn-primary" onClick={() => fetchDashboard()}>
+            Refresh
+          </button>
+          <button type="button" className="sidebar-footer-btn" onClick={logout}>
+            Logout
+          </button>
+          <div className="sidebar-user">
+            <div className="user-avatar organizer-avatar">{firstName[0]}</div>
+            <div className="user-info">
+              <span className="user-name">{firstName}</span>
+              <span className="user-points">Verified Organizer</span>
             </div>
           </div>
-          <nav className="sidebar-nav">
-            <button className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`} onClick={() => setActiveTab('dashboard')}>Dashboard</button>
-            <button className={`nav-item ${activeTab === 'events' ? 'active' : ''}`} onClick={() => setActiveTab('events')}>Events</button>
-            <button className={`nav-item ${activeTab === 'volunteers' ? 'active' : ''}`} onClick={() => setActiveTab('volunteers')}>Volunteers</button>
-            <button className={`nav-item ${activeTab === 'reports' ? 'active' : ''}`} onClick={() => setActiveTab('reports')}>Reports</button>
-          </nav>
-        </div>
-        <div className="sidebar-user">
-          <div className="user-avatar organizer-avatar">{firstName[0]}</div>
-          <div className="user-info">
-            <span className="user-name">{firstName}</span>
-            <span className="user-points">Verified Organizer</span>
-          </div>
-          <button className="logout-btn" onClick={logout}>↩</button>
         </div>
       </aside>
 
       <main className="dashboard-main">
         {error && <div className="organizer-error-banner">{error}</div>}
         {actionStatus && <div className="organizer-success-banner">{actionStatus}</div>}
+        {entryNotifBanner ? (
+          <div
+            className="organizer-success-banner"
+            style={{ background: '#eef2ff', borderColor: '#c7d2fe', color: '#312e81', display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}
+          >
+            <span>🔔 {entryNotifBanner}</span>
+            <button type="button" className="filter-btn" onClick={() => setEntryNotifBanner('')}>
+              Dismiss
+            </button>
+          </div>
+        ) : null}
 
         <header className="dashboard-header">
           <div className="header-title">
@@ -358,21 +440,39 @@ function OrganizerDashboard() {
           </div>
           <div className="organizer-top-actions">
             <button className="organizer-create-btn" onClick={openCreateModal}>+ Create Event</button>
-            <button className="organizer-bell-btn" onClick={() => setShowNotifications((current) => !current)} aria-label="Notifications">
+            <button type="button" className="organizer-bell-btn" onClick={() => setShowNotifications((current) => !current)} aria-label="Notifications">
               <svg fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" width="22" height="22">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0a3 3 0 11-6 0h6z" />
               </svg>
-              {getNotificationCount() > 0 && <span className="organizer-bell-count">{getNotificationCount()}</span>}
+              {getNotificationCount() > 0 ? (
+                <span className="organizer-bell-count">{getNotificationCount() > 99 ? '99+' : getNotificationCount()}</span>
+              ) : null}
+            </button>
+            <button type="button" className="map-view-btn" onClick={() => navigate('/complaints')}>
+              Complaints
             </button>
             <button className="map-view-btn" onClick={onOpenMapView}>Map View</button>
             {showNotifications && (
-              <div className="organizer-notification-popover">
-                {notifications.map((note) => (
-                  <div key={note.id} className="organizer-note-item">
-                    <strong>{note.text}</strong>
-                    <span>{note.time}</span>
-                  </div>
-                ))}
+              <div className="organizer-notification-popover" style={{ maxHeight: 360, overflowY: 'auto' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                  <strong style={{ fontSize: 13 }}>Notifications</strong>
+                  {bellNotifications.length > 0 ? (
+                    <button type="button" className="filter-btn" style={{ fontSize: 11, padding: '4px 8px' }} onClick={() => markAllOrganizerNotificationsRead()}>
+                      Mark all read
+                    </button>
+                  ) : null}
+                </div>
+                {bellNotifications.length === 0 ? (
+                  <p style={{ margin: 0, color: '#64748b', fontSize: 13 }}>No notifications yet.</p>
+                ) : (
+                  bellNotifications.map((note) => (
+                    <div key={note.id} className="organizer-note-item" style={{ opacity: note.read ? 0.7 : 1 }}>
+                      <strong>{note.title}</strong>
+                      <div style={{ fontWeight: 400, fontSize: 13 }}>{note.text}</div>
+                      <span>{note.time}</span>
+                    </div>
+                  ))
+                )}
               </div>
             )}
           </div>
@@ -520,26 +620,54 @@ function OrganizerDashboard() {
                   </button>
                   <span className="applications-summary">Showing {applications.length} volunteer{applications.length === 1 ? '' : 's'}</span>
                 </div>
+                <p style={{ color: '#64748b', fontSize: 14, marginBottom: 12 }}>
+                  After someone participates, confirm attendance here — they receive event points and badges update automatically.
+                </p>
                 {applications.length === 0 ? (
                   <div className="no-applications">No volunteer applications found for this event.</div>
                 ) : (
-                  applications.map((application) => (
-                    <div key={application._id} className="application-item">
-                      <div className="app-header">
-                        <div className="app-info">
-                          <h4>{application.volunteerName}</h4>
-                          <p>{application.volunteerEmail}</p>
+                  applications.map((application) => {
+                    const profile = application.volunteerProfile
+                    const vid = application.volunteerId
+                    const canConfirm =
+                      application.status !== 'withdrawn' &&
+                      application.status !== 'rejected' &&
+                      !application.attended
+                    return (
+                      <div key={application._id} className="application-item">
+                        <div className="app-header">
+                          <div className="app-info">
+                            <h4>{application.volunteerName}</h4>
+                            <p>{application.volunteerEmail}</p>
+                          </div>
+                          <div className="app-status">
+                            {application.status === 'withdrawn' && (
+                              <span className="app-status-badge withdrawn">Withdrawn</span>
+                            )}
+                            {application.attended && <span className="app-status-badge attended">Attended</span>}
+                          </div>
                         </div>
-                        <div className="app-status">
-                          {application.status === 'withdrawn' && (
-                            <span className="app-status-badge withdrawn">Withdrawn</span>
-                          )}
-                          {application.attended && <span className="app-status-badge attended">Attended</span>}
-                        </div>
+                        {profile && (
+                          <div className="app-notes">
+                            <p><strong>City:</strong> {profile.city || '—'}</p>
+                            <p><strong>Interests:</strong> {(profile.interests || []).join(', ') || '—'}</p>
+                          </div>
+                        )}
+                        {application.notes && <p className="app-notes">{application.notes}</p>}
+                        <label style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10, cursor: canConfirm ? 'pointer' : 'default' }}>
+                          <input
+                            type="checkbox"
+                            checked={Boolean(application.attended)}
+                            disabled={!canConfirm}
+                            onChange={(e) => {
+                              if (e.target.checked) confirmVolunteerAttendance(vid)
+                            }}
+                          />
+                          <span>Confirm attendance (awards points)</span>
+                        </label>
                       </div>
-                      {application.notes && <p className="app-notes">{application.notes}</p>}
-                    </div>
-                  ))
+                    )
+                  })
                 )}
               </div>
             )}
@@ -548,18 +676,42 @@ function OrganizerDashboard() {
 
         {activeTab === 'reports' && (
           <section className="organizer-section">
-            <h3>Analytics, Reports, and Communication</h3>
+            <h3>Analytics & reports</h3>
             <div className="organizer-report-grid">
               <div className="stat-card stat-blue"><div className="stat-info"><h3>{reports?.totalApplications || 0}</h3><p>Total Applications</p></div></div>
               <div className="stat-card stat-green"><div className="stat-info"><h3>{reports?.attendanceCount || 0}</h3><p>Attendance Tracked</p></div></div>
               <div className="stat-card stat-orange"><div className="stat-info"><h3>{reports?.participationRate || 0}%</h3><p>Participation Rate</p></div></div>
               <div className="stat-card stat-pink"><div className="stat-info"><h3>{reports?.volunteerHoursLogged || 0}</h3><p>Volunteer Hours</p></div></div>
             </div>
-            <div className="organizer-communication-box">
-              <h4>Announcements</h4>
-              <textarea value={announcementMessage} onChange={(e) => setAnnouncementMessage(e.target.value)} placeholder="Send update, reminder, or cancellation..." />
-              <button className="organizer-create-btn" onClick={sendAnnouncement}>Send Message</button>
-              {annStatus && <p>{annStatus}</p>}
+            <div className="organizer-past-events-section">
+              <h4 className="organizer-form-section-title">Past events you conducted</h4>
+              <p style={{ color: '#64748b', fontSize: 14, marginBottom: 12 }}>
+                Completed events (by end date) with how many people signed up.
+              </p>
+              {pastConductedEvents.length === 0 ? (
+                <p className="organizer-date-empty">No past events yet.</p>
+              ) : (
+                <table className="organizer-past-events-table">
+                  <thead>
+                    <tr>
+                      <th>Event</th>
+                      <th>Start – end</th>
+                      <th>Location</th>
+                      <th>Joined</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pastConductedEvents.map((evt) => (
+                      <tr key={evt._id}>
+                        <td>{evt.title}</td>
+                        <td>{formatEventDate(evt)}</td>
+                        <td>{evt.location || '—'}</td>
+                        <td>{joinCountDisplay(evt)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
             </div>
           </section>
         )}
@@ -570,23 +722,74 @@ function OrganizerDashboard() {
           <form className="organizer-modal organizer-event-modal" onClick={(e) => e.stopPropagation()} onSubmit={submitEvent}>
             <h2>{editingEvent ? 'Edit Event' : 'Create New Event'}</h2>
             <div className="organizer-form-grid">
-              <input name="title" value={eventForm.title} onChange={handleEventFormChange} placeholder="Title" required />
-              <input name="organizationName" value={eventForm.organizationName} onChange={handleEventFormChange} placeholder="Organization Name" required />
-              <select name="category" value={eventForm.category} onChange={handleEventFormChange} required>
-                <option value="cleanup">Cleanup</option>
-                <option value="planting">Planting</option>
-                <option value="recycling">Recycling</option>
-                <option value="awareness">Awareness</option>
-              </select>
-              <input name="location" value={eventForm.location} onChange={handleEventFormChange} placeholder="Location (Area Name, City, State)" required />
-              <input type="date" name="startDateISO" value={eventForm.startDateISO} onChange={handleEventFormChange} required />
-              <input type="date" name="endDateISO" value={eventForm.endDateISO} onChange={handleEventFormChange} required />
-              <input type="number" name="startHour" value={eventForm.startHour} onChange={handleEventFormChange} placeholder="Start Hour (1-24)" min="1" max="24" required />
-              <input type="number" name="endHour" value={eventForm.endHour} onChange={handleEventFormChange} placeholder="End Hour (1-24)" min="1" max="24" required />
-              <input type="number" name="points" value={eventForm.points} onChange={handleEventFormChange} placeholder="Points" min="0" required />
-              <input type="number" name="distanceKm" value={eventForm.distanceKm} onChange={handleEventFormChange} placeholder="Distance km" min="0" step="0.1" />
-              <input type="number" name="volunteerSlots" value={eventForm.volunteerSlots} onChange={handleEventFormChange} placeholder="Volunteer slots" min="0" />
-              <input name="requiredSkills" value={eventForm.requiredSkills} onChange={handleEventFormChange} placeholder="Required skills (comma separated)" />
+              <h4 className="organizer-form-section-title">Basics</h4>
+              <label className="organizer-field-label">
+                <span>Event title</span>
+                <input name="title" value={eventForm.title} onChange={handleEventFormChange} placeholder="Title" required />
+              </label>
+              <label className="organizer-field-label">
+                <span>Organization name</span>
+                <input name="organizationName" value={eventForm.organizationName} onChange={handleEventFormChange} placeholder="Organization Name" required />
+              </label>
+              <label className="organizer-field-label">
+                <span>Category</span>
+                <select name="category" value={eventForm.category} onChange={handleEventFormChange} required>
+                  <option value="cleanup">Cleanup</option>
+                  <option value="planting">Planting</option>
+                  <option value="recycling">Recycling</option>
+                  <option value="awareness">Awareness</option>
+                </select>
+              </label>
+
+              <h4 className="organizer-form-section-title">Where</h4>
+              <label className="organizer-field-label organizer-field-full">
+                <span>Location (area / landmark)</span>
+                <input name="location" value={eventForm.location} onChange={handleEventFormChange} placeholder="Location (Area Name, City, State)" required />
+              </label>
+
+              <h4 className="organizer-form-section-title">Schedule</h4>
+              <label className="organizer-field-label">
+                <span>Start date</span>
+                <input type="date" name="startDateISO" value={eventForm.startDateISO} onChange={handleEventFormChange} required />
+              </label>
+              <label className="organizer-field-label">
+                <span>End date</span>
+                <input type="date" name="endDateISO" value={eventForm.endDateISO} onChange={handleEventFormChange} required />
+              </label>
+              <label className="organizer-field-label">
+                <span>Start time (hour 1–24)</span>
+                <input type="number" name="startHour" value={eventForm.startHour} onChange={handleEventFormChange} placeholder="e.g. 9 for 9:00" min="1" max="24" required />
+              </label>
+              <label className="organizer-field-label">
+                <span>End time (hour 1–24)</span>
+                <input type="number" name="endHour" value={eventForm.endHour} onChange={handleEventFormChange} placeholder="e.g. 17 for 17:00" min="1" max="24" required />
+              </label>
+
+              <h4 className="organizer-form-section-title">Volunteers & rewards</h4>
+              <label className="organizer-field-label">
+                <span>Volunteer points</span>
+                <input type="number" name="points" value={eventForm.points} onChange={handleEventFormChange} placeholder="Points" min="0" required />
+              </label>
+              <label className="organizer-field-label">
+                <span>Distance (km)</span>
+                <input type="number" name="distanceKm" value={eventForm.distanceKm} onChange={handleEventFormChange} placeholder="Distance km" min="0" step="0.1" />
+              </label>
+              <label className="organizer-field-label">
+                <span>Max volunteers</span>
+                <input type="number" name="volunteerSlots" value={eventForm.volunteerSlots} onChange={handleEventFormChange} placeholder="0 = no limit" min="0" />
+              </label>
+              <label className="organizer-field-label">
+                <span>Latitude (optional)</span>
+                <input type="number" name="latitude" value={eventForm.latitude} onChange={handleEventFormChange} placeholder="e.g. 17.385" step="any" />
+              </label>
+              <label className="organizer-field-label">
+                <span>Longitude (optional)</span>
+                <input type="number" name="longitude" value={eventForm.longitude} onChange={handleEventFormChange} placeholder="e.g. 78.4867" step="any" />
+              </label>
+              <label className="organizer-field-label organizer-field-full">
+                <span>Required skills (comma separated)</span>
+                <input name="requiredSkills" value={eventForm.requiredSkills} onChange={handleEventFormChange} placeholder="Required skills" />
+              </label>
             </div>
             <textarea name="description" value={eventForm.description} onChange={handleEventFormChange} placeholder="Description" required />
             <textarea name="address" value={eventForm.address} onChange={handleEventFormChange} placeholder="Address" required />

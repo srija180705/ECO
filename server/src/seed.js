@@ -1,6 +1,7 @@
 require("dotenv").config();
 const bcrypt = require("bcrypt");
 const { connectDB } = require("./db");
+const { useMemoryDb, resolveMongoUri } = require("./memoryMongo");
 const User = require("./models/User");
 const Event = require("./models/Event");
 const Grievance = require("./models/Grievance");
@@ -188,11 +189,9 @@ const sampleGrievances = [
   }
 ];
 
-async function seedDatabase() {
-  try {
-    await connectDB(process.env.MONGODB_URI);
-
-    for (const admin of adminUsers) {
+/** Inserts seed users/events/grievances if missing. Caller must have connected mongoose already. */
+async function runSeedContent() {
+  for (const admin of adminUsers) {
       const exists = await User.findOne({ email: admin.email.toLowerCase() });
       if (!exists) {
         const passwordHash = await bcrypt.hash(admin.password, 10);
@@ -276,12 +275,33 @@ async function seedDatabase() {
       }
     }
 
+}
+
+async function seedDatabase() {
+  let stopMemory = async () => {};
+  try {
+    if (!useMemoryDb() && !process.env.MONGODB_URI) {
+      console.error("[SEED] Set MONGODB_URI or USE_MEMORY_DB=1 in server/.env");
+      process.exit(1);
+    }
+    const { uri, stopMemoryServer } = await resolveMongoUri({
+      registerSignals: false,
+    });
+    stopMemory = stopMemoryServer;
+    await connectDB(uri);
+    await runSeedContent();
     console.log("[SEED] Database seeding completed");
+    await stopMemory();
     process.exit(0);
   } catch (error) {
     console.error("[SEED] Error:", error);
+    await stopMemory();
     process.exit(1);
   }
 }
 
-seedDatabase();
+if (require.main === module) {
+  seedDatabase();
+}
+
+module.exports = { runSeedContent, seedDatabase };

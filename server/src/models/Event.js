@@ -1,5 +1,22 @@
 const mongoose = require("mongoose");
 
+const GeoPointSchema = new mongoose.Schema(
+  {
+    type: { type: String, enum: ["Point"], required: true, default: "Point" },
+    coordinates: {
+      type: [Number],
+      required: true,
+      validate: {
+        validator(v) {
+          return Array.isArray(v) && v.length === 2 && v.every((n) => typeof n === "number" && Number.isFinite(n));
+        },
+        message: "coordinates must be [lng, lat]",
+      },
+    },
+  },
+  { _id: false }
+);
+
 const EventSchema = new mongoose.Schema(
   {
     title: { type: String, required: true },
@@ -14,6 +31,12 @@ const EventSchema = new mongoose.Schema(
     endHour: { type: Number, required: true, default: 17 },
     points: { type: Number, required: true, default: 0 },
     distanceKm: { type: Number, required: true, default: 0 },
+    /** GeoJSON Point for maps / geo queries; stored as [lng, lat]. */
+    coordinates: { type: GeoPointSchema, default: undefined },
+    /** Volunteers who joined from the dashboard (ObjectIds). */
+    volunteers: [{ type: mongoose.Schema.Types.ObjectId, ref: "User" }],
+    /** Max volunteers (0 = no limit). Mirrors volunteerSlots when created via organizer form. */
+    maxVolunteers: { type: Number, default: 0 },
     requiredSkills: { type: [String], default: [] },
     volunteerSlots: { type: Number, default: 0 },
     imageUrl: { type: String, default: "" },
@@ -29,5 +52,7 @@ const EventSchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
+
+EventSchema.index({ coordinates: "2dsphere" }, { sparse: true });
 
 module.exports = mongoose.model("Event", EventSchema);
