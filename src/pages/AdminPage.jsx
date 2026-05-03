@@ -21,6 +21,7 @@ function AdminPage() {
   const [organizers, setOrganizers] = useState([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [adminReplyDrafts, setAdminReplyDrafts] = useState({})
 
   const token = localStorage.getItem('token')
 
@@ -180,6 +181,36 @@ function AdminPage() {
     }
   }
 
+  const handleSendComplaintReply = async (grievanceId) => {
+    const messageText = (adminReplyDrafts[grievanceId] ?? '').trim()
+    if (!messageText) {
+      setError('Write a reply to send to the complainant.')
+      return
+    }
+    setError('')
+    try {
+      const res = await apiFetch(`/api/grievances/admin/${grievanceId}`, {
+        method: 'PATCH',
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          adminResponse: messageText,
+          status: 'resolved',
+        }),
+      })
+      if (!res.ok) {
+        const body = await res.json().catch(() => ({}))
+        throw new Error(body.message || 'Unable to save reply')
+      }
+      setAdminReplyDrafts((prev) => ({ ...prev, [grievanceId]: '' }))
+      await refreshAdminData()
+    } catch (err) {
+      setError(err.message || 'Unable to save reply')
+    }
+  }
+
   const handleLogout = () => {
     localStorage.removeItem('token')
     localStorage.removeItem('user')
@@ -193,33 +224,46 @@ function AdminPage() {
   return (
     <div className="dashboard-layout">
       <aside className="sidebar">
-        <div className="sidebar-top">
-          <div className="sidebar-brand">
-            <div className="brand-logo">🏢</div>
-            <div>
-              <h1 className="brand-name">Admin</h1>
-              <span className="brand-subtitle">Control Panel</span>
+        <div className="sidebar-scroll">
+          <div className="sidebar-top">
+            <div className="sidebar-brand">
+              <div className="brand-logo">🏢</div>
+              <div>
+                <h1 className="brand-name">Admin</h1>
+                <span className="brand-subtitle">Control Panel</span>
+              </div>
+            </div>
+
+            <nav className="sidebar-nav">
+              <button type="button" className={`nav-item ${activeTab === 'events' ? 'active' : ''}`} onClick={() => setActiveTab('events')}>
+                <span className="nav-icon">🗂️</span>
+                <span>Events</span>
+              </button>
+              <button type="button" className={`nav-item ${activeTab === 'organizers' ? 'active' : ''}`} onClick={() => setActiveTab('organizers')}>
+                <span className="nav-icon">🧑‍🤝‍🧑</span>
+                <span>Organizers</span>
+              </button>
+              <button type="button" className={`nav-item ${activeTab === 'grievances' ? 'active' : ''}`} onClick={() => setActiveTab('grievances')}>
+                <span className="nav-icon">⚠️</span>
+                <span>Grievances</span>
+              </button>
+            </nav>
+          </div>
+        </div>
+        <div className="sidebar-footer-portal">
+          <button type="button" className="sidebar-footer-btn sidebar-footer-btn-primary" onClick={() => refreshAdminData()}>
+            Refresh
+          </button>
+          <button type="button" className="sidebar-footer-btn" onClick={handleLogout}>
+            Logout
+          </button>
+          <div className="sidebar-user">
+            <div className="user-avatar">{(firstName && firstName[0]) ? firstName[0] : 'A'}</div>
+            <div className="user-info">
+              <span className="user-name">{firstName}</span>
+              <span className="user-points">Administrator</span>
             </div>
           </div>
-
-          <nav className="sidebar-nav">
-            <button type="button" className={`nav-item ${activeTab === 'events' ? 'active' : ''}`} onClick={() => setActiveTab('events')}>
-              <span className="nav-icon">🗂️</span>
-              <span>Events</span>
-            </button>
-            <button type="button" className={`nav-item ${activeTab === 'organizers' ? 'active' : ''}`} onClick={() => setActiveTab('organizers')}>
-              <span className="nav-icon">🧑‍🤝‍🧑</span>
-              <span>Organizers</span>
-            </button>
-            <button type="button" className={`nav-item ${activeTab === 'grievances' ? 'active' : ''}`} onClick={() => setActiveTab('grievances')}>
-              <span className="nav-icon">⚠️</span>
-              <span>Grievances</span>
-            </button>
-            <button type="button" className={`nav-item`} onClick={handleLogout}>
-              <span className="nav-icon">🚪</span>
-              <span>Logout</span>
-            </button>
-          </nav>
         </div>
       </aside>
 
@@ -345,17 +389,68 @@ function AdminPage() {
                 grievances.map((grievance) => (
                   <div key={grievance._id} className="event-card">
                     <div className="event-card-header">
-                      <h4>{grievance.eventName}</h4>
+                      <h4>
+                        {grievance.referenceId
+                          ? `${grievance.referenceId} — ${grievance.complaintType || 'Complaint'}`
+                          : (grievance.eventName || 'Grievance')}
+                      </h4>
                       <span className="event-badge">{grievance.status}</span>
                     </div>
                     <div className="event-details">
+                      {grievance.referenceId && (
+                        <>
+                          <p><strong>Name:</strong> {grievance.submitterName || '—'}</p>
+                          <p><strong>Role:</strong> {grievance.role || '—'}</p>
+                          <p><strong>Type:</strong> {grievance.complaintType || '—'}</p>
+                        </>
+                      )}
                       <p><strong>Email:</strong> {grievance.userEmail}</p>
-                      <p><strong>Organization:</strong> {grievance.organizationName}</p>
-                      <p><strong>Complaint:</strong> {grievance.description}</p>
+                      {(grievance.organizationName || grievance.eventName) && !grievance.referenceId && (
+                        <>
+                          <p><strong>Event:</strong> {grievance.eventName || '—'}</p>
+                          <p><strong>Organization:</strong> {grievance.organizationName || '—'}</p>
+                        </>
+                      )}
+                      <p><strong>Details:</strong> {grievance.description}</p>
+                      {grievance.adminResponse ? (
+                        <p><strong>Message sent to user:</strong> {grievance.adminResponse}</p>
+                      ) : null}
                     </div>
-                    {grievance.status === 'open' && (
-                      <button className="join-btn" onClick={() => handleResolve(grievance._id)}>Mark Resolved</button>
-                    )}
+                    {grievance.status === 'open' ? (
+                      <div style={{ marginTop: 12 }}>
+                        <label style={{ display: 'block', fontSize: 13, fontWeight: 600, marginBottom: 6 }}>
+                          Reply to complainant (visible on their Complaints page)
+                        </label>
+                        <textarea
+                          rows={4}
+                          placeholder="Address their concern and explain next steps…"
+                          value={adminReplyDrafts[grievance._id] ?? ''}
+                          onChange={(e) =>
+                            setAdminReplyDrafts((prev) => ({ ...prev, [grievance._id]: e.target.value }))
+                          }
+                          style={{
+                            width: '100%',
+                            padding: '10px 12px',
+                            borderRadius: 8,
+                            border: '1px solid #e5e7eb',
+                            marginBottom: 10,
+                            resize: 'vertical',
+                          }}
+                        />
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+                          <button type="button" className="join-btn" onClick={() => handleSendComplaintReply(grievance._id)}>
+                            Send reply & mark resolved
+                          </button>
+                          <button
+                            type="button"
+                            className="cancel-btn"
+                            onClick={() => handleResolve(grievance._id)}
+                          >
+                            Mark resolved (no message)
+                          </button>
+                        </div>
+                      </div>
+                    ) : null}
                   </div>
                 ))
               )}

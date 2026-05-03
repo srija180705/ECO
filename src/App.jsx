@@ -6,6 +6,7 @@ import OrganizerDashboard from './pages/OrganizerDashboard'
 import Profile from './pages/Profile'
 import MapView from './pages/MapView'
 import AdminPage from './pages/AdminPage'
+import Complaints from './pages/Complaints'
 
 // Protected route wrapper - checks localStorage token/user only
 function PrivateRoute({ children, allowedRoles = null, organizerOnly = false }) {
@@ -69,6 +70,14 @@ function App() {
           element={
             <PrivateRoute>
               <Profile />
+            </PrivateRoute>
+          }
+        />
+        <Route
+          path="/complaints"
+          element={
+            <PrivateRoute>
+              <Complaints />
             </PrivateRoute>
           }
         />

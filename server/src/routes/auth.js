@@ -15,6 +15,33 @@ function getNormalizedEmail(email) {
   return normalizedEmail;
 }
 
+/** Same inbox aliases (Gmail / Googlemail + dots + plus-tags) for duplicate login/register checks. */
+function emailAliasesForLookup(normalizedEmail) {
+  if (!normalizedEmail) return [];
+  const out = new Set([normalizedEmail]);
+  const parts = normalizedEmail.split("@");
+  if (parts.length !== 2) return [...out];
+  let [local, domain] = parts;
+  domain = domain.toLowerCase();
+  if (domain === "googlemail.com") {
+    out.add(`${local}@gmail.com`);
+    domain = "gmail.com";
+  }
+  if (domain === "gmail.com") {
+    const tagStrip = local.split("+")[0];
+    const collapseDots = tagStrip.replace(/\./g, "");
+    out.add(`${collapseDots}@gmail.com`);
+    out.add(`${collapseDots}@googlemail.com`);
+  }
+  return [...out];
+}
+
+async function findUserByEmailAliases(normalizedEmail) {
+  const aliases = emailAliasesForLookup(normalizedEmail);
+  if (aliases.length === 0) return null;
+  return User.findOne({ email: { $in: aliases } });
+}
+
 async function sendMail(to, subject, html, text) {
   const nodemailer = require("nodemailer");
   const smtpHost = process.env.SMTP_HOST;
@@ -70,8 +97,8 @@ router.post("/register", async (req, res, next) => {
     const normalizedEmail = getNormalizedEmail(email);
     if (!normalizedEmail) return res.status(400).json({ message: "Invalid email format" });
 
-    const exists = await User.findOne({ email: normalizedEmail });
-    if (exists) return res.status(409).json({ message: "Email already exists" });
+    const exists = await findUserByEmailAliases(normalizedEmail);
+    if (exists) return res.status(409).json({ message: "An account with this email already exists. Try logging in." });
 
     const normalizedRole = role === "organizer" ? "organizer" : "volunteer";
     const passwordHash = await bcrypt.hash(password, 10);
@@ -102,6 +129,9 @@ router.post("/register", async (req, res, next) => {
       } 
     });
   } catch (error) {
+    if (error && error.code === 11000) {
+      return res.status(409).json({ message: "An account with this email already exists. Try logging in." });
+    }
     next(error);
   }
 });
@@ -113,7 +143,7 @@ router.post("/login", async (req, res, next) => {
     const normalizedEmail = getNormalizedEmail(email);
     if (!normalizedEmail) return res.status(400).json({ message: "Invalid email format" });
 
-    const user = await User.findOne({ email: normalizedEmail });
+    const user = await findUserByEmailAliases(normalizedEmail);
     if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
     const ok = await bcrypt.compare(password, user.passwordHash);
@@ -143,7 +173,7 @@ router.post('/forgot-password', async (req, res, next) => {
     const normalizedEmail = getNormalizedEmail(email);
     if (!normalizedEmail) return res.status(400).json({ message: 'Invalid email format' });
 
-    const user = await User.findOne({ email: normalizedEmail });
+    const user = await findUserByEmailAliases(normalizedEmail);
     if (user) {
       const token = crypto.randomBytes(32).toString('hex');
       user.passwordResetToken = token;
@@ -172,7 +202,11 @@ router.post('/reset-password', async (req, res, next) => {
     const normalizedEmail = getNormalizedEmail(email);
     if (!normalizedEmail) return res.status(400).json({ message: 'Invalid email format' });
 
-    const user = await User.findOne({ email: normalizedEmail, passwordResetToken: token });
+    const aliases = emailAliasesForLookup(normalizedEmail);
+    const user = await User.findOne({
+      email: { $in: aliases },
+      passwordResetToken: token,
+    });
     if (!user || !user.passwordResetExpires || user.passwordResetExpires < Date.now()) {
       return res.status(400).json({ message: 'Invalid or expired password reset token' });
     }

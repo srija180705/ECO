@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("../models/User");
 const Reward = require("../models/Reward");
+const Notification = require("../models/Notification");
 
 async function syncAchievementBadges(userId) {
   if (!mongoose.Types.ObjectId.isValid(userId)) return null;
@@ -12,6 +13,8 @@ async function syncAchievementBadges(userId) {
   const eventCount = (user.attendedEvents || []).length;
   const points = Number(user.points) || 0;
   let changed = false;
+  /** @type {{ badgeId: string, title: string, description: string }[]} */
+  const newlyEarned = [];
 
   for (const def of defs) {
     if (!def.badgeId) continue;
@@ -24,12 +27,33 @@ async function syncAchievementBadges(userId) {
     if (met && !badgeSet.has(def.badgeId)) {
       badgeSet.add(def.badgeId);
       changed = true;
+      newlyEarned.push({
+        badgeId: def.badgeId,
+        title: def.title || def.badgeId,
+        description: def.description || "",
+      });
     }
   }
 
   if (changed) {
     user.badges = [...badgeSet];
     await user.save();
+    for (const b of newlyEarned) {
+      try {
+        await Notification.create({
+          userId: user._id,
+          type: "badge_earned",
+          title: `New badge: ${b.title}`,
+          body:
+            b.description && String(b.description).trim()
+              ? String(b.description).trim()
+              : `You earned the "${b.title}" badge.`,
+          meta: { badgeId: b.badgeId },
+        });
+      } catch (e) {
+        console.error("[notifications] badge_earned:", e.message);
+      }
+    }
   }
   return user;
 }

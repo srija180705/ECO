@@ -128,7 +128,10 @@ export default function Community() {
     const token = localStorage.getItem('token');
     if (!token) return undefined;
 
-    const socketUrl = API_BASE || window.location.origin;
+    // REST uses Vite proxy in dev; Socket.IO must talk to the API port directly.
+    const socketUrl = import.meta.env.DEV
+      ? 'http://localhost:4000'
+      : (API_BASE || window.location.origin);
     const socket = io(socketUrl, {
       auth: { token },
       withCredentials: true,

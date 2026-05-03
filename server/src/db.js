@@ -21,8 +21,17 @@ async function cleanupLegacyEventGeoIndex() {
 }
 
 async function connectDB(uri) {
+  const trimmed = typeof uri === "string" ? uri.trim() : "";
+  if (!trimmed) {
+    throw new Error(
+      "Database URI is missing. Set MONGODB_URI or USE_MEMORY_DB=1 in server/.env."
+    );
+  }
+
   mongoose.set("strictQuery", true);
-  await mongoose.connect(uri);
+  await mongoose.connect(trimmed, {
+    serverSelectionTimeoutMS: 12_000,
+  });
   await cleanupLegacyEventGeoIndex();
   console.log("[DB] Connected");
 }

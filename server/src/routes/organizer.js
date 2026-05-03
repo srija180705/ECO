@@ -6,6 +6,8 @@ const { auth } = require("../middleware/auth");
 const Event = require("../models/Event");
 const Application = require("../models/Application");
 const User = require("../models/User");
+const { parseCoordinates } = require("../lib/eventCoordinates");
+const { confirmAttendanceByOrganizer } = require("../lib/confirmAttendance");
 
 const router = express.Router();
 
@@ -207,6 +209,9 @@ router.post("/events", upload.single('permissionPdf'), async (req, res, next) =>
       });
     }
 
+    const slots = Number(volunteerSlots) || 0;
+    const coords = parseCoordinates(req.body);
+
     const event = await Event.create({
       title,
       organizationName: organizationName || req.organizer.name,
@@ -220,8 +225,10 @@ router.post("/events", upload.single('permissionPdf'), async (req, res, next) =>
       endHour: normalizeHour(endHour) || 17,
       points: Number(points) || 0,
       distanceKm: Number(distanceKm) || 0,
+      coordinates: coords || undefined,
+      maxVolunteers: slots,
       requiredSkills: Array.isArray(requiredSkills) ? requiredSkills : String(requiredSkills || '').split(',').map((item) => item.trim()).filter(Boolean),
-      volunteerSlots: Number(volunteerSlots) || 0,
+      volunteerSlots: slots,
       imageUrl,
       approved: false,
       status: "pending",
@@ -272,6 +279,10 @@ router.put("/events/:eventId", upload.single('permissionPdf'), async (req, res, 
       });
     }
 
+    const coords = parseCoordinates(req.body);
+    const nextSlots =
+      req.body.volunteerSlots !== undefined ? Number(req.body.volunteerSlots) || 0 : event.volunteerSlots;
+
     Object.assign(event, {
       title: req.body.title !== undefined ? req.body.title : event.title,
       organizationName: req.body.organizationName !== undefined ? req.body.organizationName : event.organizationName,
@@ -288,13 +299,18 @@ router.put("/events/:eventId", upload.single('permissionPdf'), async (req, res, 
       requiredSkills: req.body.requiredSkills !== undefined
         ? (Array.isArray(req.body.requiredSkills) ? req.body.requiredSkills : String(req.body.requiredSkills).split(',').map((item) => item.trim()).filter(Boolean))
         : event.requiredSkills,
-      volunteerSlots: req.body.volunteerSlots !== undefined ? req.body.volunteerSlots : event.volunteerSlots,
+      volunteerSlots: nextSlots,
+      maxVolunteers: req.body.volunteerSlots !== undefined ? nextSlots : event.maxVolunteers,
       imageUrl: req.body.imageUrl !== undefined ? req.body.imageUrl : event.imageUrl,
       permissionPdf: req.file ? `/uploads/${req.file.filename}` : event.permissionPdf,
       approved: false,
       status: "pending",
       isPublished: false,
     });
+
+    if (coords) {
+      event.coordinates = coords;
+    }
 
     await event.save();
     res.json(event);
@@ -320,9 +336,52 @@ router.get("/event/:eventId/applications", async (req, res, next) => {
     const event = await Event.findOne(organizerEventQuery(req.organizer._id, { _id: req.params.eventId }));
     if (!event) return res.status(404).json({ message: "Event not found" });
 
-    const applications = await Application.find({ eventId: req.params.eventId }).sort({ createdAt: -1 });
-    res.json({ event, applications });
+    const applications = await Application.find({ eventId: req.params.eventId }).sort({ createdAt: -1 }).lean();
+    const volunteerIds = applications.map((a) => a.volunteerId).filter(Boolean);
+    const volunteerDocs = await User.find({ _id: { $in: volunteerIds } })
+      .select("name email city interests")
+      .lean();
+
+    const byVolunteerId = Object.fromEntries(volunteerDocs.map((v) => [String(v._id), v]));
+
+    const enriched = applications.map((app) => ({
+      ...app,
+      volunteerProfile: byVolunteerId[String(app.volunteerId)] || null,
+    }));
+
+    res.json({ event, applications: enriched });
   } catch (error) {
+    next(error);
+  }
+});
+
+router.patch("/events/:eventId/confirm-attendance", async (req, res, next) => {
+  try {
+    const { volunteerId, confirmed } = req.body;
+    if (!volunteerId || confirmed !== true) {
+      return res.status(400).json({ message: "volunteerId and confirmed: true are required" });
+    }
+
+    const event = await Event.findOne(organizerEventQuery(req.organizer._id, { _id: req.params.eventId }));
+    if (!event) return res.status(404).json({ message: "Event not found" });
+
+    if (!event.isPublished) {
+      return res.status(400).json({ message: "Cannot confirm attendance for an event that is not posted to volunteers." });
+    }
+
+    const outcome = await confirmAttendanceByOrganizer(event, volunteerId);
+    const attendedCount = await Application.countDocuments({ eventId: event._id, attended: true });
+
+    res.json({
+      success: true,
+      attendedCount,
+      alreadyConfirmed: outcome.alreadyConfirmed,
+      volunteerPoints: outcome.user?.points,
+      volunteerBadges: outcome.user?.badges,
+      attendedEvents: outcome.user?.attendedEvents,
+    });
+  } catch (error) {
+    if (error.status) return res.status(error.status).json({ message: error.message });
     next(error);
   }
 });
