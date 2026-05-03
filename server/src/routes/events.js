@@ -7,7 +7,6 @@ const Event = require("../models/Event");
 const User = require("../models/User");
 const Application = require("../models/Application");
 const {
-  notifyVolunteersNewEvent,
   notifyOrganizerEventApproved,
   notifyOrganizerVolunteerJoined,
 } = require("../lib/notificationTriggers");
@@ -229,16 +228,15 @@ router.put("/admin/:id/approve", adminAuth, async (req, res, next) => {
       {
         approved: true,
         status: "approved",
-        // Volunteers only query GET /api/events for approved + published events.
-        isPublished: true,
-        publishedAt: new Date(),
+        isPublished: false,
+        publishedAt: null,
       },
       { new: true }
     );
     if (!event) return res.status(404).json({ message: "Event not found" });
 
     setImmediate(() => {
-      Promise.all([notifyOrganizerEventApproved(event), notifyVolunteersNewEvent(event)]).catch((e) =>
+      notifyOrganizerEventApproved(event).catch((e) =>
         console.error("[notifications] event approved:", e.message)
       );
     });

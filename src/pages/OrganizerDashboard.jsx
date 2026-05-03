@@ -297,7 +297,7 @@ function OrganizerDashboard() {
     setEventForm(EMPTY_EVENT_FORM)
     await fetchDashboard()
     setError('')
-    setActionStatus('Event saved. After admin approval it will appear on the volunteer dashboard automatically.')
+    setActionStatus('Event saved. After admin approval, post it to the volunteer dashboard when ready.')
   }
 
   async function deleteEvent(eventId) {

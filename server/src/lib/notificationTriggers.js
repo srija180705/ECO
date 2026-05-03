@@ -78,7 +78,7 @@ async function notifyOrganizerEventApproved(event) {
     userId: event.createdBy,
     type: "event_approved",
     title: "Event approved by admin",
-    body: `"${title}" is approved and visible to volunteers.`,
+    body: `"${title}" is approved and ready to post to the volunteer dashboard.`,
     read: false,
     meta: { eventId: String(event._id) },
   });
