@@ -1,9 +1,16 @@
-# Eco Volunteer Match - Demo App
+# Eco Volunteer Match
 
-A full-stack demonstration of the Eco Volunteer Match application with integrated frontend and backend authentication.
+A full-stack web application for connecting volunteers with environmental projects.
 
+## 🌐 Live Deployment
 
-## 🚀 Quick Start (2 Terminals)
+**[https://eco-five-gold.vercel.app](https://eco-five-gold.vercel.app)**
+
+> The frontend is deployed on Vercel. Note: The live deployment connects to the hosted backend. For full local development (including backend), follow the Quick Start guide below.
+
+---
+
+## 🚀 Quick Start (Local Development — 2 Terminals)
 
 ### Prerequisites
 - **Node.js** v18+ installed
@@ -101,9 +108,6 @@ The app will open automatically at `http://localhost:5173`
 
 ## 🧪 Testing the App
 
-### Test Account
-After registering, you can login with the same credentials.
-
 ### Example Flow
 1. **Load app** → Splash screen appears
 2. **Wait 2.2s** → Auto-navigates to /auth
@@ -169,60 +173,20 @@ npm run seed     # Seed database with sample data (if available)
 
 ---
 
-## 📱 Demo Presentation Script (3 minutes)
+## 🏗️ Architecture
 
-**Slide 1: Intro**
-"This is Eco Volunteer Match - a full-stack web application for connecting volunteers with environmental projects."
-
-**Slide 2: Show Splash**
-"When users first open the app, they see our branded splash screen with a loading animation."
-
-**Slide 3: Show Login/Register**
-"After 2 seconds, they're taken to our authentication page. They can register as a new volunteer or login if they already have an account."
-
-**Slide 4: Demo Register**
-1. Click "Register" tab
-2. Fill: Name, Email, Password
-3. Click "Create Account"
-4. Point out: "Their account is now saved in our MongoDB database"
-
-**Slide 5: Demo Login**
-1. Click "Login" tab
-2. Use same email/password
-3. Click "Login"
-4. Show: "Authentication successful!"
-
-**Slide 6: Architecture**
-"The frontend is React with Vite, the backend is Node.js/Express, and data is stored in MongoDB. Everything is connected and working."
-
----
-
-## 📚 Next Steps (For Teacher)
-
-This demo shows:
-✅ Frontend UI (Splash + Auth)
-✅ Backend API (Register/Login)
-✅ Database Persistence (MongoDB)
-✅ JWT Authentication
-✅ Responsive Design
-
-To extend:
-- Add Dashboard page
-- Add Event listing
-- Add Volunteer matching algorithm
-- Add Rewards system
-- Deploy to cloud (Azure/AWS)
+- **Frontend**: React + Vite
+- **Backend**: Node.js + Express
+- **Database**: MongoDB
+- **Auth**: JWT (7-day expiry) + bcrypt password hashing
+- **Deployment**: Vercel (frontend)
 
 ---
 
 ## 📝 Notes
 
-- Default city: "Hyderabad" (can be changed in profile)
+- Default city: "Hyderabad"
 - Initial points: 0 (for rewards system)
 - Initial badge: "b1" (for gamification)
 - Tokens expire after 7 days
 - Passwords are hashed with bcrypt (10 rounds)
-
----
-
-**Created for teacher demo - February 2026**
