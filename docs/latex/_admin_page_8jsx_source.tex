@@ -1,0 +1,471 @@
+\doxysection{Admin\+Page.\+jsx}
+\hypertarget{_admin_page_8jsx_source}{}\label{_admin_page_8jsx_source}\index{src/pages/AdminPage.jsx@{src/pages/AdminPage.jsx}}
+\doxymbox{\hyperlink{_admin_page_8jsx}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00001}00001\ \textcolor{keyword}{import}\ \{\ useEffect,\ useMemo,\ useState\ \}\ from\ \textcolor{stringliteral}{'react'}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00002}00002\ \textcolor{keyword}{import}\ \{\ useLocation,\ useNavigate\ \}\ from\ \textcolor{stringliteral}{'react-\/router-\/dom'}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00003}00003\ \textcolor{keyword}{import}\ \textcolor{stringliteral}{'./Dashboard.css'}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00004}00004\ \textcolor{keyword}{import}\ \{\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}},\ \doxymbox{\hyperlink{api_8js_a4389dc0f6ae335a90f447e2a8bd376d1}{API\_BASE}}\ \}\ from\ \textcolor{stringliteral}{'../api.js'}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00005}00005\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00006}00006\ \textcolor{keyword}{function}\ AdminPage()\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00007}00007\ \ \ \textcolor{keyword}{const}\ location\ =\ useLocation()}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00008}00008\ \ \ const\ navigate\ =\ useNavigate()}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00009}00009\ \ \ const\ storedUser\ =\ JSON.parse(localStorage.getItem('user')\ ||\ 'null')}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00010}00010\ \ \ const\ user\ =\ location.state?.user\ ||\ storedUser}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00011}00011\ \ \ const\ firstName\ =\ user?.name\ ?\ user.name.split(\textcolor{charliteral}{'\ '})[0]\ :\ 'Admin'}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00012}00012\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00013}00013\ \ \ const\ resolveUploadUrl\ =\ (url)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00014}00014\ \ \ \ \ \textcolor{keywordflow}{if}\ (!url)\ \textcolor{keywordflow}{return}\ url}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00015}00015\ \ \ \ \ \textcolor{keywordflow}{return}\ url.startsWith(\textcolor{stringliteral}{'http'})\ ?\ url\ :\ \`{}\$\{API\_BASE\}\$\{url\}\`{}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00016}00016\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00017}00017\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00018}00018\ \ \ \textcolor{keyword}{const}\ [activeTab,\ setActiveTab]\ =\ useState(\textcolor{stringliteral}{'events'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00019}00019\ \ \ const\ [events,\ setEvents]\ =\ useState([])}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00020}00020\ \ \ const\ [grievances,\ setGrievances]\ =\ useState([])}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00021}00021\ \ \ const\ [organizers,\ setOrganizers]\ =\ useState([])}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00022}00022\ \ \ const\ [loading,\ setLoading]\ =\ useState(true)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00023}00023\ \ \ const\ [error,\ setError]\ =\ useState('')}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00024}00024\ \ \ const\ [adminReplyDrafts,\ setAdminReplyDrafts]\ =\ useState(\{\})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00025}00025\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00026}00026\ \ \ \textcolor{keyword}{const}\ token\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00027}00027\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00028}00028\ \ \ useEffect(()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00029}00029\ \ \ \ \ \textcolor{keyword}{const}\ loadAdminData\ =\ async\ ()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00030}00030\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!token)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00031}00031\ \ \ \ \ \ \ \ \ setError(\textcolor{stringliteral}{'Login\ required'});}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00032}00032\ \ \ \ \ \ \ \ \ setLoading(\textcolor{keyword}{false});}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00033}00033\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00034}00034\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00035}00035\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00036}00036\ \ \ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00037}00037\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ [eventsRes,\ grievancesRes,\ organizersRes]\ =\ await\ Promise.all([}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00038}00038\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/events/admin'},\ \{\ headers:\ \{\ Authorization:\ \`{}Bearer\ \$\{token\}\`{}\ \}\ \}),}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00039}00039\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/grievances/admin'},\ \{\ headers:\ \{\ Authorization:\ \`{}Bearer\ \$\{token\}\`{}\ \}\ \}),}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00040}00040\ \ \ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/auth/admin/organizers'},\ \{\ headers:\ \{\ Authorization:\ \`{}Bearer\ \$\{token\}\`{}\ \}\ \})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00041}00041\ \ \ \ \ \ \ \ \ ])}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00042}00042\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00043}00043\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!eventsRes.ok\ ||\ !grievancesRes.ok\ ||\ !organizersRes.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00044}00044\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ errorBody\ =\ !eventsRes.ok}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00045}00045\ \ \ \ \ \ \ \ \ \ \ \ \ ?\ await\ eventsRes.json().catch(()\ =>\ \textcolor{keyword}{null})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00046}00046\ \ \ \ \ \ \ \ \ \ \ \ \ :\ !grievancesRes.ok}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00047}00047\ \ \ \ \ \ \ \ \ \ \ \ \ ?\ await\ grievancesRes.json().catch(()\ =>\ \textcolor{keyword}{null})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ :\ await\ organizersRes.json().catch(()\ =>\ \textcolor{keyword}{null})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ setError(errorBody?.message\ ||\ \textcolor{stringliteral}{'Failed\ to\ load\ admin\ data'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00050}00050\ \ \ \ \ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00051}00051\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00052}00052\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00053}00053\ \ \ \ \ \ \ \ \ setEvents(await\ eventsRes.json())}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00054}00054\ \ \ \ \ \ \ \ \ setGrievances(await\ grievancesRes.json())}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00055}00055\ \ \ \ \ \ \ \ \ setOrganizers(await\ organizersRes.json())}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00056}00056\ \ \ \ \ \ \ \}\ catch\ (err)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00057}00057\ \ \ \ \ \ \ \ \ setError(err.message\ ||\ \textcolor{stringliteral}{'Failed\ to\ load\ admin\ data'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00058}00058\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{finally}\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00059}00059\ \ \ \ \ \ \ \ \ setLoading(\textcolor{keyword}{false})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00060}00060\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00061}00061\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00063}00063\ \ \ \ \ loadAdminData()}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00064}00064\ \ \ \},\ [token])}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00065}00065\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00066}00066\ \ \ \textcolor{keyword}{const}\ groupEvents\ =\ useMemo(()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00067}00067\ \ \ \ \ \textcolor{keyword}{const}\ categories\ =\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00068}00068\ \ \ \ \ \ \ \textcolor{stringliteral}{'To\ Be\ Approved'}:\ [],}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00069}00069\ \ \ \ \ \ \ \textcolor{stringliteral}{'To\ Be\ Happened'}:\ [],}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00070}00070\ \ \ \ \ \ \ Happening:\ [],}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00071}00071\ \ \ \ \ \ \ Closed:\ []}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00072}00072\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00073}00073\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00074}00074\ \ \ \ \ \textcolor{keyword}{const}\ now\ =\ \textcolor{keyword}{new}\ Date()}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00075}00075\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00076}00076\ \ \ \ \ events.forEach((event)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00077}00077\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!event.approved\ \&\&\ event.status\ !==\ \textcolor{stringliteral}{'rejected'})\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00078}00078\ \ \ \ \ \ \ \ \ categories[\textcolor{stringliteral}{'To\ Be\ Approved'}].push(event)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00079}00079\ \ \ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00080}00080\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00081}00081\ \ \ \ \ \ \ if\ (event.status\ ===\ \textcolor{stringliteral}{'rejected'})\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00082}00082\ \ \ \ \ \ \ \textcolor{keyword}{const}\ start\ =\ \textcolor{keyword}{new}\ Date(event.startDateISO)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00083}00083\ \ \ \ \ \ \ \textcolor{keyword}{const}\ end\ =\ \textcolor{keyword}{new}\ Date(event.endDateISO)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00084}00084\ \ \ \ \ \ \ if\ (now\ >\ end)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00085}00085\ \ \ \ \ \ \ \ \ categories.Closed.push(event)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00086}00086\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \textcolor{keywordflow}{if}\ (now\ >=\ start)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00087}00087\ \ \ \ \ \ \ \ \ categories.Happening.push(event)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00088}00088\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00089}00089\ \ \ \ \ \ \ \ \ categories[\textcolor{stringliteral}{'To\ Be\ Happened'}].push(event)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00090}00090\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00091}00091\ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00092}00092\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00093}00093\ \ \ \ \ \textcolor{keywordflow}{return}\ categories}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00094}00094\ \ \ \},\ [events])}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00095}00095\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00096}00096\ \ \ \textcolor{keyword}{const}\ refreshAdminData\ =\ async\ ()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00097}00097\ \ \ \ \ setLoading(\textcolor{keyword}{true})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00098}00098\ \ \ \ \ setError('')}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00099}00099\ \ \ \ \ try\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00100}00100\ \ \ \ \ \ \ \textcolor{keyword}{const}\ [eventsRes,\ grievancesRes,\ organizersRes]\ =\ await\ Promise.all([}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00101}00101\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/events/admin'},\ \{\ headers:\ \{\ Authorization:\ \`{}Bearer\ \$\{token\}\`{}\ \}\ \}),}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00102}00102\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/grievances/admin'},\ \{\ headers:\ \{\ Authorization:\ \`{}Bearer\ \$\{token\}\`{}\ \}\ \}),}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00103}00103\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/auth/admin/organizers'},\ \{\ headers:\ \{\ Authorization:\ \`{}Bearer\ \$\{token\}\`{}\ \}\ \})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00104}00104\ \ \ \ \ \ \ ])}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00105}00105\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!eventsRes.ok\ ||\ !grievancesRes.ok\ ||\ !organizersRes.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00106}00106\ \ \ \ \ \ \ \ \ const\ errorBody\ =\ !eventsRes.ok}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00107}00107\ \ \ \ \ \ \ \ \ \ \ ?\ await\ eventsRes.json().catch(()\ =>\ null)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00108}00108\ \ \ \ \ \ \ \ \ \ \ :\ !grievancesRes.ok}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00109}00109\ \ \ \ \ \ \ \ \ \ \ ?\ await\ grievancesRes.json().catch(()\ =>\ null)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00110}00110\ \ \ \ \ \ \ \ \ \ \ :\ await\ organizersRes.json().catch(()\ =>\ null)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00111}00111\ \ \ \ \ \ \ \ \ setError(errorBody?.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ refresh\ admin\ data'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00112}00112\ \ \ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00113}00113\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00114}00114\ \ \ \ \ \ \ setEvents(await\ eventsRes.json())}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00115}00115\ \ \ \ \ \ \ setGrievances(await\ grievancesRes.json())}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00116}00116\ \ \ \ \ \ \ setOrganizers(await\ organizersRes.json())}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00117}00117\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (err)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00118}00118\ \ \ \ \ \ \ setError(err.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ refresh\ admin\ data'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00119}00119\ \ \ \ \ \}\ \textcolor{keywordflow}{finally}\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00120}00120\ \ \ \ \ \ \ setLoading(\textcolor{keyword}{false})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00121}00121\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00122}00122\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00123}00123\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00124}00124\ \ \ \textcolor{keyword}{const}\ handleApprove\ =\ async\ (eventId)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00125}00125\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00126}00126\ \ \ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/events/admin/\$\{eventId\}/approve\`{},\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00127}00127\ \ \ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'PUT'},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00128}00128\ \ \ \ \ \ \ \ \ headers:\ \{\ Authorization:\ \`{}Bearer\ \$\{token\}\`{}\ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00129}00129\ \ \ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00130}00130\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00131}00131\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ body\ =\ await\ res.json().catch(()\ =>\ \textcolor{keyword}{null})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00132}00132\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(body?.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ approve\ event'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00133}00133\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00134}00134\ \ \ \ \ \ \ refreshAdminData()}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00135}00135\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (err)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00136}00136\ \ \ \ \ \ \ setError(err.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ approve\ event'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00137}00137\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00138}00138\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00139}00139\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00140}00140\ \ \ \textcolor{keyword}{const}\ handleDecline\ =\ async\ (eventId)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00141}00141\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00142}00142\ \ \ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/events/admin/\$\{eventId\}/reject\`{},\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00143}00143\ \ \ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'PUT'},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00144}00144\ \ \ \ \ \ \ \ \ headers:\ \{\ Authorization:\ \`{}Bearer\ \$\{token\}\`{}\ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00145}00145\ \ \ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00146}00146\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00147}00147\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ body\ =\ await\ res.json().catch(()\ =>\ \textcolor{keyword}{null})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00148}00148\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(body?.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ decline\ event'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00149}00149\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00150}00150\ \ \ \ \ \ \ refreshAdminData()}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00151}00151\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (err)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00152}00152\ \ \ \ \ \ \ setError(err.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ decline\ event'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00153}00153\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00154}00154\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00155}00155\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00156}00156\ \ \ \textcolor{keyword}{const}\ handleClose\ =\ async\ (eventId)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00157}00157\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00158}00158\ \ \ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/events/admin/\$\{eventId\}/close\`{},\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00159}00159\ \ \ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'PUT'},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00160}00160\ \ \ \ \ \ \ \ \ headers:\ \{\ Authorization:\ \`{}Bearer\ \$\{token\}\`{}\ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00161}00161\ \ \ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00162}00162\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00163}00163\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ body\ =\ await\ res.json().catch(()\ =>\ \textcolor{keyword}{null})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00164}00164\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(body?.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ close\ event'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00165}00165\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00166}00166\ \ \ \ \ \ \ refreshAdminData()}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00167}00167\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (err)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00168}00168\ \ \ \ \ \ \ setError(err.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ close\ event'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00169}00169\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00170}00170\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00171}00171\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00172}00172\ \ \ \textcolor{keyword}{const}\ handleResolve\ =\ async\ (grievanceId)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00173}00173\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00174}00174\ \ \ \ \ \ \ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/grievances/admin/\$\{grievanceId\}/resolve\`{},\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00175}00175\ \ \ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'PUT'},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00176}00176\ \ \ \ \ \ \ \ \ headers:\ \{\ Authorization:\ \`{}Bearer\ \$\{token\}\`{}\ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00177}00177\ \ \ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00178}00178\ \ \ \ \ \ \ refreshAdminData()}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00179}00179\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (err)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00180}00180\ \ \ \ \ \ \ setError(err.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ resolve\ grievance'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00181}00181\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00182}00182\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00183}00183\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00184}00184\ \ \ \textcolor{keyword}{const}\ handleSendComplaintReply\ =\ async\ (grievanceId)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00185}00185\ \ \ \ \ \textcolor{keyword}{const}\ messageText\ =\ (adminReplyDrafts[grievanceId]\ ??\ \textcolor{stringliteral}{''}).trim()}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00186}00186\ \ \ \ \ \textcolor{keywordflow}{if}\ (!messageText)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00187}00187\ \ \ \ \ \ \ setError(\textcolor{stringliteral}{'Write\ a\ reply\ to\ send\ to\ the\ complainant.'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00188}00188\ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00189}00189\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00190}00190\ \ \ \ \ setError('')}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00191}00191\ \ \ \ \ try\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00192}00192\ \ \ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/grievances/admin/\$\{grievanceId\}\`{},\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00193}00193\ \ \ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'PATCH'},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00194}00194\ \ \ \ \ \ \ \ \ headers:\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00195}00195\ \ \ \ \ \ \ \ \ \ \ Authorization:\ \`{}Bearer\ \$\{token\}\`{},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00196}00196\ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'Content-\/Type'}:\ \textcolor{stringliteral}{'application/json'},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00197}00197\ \ \ \ \ \ \ \ \ \},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00198}00198\ \ \ \ \ \ \ \ \ body:\ JSON.stringify(\{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00199}00199\ \ \ \ \ \ \ \ \ \ \ adminResponse:\ messageText,}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00200}00200\ \ \ \ \ \ \ \ \ \ \ status:\ \textcolor{stringliteral}{'resolved'},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00201}00201\ \ \ \ \ \ \ \ \ \}),}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00202}00202\ \ \ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00203}00203\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00204}00204\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ body\ =\ await\ res.json().catch(()\ =>\ (\{\}))}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00205}00205\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(body.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ save\ reply'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00206}00206\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00207}00207\ \ \ \ \ \ \ setAdminReplyDrafts((prev)\ =>\ (\{\ ...prev,\ [grievanceId]:\ \textcolor{stringliteral}{''}\ \}))}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00208}00208\ \ \ \ \ \ \ await\ refreshAdminData()}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00209}00209\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (err)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00210}00210\ \ \ \ \ \ \ setError(err.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ save\ reply'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00211}00211\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00212}00212\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00213}00213\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00214}00214\ \ \ \textcolor{keyword}{const}\ handleLogout\ =\ ()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00215}00215\ \ \ \ \ localStorage.removeItem(\textcolor{stringliteral}{'token'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00216}00216\ \ \ \ \ localStorage.removeItem(\textcolor{stringliteral}{'user'})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00217}00217\ \ \ \ \ navigate(\textcolor{stringliteral}{'/auth'},\ \{\ replace:\ \textcolor{keyword}{true}\ \})}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00218}00218\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00219}00219\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00220}00220\ \ \ \textcolor{keywordflow}{if}\ (loading)\ \{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00221}00221\ \ \ \ \ \textcolor{keywordflow}{return}\ <div\ className=\textcolor{stringliteral}{"{}coming-\/soon-\/container"{}}><p>Loading\ admin\ dashboard...</p></div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00222}00222\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00223}00223\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00224}00224\ \ \ \textcolor{keywordflow}{return}\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00225}00225\ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}dashboard-\/layout"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00226}00226\ \ \ \ \ \ \ <aside\ className=\textcolor{stringliteral}{"{}sidebar"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00227}00227\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}sidebar-\/scroll"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00228}00228\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}sidebar-\/top"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00229}00229\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}sidebar-\/brand"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00230}00230\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}brand-\/logo"{}}>🏢</div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00231}00231\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00232}00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h1\ className=\textcolor{stringliteral}{"{}brand-\/name"{}}>Admin</h1>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00233}00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}brand-\/subtitle"{}}>Control\ Panel</span>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00234}00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00236}00236\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ <nav\ className=\textcolor{stringliteral}{"{}sidebar-\/nav"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\{\`{}nav-\/item\ \$\{activeTab\ ===\ \textcolor{stringliteral}{'events'}\ ?\ \textcolor{stringliteral}{'active'}\ :\ \textcolor{stringliteral}{''}\}\`{}\}\ onClick=\{()\ =>\ setActiveTab(\textcolor{stringliteral}{'events'})\}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00239}00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}nav-\/icon"{}}>🗂️</span>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00240}00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Events</span>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00241}00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00242}00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\{\`{}nav-\/item\ \$\{activeTab\ ===\ \textcolor{stringliteral}{'organizers'}\ ?\ \textcolor{stringliteral}{'active'}\ :\ \textcolor{stringliteral}{''}\}\`{}\}\ onClick=\{()\ =>\ setActiveTab(\textcolor{stringliteral}{'organizers'})\}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00243}00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}nav-\/icon"{}}>🧑‍🤝‍🧑</span>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00244}00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Organizers</span>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00245}00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00246}00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\{\`{}nav-\/item\ \$\{activeTab\ ===\ \textcolor{stringliteral}{'grievances'}\ ?\ \textcolor{stringliteral}{'active'}\ :\ \textcolor{stringliteral}{''}\}\`{}\}\ onClick=\{()\ =>\ setActiveTab(\textcolor{stringliteral}{'grievances'})\}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00247}00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}nav-\/icon"{}}>⚠️</span>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00248}00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Grievances</span>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00249}00249\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00250}00250\ \ \ \ \ \ \ \ \ \ \ \ \ </nav>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00251}00251\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00252}00252\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00253}00253\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}sidebar-\/footer-\/portal"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00254}00254\ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}sidebar-\/footer-\/btn\ sidebar-\/footer-\/btn-\/primary"{}}\ onClick=\{()\ =>\ refreshAdminData()\}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00255}00255\ \ \ \ \ \ \ \ \ \ \ \ \ Refresh}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00256}00256\ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00257}00257\ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}sidebar-\/footer-\/btn"{}}\ onClick=\{handleLogout\}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00258}00258\ \ \ \ \ \ \ \ \ \ \ \ \ Logout}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00259}00259\ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00260}00260\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}sidebar-\/user"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00261}00261\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}user-\/avatar"{}}>\{(firstName\ \&\&\ firstName[0])\ ?\ firstName[0]\ :\ \textcolor{stringliteral}{'A'}\}</div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00262}00262\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}user-\/info"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00263}00263\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}user-\/name"{}}>\{firstName\}</span>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}user-\/points"{}}>Administrator</span>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00265}00265\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00266}00266\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00267}00267\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00268}00268\ \ \ \ \ \ \ </aside>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00269}00269\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00270}00270\ \ \ \ \ \ \ <main\ className=\textcolor{stringliteral}{"{}dashboard-\/main"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00271}00271\ \ \ \ \ \ \ \ \ <header\ className=\textcolor{stringliteral}{"{}dashboard-\/header"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}header-\/title"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00273}00273\ \ \ \ \ \ \ \ \ \ \ \ \ <h2>Admin\ panel</h2>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ <p>Welcome\ back,\ \{firstName\}.\ Manage\ events\ and\ grievances\ here.</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00275}00275\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00276}00276\ \ \ \ \ \ \ \ \ </header>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00277}00277\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00278}00278\ \ \ \ \ \ \ \ \ \{error\ \&\&\ <div\ className=\textcolor{stringliteral}{"{}no-\/events"{}}><p>\{error\}</p></div>\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00279}00279\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00280}00280\ \ \ \ \ \ \ \ \ \{activeTab\ ===\ \textcolor{stringliteral}{'events'}\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00281}00281\ \ \ \ \ \ \ \ \ \ \ <div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00282}00282\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}search-\/filter-\/bar"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00283}00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00284}00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h3>Event\ Categories</h3>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00285}00285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>Approved\ events\ are\ shown\ to\ users\ once\ they\ enter\ the\ schedule\ category.</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00286}00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00287}00287\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00288}00288\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00289}00289\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}stats-\/grid"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00290}00290\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{Object.entries(groupEvents).map(([key,\ list])\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00291}00291\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ key=\{key\}\ className=\textcolor{stringliteral}{"{}stat-\/card\ stat-\/blue"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00292}00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}stat-\/icon-\/wrapper"{}}>\{key\ ===\ \textcolor{stringliteral}{'Closed'}\ ?\ \textcolor{stringliteral}{'✔️'}\ :\ key\ ===\ \textcolor{stringliteral}{'Happening'}\ ?\ \textcolor{stringliteral}{'🔥'}\ :\ key\ ===\ \textcolor{stringliteral}{'To\ Be\ Approved'}\ ?\ \textcolor{stringliteral}{'⏳'}\ :\ \textcolor{stringliteral}{'🕓'}\}</div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}stat-\/info"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00294}00294\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h3>\{list.length\}</h3>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00295}00295\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>\{key\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00296}00296\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00297}00297\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00298}00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00299}00299\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00300}00300\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00301}00301\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}events-\/grid"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00302}00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{Object.entries(groupEvents).map(([categoryTitle,\ list])\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00303}00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ key=\{categoryTitle\}\ className=\textcolor{stringliteral}{"{}event-\/card"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00304}00304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h3>\{categoryTitle\}</h3>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00305}00305\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{list.length\ ===\ 0\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00306}00306\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>No\ events\ in\ \textcolor{keyword}{this}\ category.</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00307}00307\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00308}00308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ list.map((event)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00309}00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ key=\{\textcolor{keyword}{event}.\_id\}\ className=\textcolor{stringliteral}{"{}event-\/card"{}}\ style=\{\{\ marginBottom:\ \textcolor{stringliteral}{'12px'}\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00310}00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}event-\/card-\/header"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00311}00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4>\{\textcolor{keyword}{event}.title\}</h4>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00312}00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}event-\/badge"{}}>\{\textcolor{keyword}{event}.category\}</span>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00313}00313\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00314}00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}event-\/details"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00315}00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Org:</strong>\ \{\textcolor{keyword}{event}.organizationName\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00316}00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>When:</strong>\ \{\textcolor{keyword}{new}\ Date(event.startDateISO).toDateString()\}\ -\/\ \{\textcolor{keyword}{new}\ Date(event.endDateISO).toDateString()\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00317}00317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Location:</strong>\ \{\textcolor{keyword}{event}.location\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00318}00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00319}00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}event-\/details"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00320}00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>\{\textcolor{keyword}{event}.description\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00321}00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\textcolor{keyword}{event}.permissionPdf\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00322}00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00323}00323\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <strong>Permission\ PDF:</strong>\{\textcolor{charliteral}{'\ '}\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00324}00324\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <a\ href=\{resolveUploadUrl(event.permissionPdf)\}\ target=\textcolor{stringliteral}{"{}\_blank"{}}\ rel=\textcolor{stringliteral}{"{}noreferrer"{}}>View\ document</a>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00325}00325\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00326}00326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00327}00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00328}00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ display:\ \textcolor{stringliteral}{'flex'},\ gap:\ \textcolor{stringliteral}{'10px'},\ flexWrap:\ \textcolor{stringliteral}{'wrap'}\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00329}00329\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{!\textcolor{keyword}{event}.approved\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00330}00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00331}00331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}join-\/btn"{}}\ onClick=\{()\ =>\ handleApprove(event.\_id)\}>Approve</button>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00332}00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}join-\/btn\ decline-\/btn"{}}\ onClick=\{()\ =>\ handleDecline(event.\_id)\}>Decline</button>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00333}00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00334}00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00335}00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\textcolor{keyword}{event}.approved\ \&\&\ categoryTitle\ !==\ \textcolor{stringliteral}{'Closed'}\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00336}00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}join-\/btn"{}}\ onClick=\{()\ =>\ handleClose(event.\_id)\}>Close</button>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00337}00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00338}00338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00339}00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00340}00340\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00341}00341\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00342}00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00343}00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00344}00344\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00345}00345\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00346}00346\ \ \ \ \ \ \ \ \ )\ :\ activeTab\ ===\ \textcolor{stringliteral}{'organizers'}\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00347}00347\ \ \ \ \ \ \ \ \ \ \ <div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00348}00348\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}search-\/filter-\/bar"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00349}00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h3>Registered\ Organizers</h3>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00350}00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>All\ organizers\ who\ registered\ in\ the\ platform\ are\ listed\ below.</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00351}00351\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00352}00352\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00353}00353\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}events-\/grid"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00354}00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{organizers.length\ ===\ 0\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00355}00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>No\ organizers\ registered\ yet.</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00356}00356\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00357}00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ organizers.map((organizer)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00358}00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ key=\{organizer.\_id\}\ className=\textcolor{stringliteral}{"{}event-\/card"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00359}00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}event-\/card-\/header"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00360}00360\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4>\{organizer.name\}</h4>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00361}00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00362}00362\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}event-\/details"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00363}00363\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Email:</strong>\ \{organizer.email\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00364}00364\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>City:</strong>\ \{organizer.city\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00365}00365\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Role:</strong>\ \{organizer.role\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00366}00366\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Registered:</strong>\ \{organizer.createdAt\ ?\ \textcolor{keyword}{new}\ Date(organizer.createdAt).toLocaleString()\ :\ \textcolor{stringliteral}{'N/A'}\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00367}00367\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{organizer.permissionSlipUrl\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00368}00368\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00369}00369\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <strong>Permission\ Slip:</strong>\{\textcolor{charliteral}{'\ '}\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00370}00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <a\ href=\{resolveUploadUrl(organizer.permissionSlipUrl)\}\ target=\textcolor{stringliteral}{"{}\_blank"{}}\ rel=\textcolor{stringliteral}{"{}noreferrer"{}}>View\ document</a>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00371}00371\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00372}00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00373}00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00374}00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00375}00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00376}00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00377}00377\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00378}00378\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00379}00379\ \ \ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00380}00380\ \ \ \ \ \ \ \ \ \ \ <div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00381}00381\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}search-\/filter-\/bar"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00382}00382\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h3>Pending\ grievances</h3>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00383}00383\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00384}00384\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00385}00385\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}events-\/grid"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00386}00386\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{grievances.length\ ===\ 0\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00387}00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>No\ grievances\ yet.</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00388}00388\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00389}00389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ grievances.map((grievance)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00390}00390\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ key=\{grievance.\_id\}\ className=\textcolor{stringliteral}{"{}event-\/card"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00391}00391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}event-\/card-\/header"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00392}00392\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00393}00393\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{grievance.referenceId}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00394}00394\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ \`{}\$\{grievance.referenceId\}\ —\ \$\{grievance.complaintType\ ||\ \textcolor{stringliteral}{'Complaint'}\}\`{}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00395}00395\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ (grievance.eventName\ ||\ \textcolor{stringliteral}{'Grievance'})\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00396}00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </h4>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00397}00397\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}event-\/badge"{}}>\{grievance.status\}</span>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00398}00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00399}00399\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}event-\/details"{}}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00400}00400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{grievance.referenceId\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00401}00401\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00402}00402\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Name:</strong>\ \{grievance.submitterName\ ||\ \textcolor{stringliteral}{'—'}\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00403}00403\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Role:</strong>\ \{grievance.role\ ||\ \textcolor{stringliteral}{'—'}\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00404}00404\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Type:</strong>\ \{grievance.complaintType\ ||\ \textcolor{stringliteral}{'—'}\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00405}00405\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00406}00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00407}00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Email:</strong>\ \{grievance.userEmail\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00408}00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{(grievance.organizationName\ ||\ grievance.eventName)\ \&\&\ !grievance.referenceId\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00409}00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00410}00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Event:</strong>\ \{grievance.eventName\ ||\ \textcolor{stringliteral}{'—'}\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00411}00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Organization:</strong>\ \{grievance.organizationName\ ||\ \textcolor{stringliteral}{'—'}\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00412}00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00413}00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00414}00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Details:</strong>\ \{grievance.description\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00415}00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{grievance.adminResponse\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00416}00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Message\ sent\ to\ user:</strong>\ \{grievance.adminResponse\}</p>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00417}00417\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ null\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00418}00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00419}00419\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{grievance.status\ ===\ \textcolor{stringliteral}{'open'}\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00420}00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ marginTop:\ 12\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00421}00421\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ style=\{\{\ display:\ \textcolor{stringliteral}{'block'},\ fontSize:\ 13,\ fontWeight:\ 600,\ marginBottom:\ 6\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00422}00422\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Reply\ to\ complainant\ (visible\ on\ their\ Complaints\ page)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00423}00423\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00424}00424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <textarea}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00425}00425\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rows=\{4\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00426}00426\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ placeholder=\textcolor{stringliteral}{"{}Address\ their\ concern\ and\ explain\ next\ steps…"{}}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00427}00427\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value=\{adminReplyDrafts[grievance.\_id]\ ??\ \textcolor{stringliteral}{''}\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00428}00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{(e)\ =>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00429}00429\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setAdminReplyDrafts((prev)\ =>\ (\{\ ...prev,\ [grievance.\_id]:\ e.target.value\ \}))}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00430}00430\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00431}00431\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00432}00432\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ width:\ \textcolor{stringliteral}{'100\%'},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00433}00433\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ padding:\ \textcolor{stringliteral}{'10px\ 12px'},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00434}00434\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ borderRadius:\ 8,}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00435}00435\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ border:\ \textcolor{stringliteral}{'1px\ solid\ \#e5e7eb'},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00436}00436\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ marginBottom:\ 10,}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00437}00437\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ resize:\ \textcolor{stringliteral}{'vertical'},}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00438}00438\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00439}00439\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00440}00440\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ display:\ \textcolor{stringliteral}{'flex'},\ flexWrap:\ \textcolor{stringliteral}{'wrap'},\ gap:\ 10\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00441}00441\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}join-\/btn"{}}\ onClick=\{()\ =>\ handleSendComplaintReply(grievance.\_id)\}>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00442}00442\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Send\ reply\ \&\ mark\ resolved}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00443}00443\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00444}00444\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00445}00445\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00446}00446\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}cancel-\/btn"{}}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00447}00447\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ handleResolve(grievance.\_id)\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00448}00448\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00449}00449\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Mark\ resolved\ (no\ message)}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00450}00450\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00451}00451\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00452}00452\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00453}00453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ null\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00454}00454\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00455}00455\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00456}00456\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00457}00457\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00458}00458\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00459}00459\ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00460}00460\ \ \ \ \ \ \ </main>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00461}00461\ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00462}00462\ \ \ )}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00463}00463\ \}}
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00464}00464\ }
+\DoxyCodeLine{\Hypertarget{_admin_page_8jsx_source_l00465}00465\ export\ default\ AdminPage}
+
+\end{DoxyCode}

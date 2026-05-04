@@ -1,0 +1,301 @@
+\doxysection{src/\+components/\+\+Profile\+Page.jsx File Reference}
+\hypertarget{_profile_page_8jsx}{}\label{_profile_page_8jsx}\index{src/components/ProfilePage.jsx@{src/components/ProfilePage.jsx}}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{_profile_page_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \{ use\+State, use\+Effect \} from "{}react"{}
+\item 
+\doxymbox{\hyperlink{_profile_page_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} Loader from \doxymbox{\hyperlink{_profile_page_8jsx_a990d1c1937077c24aea73e1f30412ff4}{Loader}}
+\item 
+\doxymbox{\hyperlink{_profile_page_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} styles profile \doxymbox{\hyperlink{_profile_page_8jsx_ad3edbfa70d80e87f45cb00ad4904d229}{css}}
+\item 
+\doxymbox{\hyperlink{_profile_page_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} default\+Avatar from assets \doxymbox{\hyperlink{_profile_page_8jsx_a79d37faee5ab68199aaf5d3fd68ee5ef}{avatars}} user \doxymbox{\hyperlink{_profile_page_8jsx_a88b727eeec4c905ff9e767b9d4b514d0}{png}}
+\item 
+const \doxymbox{\hyperlink{_profile_page_8jsx_a79d37faee5ab68199aaf5d3fd68ee5ef}{avatars}} = \+[default\+Avatar, plant, cactus]\+
+\item 
+const \doxymbox{\hyperlink{_profile_page_8jsx_abc8baf512f7a33055759189f143224aa}{Profile\+Page}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-var-members}
+\Hypertarget{_profile_page_8jsx_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{_profile_page_8jsx_a79d37faee5ab68199aaf5d3fd68ee5ef}\index{ProfilePage.jsx@{ProfilePage.jsx}!avatars@{avatars}}
+\index{avatars@{avatars}!ProfilePage.jsx@{ProfilePage.jsx}}
+\doxysubsubsection{\texorpdfstring{avatars}{avatars}}
+{\footnotesize\ttfamily \label{_profile_page_8jsx_a79d37faee5ab68199aaf5d3fd68ee5ef} 
+const avatars = \+[default\+Avatar, plant, cactus]\+}
+
+
+
+Definition at line \doxymbox{\hyperlink{_profile_page_8jsx_source_l00010}{10}} of file \doxymbox{\hyperlink{_profile_page_8jsx_source}{Profile\+Page.\+jsx}}.
+
+\Hypertarget{_profile_page_8jsx_ad3edbfa70d80e87f45cb00ad4904d229}\index{ProfilePage.jsx@{ProfilePage.jsx}!css@{css}}
+\index{css@{css}!ProfilePage.jsx@{ProfilePage.jsx}}
+\doxysubsubsection{\texorpdfstring{css}{css}}
+{\footnotesize\ttfamily \label{_profile_page_8jsx_ad3edbfa70d80e87f45cb00ad4904d229} 
+\doxymbox{\hyperlink{_profile_page_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} styles profile css}
+
+
+
+Definition at line \doxymbox{\hyperlink{_profile_page_8jsx_source_l00003}{3}} of file \doxymbox{\hyperlink{_profile_page_8jsx_source}{Profile\+Page.\+jsx}}.
+
+\Hypertarget{_profile_page_8jsx_a59be084da8908b7d77ff34b25cd84488}\index{ProfilePage.jsx@{ProfilePage.jsx}!import@{import}}
+\index{import@{import}!ProfilePage.jsx@{ProfilePage.jsx}}
+\doxysubsubsection{\texorpdfstring{import}{import}}
+{\footnotesize\ttfamily \label{_profile_page_8jsx_a59be084da8908b7d77ff34b25cd84488} 
+import \{ use\+State, use\+Effect \} from "{}react"{}}
+
+
+
+Definition at line \doxymbox{\hyperlink{_profile_page_8jsx_source_l00001}{1}} of file \doxymbox{\hyperlink{_profile_page_8jsx_source}{Profile\+Page.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \{\ useState,\ useEffect\ \}\ from\ \textcolor{stringliteral}{"{}react"{}};}
+
+\end{DoxyCode}
+\Hypertarget{_profile_page_8jsx_a990d1c1937077c24aea73e1f30412ff4}\index{ProfilePage.jsx@{ProfilePage.jsx}!Loader@{Loader}}
+\index{Loader@{Loader}!ProfilePage.jsx@{ProfilePage.jsx}}
+\doxysubsubsection{\texorpdfstring{Loader}{Loader}}
+{\footnotesize\ttfamily \label{_profile_page_8jsx_a990d1c1937077c24aea73e1f30412ff4} 
+\doxymbox{\hyperlink{_profile_page_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} Loader from Loader}
+
+
+
+Definition at line \doxymbox{\hyperlink{_profile_page_8jsx_source_l00002}{2}} of file \doxymbox{\hyperlink{_profile_page_8jsx_source}{Profile\+Page.\+jsx}}.
+
+\Hypertarget{_profile_page_8jsx_a88b727eeec4c905ff9e767b9d4b514d0}\index{ProfilePage.jsx@{ProfilePage.jsx}!png@{png}}
+\index{png@{png}!ProfilePage.jsx@{ProfilePage.jsx}}
+\doxysubsubsection{\texorpdfstring{png}{png}}
+{\footnotesize\ttfamily \label{_profile_page_8jsx_a88b727eeec4c905ff9e767b9d4b514d0} 
+\doxymbox{\hyperlink{_profile_page_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} marker\+Shadow from \doxymbox{\hyperlink{_map_view_8jsx_aa02a5e7aa636cd5ffcfb11556964d98a}{leaflet}} dist images marker shadow png}
+
+
+
+Definition at line \doxymbox{\hyperlink{_profile_page_8jsx_source_l00006}{6}} of file \doxymbox{\hyperlink{_profile_page_8jsx_source}{Profile\+Page.\+jsx}}.
+
+\Hypertarget{_profile_page_8jsx_abc8baf512f7a33055759189f143224aa}\index{ProfilePage.jsx@{ProfilePage.jsx}!ProfilePage@{ProfilePage}}
+\index{ProfilePage@{ProfilePage}!ProfilePage.jsx@{ProfilePage.jsx}}
+\doxysubsubsection{\texorpdfstring{ProfilePage}{ProfilePage}}
+{\footnotesize\ttfamily \label{_profile_page_8jsx_abc8baf512f7a33055759189f143224aa} 
+export default Profile\+Page}
+
+
+
+Definition at line \doxymbox{\hyperlink{_profile_page_8jsx_source_l00012}{12}} of file \doxymbox{\hyperlink{_profile_page_8jsx_source}{Profile\+Page.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ =>\ \{}
+\DoxyCodeLine{00013\ }
+\DoxyCodeLine{00014\ \ \ \textcolor{keyword}{const}\ defaultData\ =\ \{}
+\DoxyCodeLine{00015\ \ \ \ \ name:\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{00016\ \ \ \ \ email:\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{00017\ \ \ \ \ role:\ \textcolor{stringliteral}{"{}volunteer"{}},}
+\DoxyCodeLine{00018\ \ \ \ \ location:\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{00019\ \ \ \ \ interests:\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{00020\ \ \ \ \ points:\ \textcolor{stringliteral}{"{}0"{}},}
+\DoxyCodeLine{00021\ \ \ \ \ badges:\ \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{00022\ \ \ \};}
+\DoxyCodeLine{00023\ }
+\DoxyCodeLine{00024\ \ \ \textcolor{keyword}{const}\ [profile,\ setProfile]\ =\ useState(defaultData);}
+\DoxyCodeLine{00025\ \ \ \textcolor{keyword}{const}\ [editMode,\ setEditMode]\ =\ useState(\textcolor{keyword}{false});}
+\DoxyCodeLine{00026\ \ \ \textcolor{keyword}{const}\ [loading,\ setLoading]\ =\ useState(\textcolor{keyword}{true});}
+\DoxyCodeLine{00027\ \ \ \textcolor{keyword}{const}\ [userId,\ setUserId]\ =\ useState(\textcolor{keyword}{null});}
+\DoxyCodeLine{00028\ \ \ \textcolor{keyword}{const}\ [saveStatus,\ setSaveStatus]\ =\ useState(\textcolor{stringliteral}{''});}
+\DoxyCodeLine{00029\ \ \ \textcolor{keyword}{const}\ [error,\ setError]\ =\ useState(\textcolor{keyword}{null});}
+\DoxyCodeLine{00030\ }
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{const}\ [avatar,\ setAvatar]\ =\ useState(\textcolor{keyword}{null});}
+\DoxyCodeLine{00032\ \ \ \textcolor{keyword}{const}\ [showAvatarPicker,\ setShowAvatarPicker]\ =\ useState(\textcolor{keyword}{false});}
+\DoxyCodeLine{00033\ }
+\DoxyCodeLine{00034\ \ \ useEffect(()\ =>\ \{}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keyword}{const}\ savedProfile\ =\ localStorage.getItem(\textcolor{stringliteral}{"{}ecoProfile"{}});}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keyword}{const}\ savedAvatar\ =\ localStorage.getItem(\textcolor{stringliteral}{"{}ecoAvatar"{}});}
+\DoxyCodeLine{00037\ }
+\DoxyCodeLine{00038\ \ \ \ \ \textcolor{keyword}{const}\ token\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'});}
+\DoxyCodeLine{00039\ \ \ \ \ \textcolor{keywordflow}{if}\ (!token)\ \{}
+\DoxyCodeLine{00040\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (savedProfile)\ \{}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ setProfile(JSON.parse(savedProfile));}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (savedAvatar)\ \{}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ setAvatar(savedAvatar);}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ setLoading(\textcolor{keyword}{false});}
+\DoxyCodeLine{00047\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00048\ \ \ \ \ \}}
+\DoxyCodeLine{00049\ }
+\DoxyCodeLine{00050\ \ \ \ \ \textcolor{keyword}{const}\ loadProfile\ =\ async\ ()\ =>\ \{}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ response\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/users/me'},\ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ \ \ \ \ headers:\ \{}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ \ \ \ \ \ \ Authorization:\ \`{}Bearer\ \$\{token\}\`{},}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ \ \ \},}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00057\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!response.ok)\ \{}
+\DoxyCodeLine{00058\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(\textcolor{stringliteral}{'Unable\ to\ load\ profile\ from\ backend'});}
+\DoxyCodeLine{00059\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00060\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ data\ =\ await\ response.json();}
+\DoxyCodeLine{00061\ \ \ \ \ \ \ \ \ setUserId(data.\_id);}
+\DoxyCodeLine{00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ loadedProfile\ =\ \{}
+\DoxyCodeLine{00063\ \ \ \ \ \ \ \ \ \ \ name:\ data.name\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ \ \ \ \ email:\ data.email\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ \ \ \ \ role:\ data.role\ ||\ \textcolor{stringliteral}{'volunteer'},}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \ \ location:\ data.city\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ \ \ interests:\ Array.isArray(data.interests)\ ?\ data.interests.join(\textcolor{stringliteral}{',\ '})\ :\ (data.interests\ ||\ \textcolor{stringliteral}{''}),}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \ \ \ \ points:\ typeof\ data.points\ ===\ \textcolor{stringliteral}{'number'}\ ?\ String(data.points)\ :\ \textcolor{stringliteral}{'0'},}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ badges:\ Array.isArray(data.badges)\ ?\ data.badges.join(\textcolor{stringliteral}{',\ '})\ :\ (data.badges\ ||\ \textcolor{stringliteral}{''}),}
+\DoxyCodeLine{00070\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00071\ \ \ \ \ \ \ \ \ setProfile(loadedProfile);}
+\DoxyCodeLine{00072\ \ \ \ \ \ \ \ \ localStorage.setItem(\textcolor{stringliteral}{'ecoProfile'},\ JSON.stringify(loadedProfile));}
+\DoxyCodeLine{00073\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ \{}
+\DoxyCodeLine{00074\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (savedProfile)\ \{}
+\DoxyCodeLine{00075\ \ \ \ \ \ \ \ \ \ \ setProfile(JSON.parse(savedProfile));}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00077\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{finally}\ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (savedAvatar)\ \{}
+\DoxyCodeLine{00079\ \ \ \ \ \ \ \ \ \ \ setAvatar(savedAvatar);}
+\DoxyCodeLine{00080\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00081\ \ \ \ \ \ \ \ \ setLoading(\textcolor{keyword}{false});}
+\DoxyCodeLine{00082\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00083\ \ \ \ \ \};}
+\DoxyCodeLine{00084\ }
+\DoxyCodeLine{00085\ \ \ \ \ loadProfile();}
+\DoxyCodeLine{00086\ \ \ \},\ []);}
+\DoxyCodeLine{00087\ }
+\DoxyCodeLine{00088\ \ \ \textcolor{keyword}{const}\ handleChange\ =\ (e)\ =>\ \{}
+\DoxyCodeLine{00089\ }
+\DoxyCodeLine{00090\ \ \ \ \ setProfile(\{}
+\DoxyCodeLine{00091\ \ \ \ \ \ \ ...profile,}
+\DoxyCodeLine{00092\ \ \ \ \ \ \ [e.target.name]:\ e.target.value}
+\DoxyCodeLine{00093\ \ \ \ \ \});}
+\DoxyCodeLine{00094\ }
+\DoxyCodeLine{00095\ \ \ \};}
+\DoxyCodeLine{00096\ }
+\DoxyCodeLine{00097\ \ \ \textcolor{keyword}{const}\ saveProfile\ =\ async\ ()\ =>\ \{}
+\DoxyCodeLine{00098\ \ \ \ \ setSaveStatus(\textcolor{stringliteral}{''});}
+\DoxyCodeLine{00099\ \ \ \ \ setError(\textcolor{keyword}{null});}
+\DoxyCodeLine{00100\ }
+\DoxyCodeLine{00101\ \ \ \ \ \textcolor{keyword}{const}\ token\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'});}
+\DoxyCodeLine{00102\ \ \ \ \ \textcolor{keyword}{const}\ patchData\ =\ \{\};}
+\DoxyCodeLine{00103\ }
+\DoxyCodeLine{00104\ \ \ \ \ \textcolor{keywordflow}{if}\ (profile.name)\ patchData.name\ =\ profile.name;}
+\DoxyCodeLine{00105\ \ \ \ \ \textcolor{keywordflow}{if}\ (profile.location)\ patchData.city\ =\ profile.location;}
+\DoxyCodeLine{00106\ \ \ \ \ \textcolor{keywordflow}{if}\ (profile.interests\ !==\ undefined)\ \{}
+\DoxyCodeLine{00107\ \ \ \ \ \ \ patchData.interests\ =\ profile.interests}
+\DoxyCodeLine{00108\ \ \ \ \ \ \ \ \ .split(\textcolor{charliteral}{','})}
+\DoxyCodeLine{00109\ \ \ \ \ \ \ \ \ .map((item)\ =>\ item.trim())}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ .filter(Boolean);}
+\DoxyCodeLine{00111\ \ \ \ \ \}}
+\DoxyCodeLine{00112\ }
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keywordflow}{if}\ (token\ \&\&\ userId)\ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ response\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/users/\$\{userId\}\`{},\ \{}
+\DoxyCodeLine{00116\ \ \ \ \ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'PATCH'},}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ \ \ \ \ headers:\ \{}
+\DoxyCodeLine{00118\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'Content-\/Type'}:\ \textcolor{stringliteral}{'application/json'},}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ \ \ \ \ \ \ Authorization:\ \`{}Bearer\ \$\{token\}\`{},}
+\DoxyCodeLine{00120\ \ \ \ \ \ \ \ \ \ \ \},}
+\DoxyCodeLine{00121\ \ \ \ \ \ \ \ \ \ \ body:\ JSON.stringify(patchData),}
+\DoxyCodeLine{00122\ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00123\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!response.ok)\ \{}
+\DoxyCodeLine{00124\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ result\ =\ await\ response.json().catch(()\ =>\ (\{\}));}
+\DoxyCodeLine{00125\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(result.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ save\ profile\ to\ backend'});}
+\DoxyCodeLine{00126\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00127\ \ \ \ \ \ \ \ \ setSaveStatus(\textcolor{stringliteral}{'Profile\ saved\ to\ backend'});}
+\DoxyCodeLine{00128\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (err)\ \{}
+\DoxyCodeLine{00129\ \ \ \ \ \ \ \ \ setError(err.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ save\ profile\ to\ backend'});}
+\DoxyCodeLine{00130\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00131\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{00132\ \ \ \ \ \ \ setSaveStatus(\textcolor{stringliteral}{'Profile\ saved\ locally'});}
+\DoxyCodeLine{00133\ \ \ \ \ \}}
+\DoxyCodeLine{00134\ }
+\DoxyCodeLine{00135\ \ \ \ \ localStorage.setItem(\textcolor{stringliteral}{'ecoProfile'},\ JSON.stringify(profile));}
+\DoxyCodeLine{00136\ \ \ \ \ setEditMode(\textcolor{keyword}{false});}
+\DoxyCodeLine{00137\ \ \ \};}
+\DoxyCodeLine{00138\ }
+\DoxyCodeLine{00139\ \ \ \textcolor{keyword}{const}\ selectAvatar\ =\ (img)\ =>\ \{}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ setAvatar(img);}
+\DoxyCodeLine{00142\ \ \ \ \ localStorage.setItem(\textcolor{stringliteral}{"{}ecoAvatar"{}},\ img);}
+\DoxyCodeLine{00143\ \ \ \ \ setShowAvatarPicker(\textcolor{keyword}{false});}
+\DoxyCodeLine{00144\ }
+\DoxyCodeLine{00145\ \ \ \};}
+\DoxyCodeLine{00146\ }
+\DoxyCodeLine{00147\ \ \ \textcolor{keywordflow}{if}\ (loading)\ \{}
+\DoxyCodeLine{00148\ \ \ \ \ \textcolor{keywordflow}{return}\ <\doxymbox{\hyperlink{_loader_8jsx_a4bebbc8ff720ec5226c844beb5178cb1}{Loader}}\ />;}
+\DoxyCodeLine{00149\ \ \ \}}
+\DoxyCodeLine{00150\ }
+\DoxyCodeLine{00151\ \ \ \textcolor{keywordflow}{return}\ (}
+\DoxyCodeLine{00152\ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}profile-\/page-\/wrapper"{}}>}
+\DoxyCodeLine{00153\ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}profile-\/status-\/container"{}}>}
+\DoxyCodeLine{00154\ \ \ \ \ \ \ \ \ \{saveStatus\ \&\&\ <div\ className=\textcolor{stringliteral}{"{}profile-\/success"{}}>\{saveStatus\}</div>\}}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ \ \ \{error\ \&\&\ <div\ className=\textcolor{stringliteral}{"{}profile-\/error"{}}>\{error\}</div>\}}
+\DoxyCodeLine{00156\ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}profile-\/page"{}}>}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ \ \ <h1\ className=\textcolor{stringliteral}{"{}title"{}}>🌿\ E-\/Volunteer\ \doxymbox{\hyperlink{_profile_8jsx_acbb96d2aced86157f45d32fc29a1ad2b}{Profile}}</h1>}
+\DoxyCodeLine{00160\ }
+\DoxyCodeLine{00161\ \ \ \ \ \ \ \ \ \{\textcolor{comment}{/*\ Avatar\ Section\ */}\}}
+\DoxyCodeLine{00162\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}avatar-\/section"{}}>}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ \ \ \ \ <div}
+\DoxyCodeLine{00164\ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}avatar-\/circle"{}}}
+\DoxyCodeLine{00165\ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ setShowAvatarPicker(!showAvatarPicker)\}}
+\DoxyCodeLine{00166\ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{00167\ \ \ \ \ \ \ \ \ \ \ \ \ <img\ src=\{avatar\ ||\ defaultAvatar\}\ alt=\textcolor{stringliteral}{"{}avatar"{}}\ />}
+\DoxyCodeLine{00168\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00169\ }
+\DoxyCodeLine{00170\ \ \ \ \ \ \ \ \ \ \ \{showAvatarPicker\ \&\&\ (}
+\DoxyCodeLine{00171\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}avatar-\/picker"{}}>}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\doxymbox{\hyperlink{_profile_page_8jsx_a79d37faee5ab68199aaf5d3fd68ee5ef}{avatars}}.map((img,\ index)\ =>\ (}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <img}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ key=\{index\}}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ src=\{img\}}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}avatar-\/option"{}}}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ selectAvatar(img)\}}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00183\ }
+\DoxyCodeLine{00184\ \ \ \ \ \ \ \ \ \{\textcolor{comment}{/*\ Buttons\ */}\}}
+\DoxyCodeLine{00185\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}buttons"{}}>}
+\DoxyCodeLine{00186\ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}edit-\/btn"{}}\ onClick=\{()\ =>\ setEditMode(\textcolor{keyword}{true})\}>}
+\DoxyCodeLine{00187\ \ \ \ \ \ \ \ \ \ \ \ \ ✏️\ Edit\ \doxymbox{\hyperlink{_profile_8jsx_acbb96d2aced86157f45d32fc29a1ad2b}{Profile}}}
+\DoxyCodeLine{00188\ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{00189\ \ \ \ \ \ \ \ \ \ \ \{editMode\ \&\&\ (}
+\DoxyCodeLine{00190\ \ \ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}save-\/btn"{}}\ onClick=\{saveProfile\}>}
+\DoxyCodeLine{00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 💾\ Save\ Changes}
+\DoxyCodeLine{00192\ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{00193\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{00194\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00195\ }
+\DoxyCodeLine{00196\ \ \ \ \ \ \ \ \ \{\textcolor{comment}{/*\ Profile\ Fields\ */}\}}
+\DoxyCodeLine{00197\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}profile-\/container"{}}>}
+\DoxyCodeLine{00198\ \ \ \ \ \ \ \ \ \ \ \{[}
+\DoxyCodeLine{00199\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ key:\ \textcolor{stringliteral}{'name'},\ label:\ \textcolor{stringliteral}{'Full\ Name'},\ editable:\ \textcolor{keyword}{true}\ \},}
+\DoxyCodeLine{00200\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ key:\ \textcolor{stringliteral}{'email'},\ label:\ \textcolor{stringliteral}{'Email'},\ editable:\ \textcolor{keyword}{false}\ \},}
+\DoxyCodeLine{00201\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ key:\ \textcolor{stringliteral}{'role'},\ label:\ \textcolor{stringliteral}{'Role'},\ editable:\ \textcolor{keyword}{false}\ \},}
+\DoxyCodeLine{00202\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ key:\ \textcolor{stringliteral}{'location'},\ label:\ \textcolor{stringliteral}{'City'},\ editable:\ \textcolor{keyword}{true}\ \},}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ key:\ \textcolor{stringliteral}{'interests'},\ label:\ \textcolor{stringliteral}{'Interests'},\ editable:\ \textcolor{keyword}{true},\ placeholder:\ \textcolor{stringliteral}{'e.g.\ cleanup,\ planting'}\ \},}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ \ \ \ \ ].map((\{\ key,\ label,\ editable,\ placeholder\ \})\ =>\ (}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}field"{}}\ key=\{key\}>}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label>\{label\}</label>}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}text"{}}}
+\DoxyCodeLine{00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ name=\{key\}}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value=\{profile[key]\}}
+\DoxyCodeLine{00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ disabled=\{!editMode\ ||\ !editable\}}
+\DoxyCodeLine{00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ placeholder=\{placeholder\ ||\ \textcolor{stringliteral}{''}\}}
+\DoxyCodeLine{00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{handleChange\}}
+\DoxyCodeLine{00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{00215\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00219\ \ \ \ \ </div>}
+\DoxyCodeLine{00220\ \ \ );}
+\DoxyCodeLine{00221\ \};}
+
+\end{DoxyCode}

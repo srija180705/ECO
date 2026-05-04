@@ -1,0 +1,103 @@
+\doxysection{App.\+jsx}
+\hypertarget{_app_8jsx_source}{}\label{_app_8jsx_source}\index{src/App.jsx@{src/App.jsx}}
+\doxymbox{\hyperlink{_app_8jsx}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00001}00001\ \textcolor{keyword}{import}\ \{\ BrowserRouter\ as\ Router,\ Routes,\ Route,\ Navigate,\ useLocation\ \}\ from\ \textcolor{stringliteral}{'react-\/router-\/dom'}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00002}00002\ \textcolor{keyword}{import}\ Splash\ from\ \textcolor{stringliteral}{'./pages/Splash'}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00003}00003\ \textcolor{keyword}{import}\ Auth\ from\ \textcolor{stringliteral}{'./pages/Auth'}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00004}00004\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{_dashboard_8jsx_a79d988f803083e22a79ac0290b3ded4e}{Dashboard}}\ from\ \textcolor{stringliteral}{'./pages/Dashboard'}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00005}00005\ \textcolor{keyword}{import}\ OrganizerDashboard\ from\ \textcolor{stringliteral}{'./pages/OrganizerDashboard'}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00006}00006\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{_profile_8jsx_acbb96d2aced86157f45d32fc29a1ad2b}{Profile}}\ from\ \textcolor{stringliteral}{'./pages/Profile'}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00007}00007\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{_map_view_8jsx_a865b1a97ad8bb92969fe781cf8c749d4}{MapView}}\ from\ \textcolor{stringliteral}{'./pages/MapView'}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00008}00008\ \textcolor{keyword}{import}\ AdminPage\ from\ \textcolor{stringliteral}{'./pages/AdminPage'}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00009}00009\ \textcolor{keyword}{import}\ Complaints\ from\ \textcolor{stringliteral}{'./pages/Complaints'}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00010}00010\ }
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00011}00011\ \textcolor{comment}{//\ Protected\ route\ wrapper\ -\/\ checks\ localStorage\ token/user\ only}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00012}00012\ \textcolor{keyword}{function}\ PrivateRoute(\{\ children,\ allowedRoles\ =\ \textcolor{keyword}{null},\ organizerOnly\ =\ \textcolor{keyword}{false}\ \})\ \{}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00013}00013\ \ \ \textcolor{keyword}{const}\ location\ =\ useLocation()}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00014}00014\ \ \ const\ token\ =\ localStorage.getItem('token')}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00015}00015\ \ \ const\ storedUser\ =\ localStorage.getItem('user')}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00016}00016\ \ \ const\ navUser\ =\ location.state\ \&\&\ location.state.user}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00017}00017\ \ \ const\ user\ =\ navUser\ ||\ (storedUser\ ?\ JSON.parse(storedUser)\ :\ null)}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00018}00018\ }
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00019}00019\ \ \ if\ (!token\ ||\ !user)\ return\ <Navigate\ to=\textcolor{stringliteral}{"{}/auth"{}}\ replace\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00020}00020\ \ \ if\ (allowedRoles\ \&\&\ !allowedRoles.includes(user.role))\ return\ <Navigate\ to=\textcolor{stringliteral}{"{}/dashboard"{}}\ replace\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00021}00021\ \ \ if\ (organizerOnly\ \&\&\ !(user.role\ ===\ 'organizer'\ \&\&\ user.isVerified))\ \{}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00022}00022\ \ \ \ \ \textcolor{keywordflow}{return}\ <Navigate\ to=\textcolor{stringliteral}{"{}/dashboard"{}}\ replace\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00023}00023\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00024}00024\ \ \ \textcolor{keywordflow}{return}\ children}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00025}00025\ \}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00026}00026\ }
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00027}00027\ \textcolor{comment}{//\ Admin\ route\ wrapper}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00028}00028\ \textcolor{keyword}{function}\ AdminRoute(\{\ children\ \})\ \{}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00029}00029\ \ \ \textcolor{keyword}{const}\ storedToken\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'})}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00030}00030\ \ \ \textcolor{keyword}{const}\ storedUser\ =\ JSON.parse(localStorage.getItem(\textcolor{stringliteral}{'user'})\ ||\ \textcolor{stringliteral}{'null'})}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00031}00031\ }
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00032}00032\ \ \ \textcolor{keywordflow}{if}\ (!storedToken\ ||\ !storedUser\ ||\ storedUser.role\ !==\ \textcolor{stringliteral}{'admin'})\ \{}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00033}00033\ \ \ \ \ \textcolor{keywordflow}{return}\ <Navigate\ to=\textcolor{stringliteral}{"{}/dashboard"{}}\ replace\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00034}00034\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00035}00035\ \ \ \textcolor{keywordflow}{return}\ children}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00036}00036\ \}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00037}00037\ }
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00038}00038\ \textcolor{keyword}{function}\ App()\ \{}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00039}00039\ \ \ \textcolor{keywordflow}{return}\ (}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00040}00040\ \ \ \ \ <Router>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00041}00041\ \ \ \ \ \ \ <Routes>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00042}00042\ \ \ \ \ \ \ \ \ <Route\ path=\textcolor{stringliteral}{"{}/"{}}\ element=\{<Splash\ />\}\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00043}00043\ \ \ \ \ \ \ \ \ <Route\ path=\textcolor{stringliteral}{"{}/auth"{}}\ element=\{<Auth\ />\}\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00044}00044\ \ \ \ \ \ \ \ \ <Route}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00045}00045\ \ \ \ \ \ \ \ \ \ \ path=\textcolor{stringliteral}{"{}/dashboard"{}}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00046}00046\ \ \ \ \ \ \ \ \ \ \ element=\{}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00047}00047\ \ \ \ \ \ \ \ \ \ \ \ \ <PrivateRoute\ allowedRoles=\{[\textcolor{stringliteral}{'volunteer'},\ \textcolor{stringliteral}{'user'}]\}>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00048}00048\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <\doxymbox{\hyperlink{_dashboard_8jsx_a79d988f803083e22a79ac0290b3ded4e}{Dashboard}}\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00049}00049\ \ \ \ \ \ \ \ \ \ \ \ \ </PrivateRoute>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00050}00050\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00051}00051\ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00052}00052\ \ \ \ \ \ \ \ \ <Route}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00053}00053\ \ \ \ \ \ \ \ \ \ \ path=\textcolor{stringliteral}{"{}/organizer-\/dashboard"{}}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00054}00054\ \ \ \ \ \ \ \ \ \ \ element=\{}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00055}00055\ \ \ \ \ \ \ \ \ \ \ \ \ <PrivateRoute\ organizerOnly>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00056}00056\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <OrganizerDashboard\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ \ \ </PrivateRoute>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00059}00059\ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00060}00060\ \ \ \ \ \ \ \ \ <Route}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00061}00061\ \ \ \ \ \ \ \ \ \ \ path=\textcolor{stringliteral}{"{}/map"{}}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00062}00062\ \ \ \ \ \ \ \ \ \ \ element=\{}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \ \ <PrivateRoute>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <\doxymbox{\hyperlink{_map_view_8jsx_a865b1a97ad8bb92969fe781cf8c749d4}{MapView}}\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ \ \ </PrivateRoute>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00067}00067\ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00068}00068\ \ \ \ \ \ \ \ \ <Route}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ path=\textcolor{stringliteral}{"{}/profile"{}}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00070}00070\ \ \ \ \ \ \ \ \ \ \ element=\{}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ <PrivateRoute>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <\doxymbox{\hyperlink{_profile_8jsx_acbb96d2aced86157f45d32fc29a1ad2b}{Profile}}\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ </PrivateRoute>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00074}00074\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00075}00075\ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00076}00076\ \ \ \ \ \ \ \ \ <Route}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00077}00077\ \ \ \ \ \ \ \ \ \ \ path=\textcolor{stringliteral}{"{}/complaints"{}}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00078}00078\ \ \ \ \ \ \ \ \ \ \ element=\{}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ \ \ <PrivateRoute>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00080}00080\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <Complaints\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00081}00081\ \ \ \ \ \ \ \ \ \ \ \ \ </PrivateRoute>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00082}00082\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00083}00083\ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00084}00084\ \ \ \ \ \ \ \ \ <Route}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00085}00085\ \ \ \ \ \ \ \ \ \ \ path=\textcolor{stringliteral}{"{}/admin"{}}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00086}00086\ \ \ \ \ \ \ \ \ \ \ element=\{}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00087}00087\ \ \ \ \ \ \ \ \ \ \ \ \ <AdminRoute>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00088}00088\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <AdminPage\ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00089}00089\ \ \ \ \ \ \ \ \ \ \ \ \ </AdminRoute>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00090}00090\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00091}00091\ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00092}00092\ \ \ \ \ \ \ </Routes>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00093}00093\ \ \ \ \ </Router>}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00094}00094\ \ \ )}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00095}00095\ \}}
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00096}00096\ }
+\DoxyCodeLine{\Hypertarget{_app_8jsx_source_l00097}00097\ export\ \textcolor{keywordflow}{default}\ App}
+
+\end{DoxyCode}

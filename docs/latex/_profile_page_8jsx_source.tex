@@ -1,0 +1,229 @@
+\doxysection{Profile\+Page.\+jsx}
+\hypertarget{_profile_page_8jsx_source}{}\label{_profile_page_8jsx_source}\index{src/components/ProfilePage.jsx@{src/components/ProfilePage.jsx}}
+\doxymbox{\hyperlink{_profile_page_8jsx}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00001}\doxymbox{\hyperlink{_profile_page_8jsx_a59be084da8908b7d77ff34b25cd84488}{00001}}\ \textcolor{keyword}{import}\ \{\ useState,\ useEffect\ \}\ from\ \textcolor{stringliteral}{"{}react"{}};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00002}\doxymbox{\hyperlink{_profile_page_8jsx_a990d1c1937077c24aea73e1f30412ff4}{00002}}\ \textcolor{keyword}{import}\ \doxymbox{\hyperlink{_loader_8jsx_a4bebbc8ff720ec5226c844beb5178cb1}{Loader}}\ from\ \textcolor{stringliteral}{"{}./Loader"{}};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00003}\doxymbox{\hyperlink{_profile_page_8jsx_ad3edbfa70d80e87f45cb00ad4904d229}{00003}}\ \textcolor{keyword}{import}\ \textcolor{stringliteral}{"{}../styles/profile.css"{}};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00004}00004\ \textcolor{keyword}{import}\ \{\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}\ \}\ from\ \textcolor{stringliteral}{"{}../api.js"{}};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00005}00005\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00006}\doxymbox{\hyperlink{_profile_page_8jsx_a88b727eeec4c905ff9e767b9d4b514d0}{00006}}\ \textcolor{keyword}{import}\ defaultAvatar\ from\ \textcolor{stringliteral}{"{}../assets/avatars/user.png"{}};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00007}00007\ \textcolor{keyword}{import}\ plant\ from\ \textcolor{stringliteral}{"{}../assets/avatars/avatar\_1.png"{}};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00008}00008\ \textcolor{keyword}{import}\ cactus\ from\ \textcolor{stringliteral}{"{}../assets/avatars/avatar\_2.png"{}};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00009}00009\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00010}\doxymbox{\hyperlink{_profile_page_8jsx_a79d37faee5ab68199aaf5d3fd68ee5ef}{00010}}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{_profile_page_8jsx_a79d37faee5ab68199aaf5d3fd68ee5ef}{avatars}}\ =\ [defaultAvatar,\ plant,\ cactus];}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00011}00011\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00012}\doxymbox{\hyperlink{_profile_page_8jsx_abc8baf512f7a33055759189f143224aa}{00012}}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{_profile_page_8jsx_abc8baf512f7a33055759189f143224aa}{ProfilePage}}\ =\ ()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00013}00013\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00014}00014\ \ \ \textcolor{keyword}{const}\ defaultData\ =\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00015}00015\ \ \ \ \ name:\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00016}00016\ \ \ \ \ email:\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00017}00017\ \ \ \ \ role:\ \textcolor{stringliteral}{"{}volunteer"{}},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00018}00018\ \ \ \ \ location:\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00019}00019\ \ \ \ \ interests:\ \textcolor{stringliteral}{"{}"{}},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00020}00020\ \ \ \ \ points:\ \textcolor{stringliteral}{"{}0"{}},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00021}00021\ \ \ \ \ badges:\ \textcolor{stringliteral}{"{}"{}}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00022}00022\ \ \ \};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00023}00023\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00024}00024\ \ \ \textcolor{keyword}{const}\ [profile,\ setProfile]\ =\ useState(defaultData);}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00025}00025\ \ \ \textcolor{keyword}{const}\ [editMode,\ setEditMode]\ =\ useState(\textcolor{keyword}{false});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00026}00026\ \ \ \textcolor{keyword}{const}\ [loading,\ setLoading]\ =\ useState(\textcolor{keyword}{true});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00027}00027\ \ \ \textcolor{keyword}{const}\ [userId,\ setUserId]\ =\ useState(\textcolor{keyword}{null});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00028}00028\ \ \ \textcolor{keyword}{const}\ [saveStatus,\ setSaveStatus]\ =\ useState(\textcolor{stringliteral}{''});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00029}00029\ \ \ \textcolor{keyword}{const}\ [error,\ setError]\ =\ useState(\textcolor{keyword}{null});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00030}00030\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00031}00031\ \ \ \textcolor{keyword}{const}\ [avatar,\ setAvatar]\ =\ useState(\textcolor{keyword}{null});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00032}00032\ \ \ \textcolor{keyword}{const}\ [showAvatarPicker,\ setShowAvatarPicker]\ =\ useState(\textcolor{keyword}{false});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00033}00033\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00034}00034\ \ \ useEffect(()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00035}00035\ \ \ \ \ \textcolor{keyword}{const}\ savedProfile\ =\ localStorage.getItem(\textcolor{stringliteral}{"{}ecoProfile"{}});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00036}00036\ \ \ \ \ \textcolor{keyword}{const}\ savedAvatar\ =\ localStorage.getItem(\textcolor{stringliteral}{"{}ecoAvatar"{}});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00037}00037\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00038}00038\ \ \ \ \ \textcolor{keyword}{const}\ token\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00039}00039\ \ \ \ \ \textcolor{keywordflow}{if}\ (!token)\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00040}00040\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (savedProfile)\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00041}00041\ \ \ \ \ \ \ \ \ setProfile(JSON.parse(savedProfile));}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00042}00042\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00043}00043\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (savedAvatar)\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00044}00044\ \ \ \ \ \ \ \ \ setAvatar(savedAvatar);}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00045}00045\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00046}00046\ \ \ \ \ \ \ setLoading(\textcolor{keyword}{false});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00047}00047\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00048}00048\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00049}00049\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00050}00050\ \ \ \ \ \textcolor{keyword}{const}\ loadProfile\ =\ async\ ()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00051}00051\ \ \ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00052}00052\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ response\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/users/me'},\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00053}00053\ \ \ \ \ \ \ \ \ \ \ headers:\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00054}00054\ \ \ \ \ \ \ \ \ \ \ \ \ Authorization:\ \`{}Bearer\ \$\{token\}\`{},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00055}00055\ \ \ \ \ \ \ \ \ \ \ \},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00056}00056\ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00057}00057\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!response.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(\textcolor{stringliteral}{'Unable\ to\ load\ profile\ from\ backend'});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00059}00059\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00060}00060\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ data\ =\ await\ response.json();}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00061}00061\ \ \ \ \ \ \ \ \ setUserId(data.\_id);}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00062}00062\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ loadedProfile\ =\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ name:\ data.name\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ email:\ data.email\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00065}00065\ \ \ \ \ \ \ \ \ \ \ role:\ data.role\ ||\ \textcolor{stringliteral}{'volunteer'},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ location:\ data.city\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ interests:\ Array.isArray(data.interests)\ ?\ data.interests.join(\textcolor{stringliteral}{',\ '})\ :\ (data.interests\ ||\ \textcolor{stringliteral}{''}),}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ points:\ typeof\ data.points\ ===\ \textcolor{stringliteral}{'number'}\ ?\ String(data.points)\ :\ \textcolor{charliteral}{'0'},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ badges:\ Array.isArray(data.badges)\ ?\ data.badges.join(\textcolor{stringliteral}{',\ '})\ :\ (data.badges\ ||\ \textcolor{stringliteral}{''}),}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00070}00070\ \ \ \ \ \ \ \ \ \};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00071}00071\ \ \ \ \ \ \ \ \ setProfile(loadedProfile);}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00072}00072\ \ \ \ \ \ \ \ \ localStorage.setItem(\textcolor{stringliteral}{'ecoProfile'},\ JSON.stringify(loadedProfile));}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00073}00073\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00074}00074\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (savedProfile)\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ setProfile(JSON.parse(savedProfile));}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00076}00076\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00077}00077\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{finally}\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00078}00078\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (savedAvatar)\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00079}00079\ \ \ \ \ \ \ \ \ \ \ setAvatar(savedAvatar);}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00080}00080\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00081}00081\ \ \ \ \ \ \ \ \ setLoading(\textcolor{keyword}{false});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00082}00082\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00083}00083\ \ \ \ \ \};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00084}00084\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00085}00085\ \ \ \ \ loadProfile();}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00086}00086\ \ \ \},\ []);}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00087}00087\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00088}00088\ \ \ \textcolor{keyword}{const}\ handleChange\ =\ (e)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00089}00089\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00090}00090\ \ \ \ \ setProfile(\{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00091}00091\ \ \ \ \ \ \ ...profile,}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00092}00092\ \ \ \ \ \ \ [e.target.name]:\ e.target.value}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00093}00093\ \ \ \ \ \});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00094}00094\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00095}00095\ \ \ \};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00096}00096\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00097}00097\ \ \ \textcolor{keyword}{const}\ saveProfile\ =\ async\ ()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00098}00098\ \ \ \ \ setSaveStatus(\textcolor{stringliteral}{''});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00099}00099\ \ \ \ \ setError(\textcolor{keyword}{null});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00100}00100\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00101}00101\ \ \ \ \ \textcolor{keyword}{const}\ token\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00102}00102\ \ \ \ \ \textcolor{keyword}{const}\ patchData\ =\ \{\};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00103}00103\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00104}00104\ \ \ \ \ \textcolor{keywordflow}{if}\ (profile.name)\ patchData.name\ =\ profile.name;}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00105}00105\ \ \ \ \ \textcolor{keywordflow}{if}\ (profile.location)\ patchData.city\ =\ profile.location;}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00106}00106\ \ \ \ \ \textcolor{keywordflow}{if}\ (profile.interests\ !==\ undefined)\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00107}00107\ \ \ \ \ \ \ patchData.interests\ =\ profile.interests}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00108}00108\ \ \ \ \ \ \ \ \ .split(\textcolor{charliteral}{','})}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00109}00109\ \ \ \ \ \ \ \ \ .map((item)\ =>\ item.trim())}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00110}00110\ \ \ \ \ \ \ \ \ .filter(Boolean);}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00111}00111\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00112}00112\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00113}00113\ \ \ \ \ \textcolor{keywordflow}{if}\ (token\ \&\&\ userId)\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00114}00114\ \ \ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00115}00115\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ response\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/users/\$\{userId\}\`{},\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00116}00116\ \ \ \ \ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'PATCH'},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00117}00117\ \ \ \ \ \ \ \ \ \ \ headers:\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00118}00118\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'Content-\/Type'}:\ \textcolor{stringliteral}{'application/json'},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ \ \ Authorization:\ \`{}Bearer\ \$\{token\}\`{},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ body:\ JSON.stringify(patchData),}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00122}00122\ \ \ \ \ \ \ \ \ \});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00123}00123\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!response.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ result\ =\ await\ response.json().catch(()\ =>\ (\{\}));}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(result.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ save\ profile\ to\ backend'});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00126}00126\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00127}00127\ \ \ \ \ \ \ \ \ setSaveStatus(\textcolor{stringliteral}{'Profile\ saved\ to\ backend'});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00128}00128\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (err)\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00129}00129\ \ \ \ \ \ \ \ \ setError(err.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ save\ profile\ to\ backend'});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00130}00130\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00131}00131\ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00132}00132\ \ \ \ \ \ \ setSaveStatus(\textcolor{stringliteral}{'Profile\ saved\ locally'});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00133}00133\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00134}00134\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00135}00135\ \ \ \ \ localStorage.setItem(\textcolor{stringliteral}{'ecoProfile'},\ JSON.stringify(profile));}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00136}00136\ \ \ \ \ setEditMode(\textcolor{keyword}{false});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00137}00137\ \ \ \};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00138}00138\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00139}00139\ \ \ \textcolor{keyword}{const}\ selectAvatar\ =\ (img)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00140}00140\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00141}00141\ \ \ \ \ setAvatar(img);}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00142}00142\ \ \ \ \ localStorage.setItem(\textcolor{stringliteral}{"{}ecoAvatar"{}},\ img);}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00143}00143\ \ \ \ \ setShowAvatarPicker(\textcolor{keyword}{false});}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00144}00144\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00145}00145\ \ \ \};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00146}00146\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00147}00147\ \ \ \textcolor{keywordflow}{if}\ (loading)\ \{}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00148}00148\ \ \ \ \ \textcolor{keywordflow}{return}\ <\doxymbox{\hyperlink{_loader_8jsx_a4bebbc8ff720ec5226c844beb5178cb1}{Loader}}\ />;}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00149}00149\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00150}00150\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00151}00151\ \ \ \textcolor{keywordflow}{return}\ (}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00152}00152\ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}profile-\/page-\/wrapper"{}}>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00153}00153\ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}profile-\/status-\/container"{}}>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00154}00154\ \ \ \ \ \ \ \ \ \{saveStatus\ \&\&\ <div\ className=\textcolor{stringliteral}{"{}profile-\/success"{}}>\{saveStatus\}</div>\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00155}00155\ \ \ \ \ \ \ \ \ \{error\ \&\&\ <div\ className=\textcolor{stringliteral}{"{}profile-\/error"{}}>\{error\}</div>\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00156}00156\ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00157}00157\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00158}00158\ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}profile-\/page"{}}>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00159}00159\ \ \ \ \ \ \ \ \ <h1\ className=\textcolor{stringliteral}{"{}title"{}}>🌿\ E-\/Volunteer\ \doxymbox{\hyperlink{_profile_8jsx_acbb96d2aced86157f45d32fc29a1ad2b}{Profile}}</h1>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00160}00160\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00161}00161\ \ \ \ \ \ \ \ \ \{\textcolor{comment}{/*\ Avatar\ Section\ */}\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00162}00162\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}avatar-\/section"{}}>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ <div}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00164}00164\ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}avatar-\/circle"{}}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00165}00165\ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ setShowAvatarPicker(!showAvatarPicker)\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00166}00166\ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00167}00167\ \ \ \ \ \ \ \ \ \ \ \ \ <img\ src=\{avatar\ ||\ defaultAvatar\}\ alt=\textcolor{stringliteral}{"{}avatar"{}}\ />}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00168}00168\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00169}00169\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00170}00170\ \ \ \ \ \ \ \ \ \ \ \{showAvatarPicker\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00171}00171\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}avatar-\/picker"{}}>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00172}00172\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{\doxymbox{\hyperlink{_profile_page_8jsx_a79d37faee5ab68199aaf5d3fd68ee5ef}{avatars}}.map((img,\ index)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00173}00173\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <img}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00174}00174\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ key=\{index\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00175}00175\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ src=\{img\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00176}00176\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}avatar-\/option"{}}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ selectAvatar(img)\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00182}00182\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00183}00183\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00184}00184\ \ \ \ \ \ \ \ \ \{\textcolor{comment}{/*\ Buttons\ */}\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00185}00185\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}buttons"{}}>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00186}00186\ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}edit-\/btn"{}}\ onClick=\{()\ =>\ setEditMode(\textcolor{keyword}{true})\}>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00187}00187\ \ \ \ \ \ \ \ \ \ \ \ \ ✏️\ Edit\ \doxymbox{\hyperlink{_profile_8jsx_acbb96d2aced86157f45d32fc29a1ad2b}{Profile}}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00188}00188\ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00189}00189\ \ \ \ \ \ \ \ \ \ \ \{editMode\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00190}00190\ \ \ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}save-\/btn"{}}\ onClick=\{saveProfile\}>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00191}00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 💾\ Save\ Changes}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00192}00192\ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00193}00193\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00194}00194\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00195}00195\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00196}00196\ \ \ \ \ \ \ \ \ \{\textcolor{comment}{/*\ Profile\ Fields\ */}\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00197}00197\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}profile-\/container"{}}>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00198}00198\ \ \ \ \ \ \ \ \ \ \ \{[}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00199}00199\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ key:\ \textcolor{stringliteral}{'name'},\ label:\ \textcolor{stringliteral}{'Full\ Name'},\ editable:\ \textcolor{keyword}{true}\ \},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00200}00200\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ key:\ \textcolor{stringliteral}{'email'},\ label:\ \textcolor{stringliteral}{'Email'},\ editable:\ \textcolor{keyword}{false}\ \},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00201}00201\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ key:\ \textcolor{stringliteral}{'role'},\ label:\ \textcolor{stringliteral}{'Role'},\ editable:\ \textcolor{keyword}{false}\ \},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00202}00202\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ key:\ \textcolor{stringliteral}{'location'},\ label:\ \textcolor{stringliteral}{'City'},\ editable:\ \textcolor{keyword}{true}\ \},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00203}00203\ \ \ \ \ \ \ \ \ \ \ \ \ \{\ key:\ \textcolor{stringliteral}{'interests'},\ label:\ \textcolor{stringliteral}{'Interests'},\ editable:\ \textcolor{keyword}{true},\ placeholder:\ \textcolor{stringliteral}{'e.g.\ cleanup,\ planting'}\ \},}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00204}00204\ \ \ \ \ \ \ \ \ \ \ ].map((\{\ key,\ label,\ editable,\ placeholder\ \})\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00205}00205\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}field"{}}\ key=\{key\}>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00206}00206\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label>\{label\}</label>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00207}00207\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00208}00208\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}text"{}}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00209}00209\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ name=\{key\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00210}00210\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value=\{profile[key]\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00211}00211\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ disabled=\{!editMode\ ||\ !editable\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00212}00212\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ placeholder=\{placeholder\ ||\ \textcolor{stringliteral}{''}\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00213}00213\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{handleChange\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00214}00214\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00215}00215\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00216}00216\ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00217}00217\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00218}00218\ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00219}00219\ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00220}00220\ \ \ );}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00221}00221\ \};}
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00222}00222\ }
+\DoxyCodeLine{\Hypertarget{_profile_page_8jsx_source_l00223}00223\ export\ \textcolor{keywordflow}{default}\ \doxymbox{\hyperlink{_profile_page_8jsx_abc8baf512f7a33055759189f143224aa}{ProfilePage}};}
+
+\end{DoxyCode}

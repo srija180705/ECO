@@ -1,0 +1,72 @@
+\doxysection{src/\+pages/\+\+Dashboard.jsx File Reference}
+\hypertarget{_dashboard_8jsx}{}\label{_dashboard_8jsx}\index{src/pages/Dashboard.jsx@{src/pages/Dashboard.jsx}}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a5559105f55daf9fab5d56509db18467b}{read\+Stored\+User}} ()
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a91ee9e3311437737e42dbb70d6ac6470}{storage\+Key\+Total\+Points}} (user\+Id)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_af710e90bc5be151521f0cc074ac69f5c}{storage\+Key\+Joined}} (user\+Id)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a84bc2fefc61781407ee31214020ebd03}{storage\+Key\+Attended}} (user\+Id)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_ab8b643998eed145335013a6815b106d6}{read\+Initial\+Total\+Points}} (stored\+User)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a8a89dba572b9ab343ad99d802b79ff5c}{normalize\+Joined\+Events}} (ids)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_ae029ddf40293397f3300253ef211c90b}{normalize\+Event}} (event)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a22699c277aefc5600d00d52ef30930c2}{volunteer\+Summary\+Line}} (event)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_aa9a6edd32f61c446711472a5e130ba50}{parse\+Date\+Only}} (iso)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_af38adbbdf6fa14940812f259aab5dd46}{start\+Of\+Today}} ()
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_aa69a42128cf63dc7fb823dc6a9919431}{is\+Past\+Event}} (event)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a7bec50b4921bd1ef346495deff881cfa}{get\+Event\+Date\+Range}} (event)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a9d11fe3c8bde57df058459cb34245ebf}{get\+Event\+Timing}} (event)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}{format\+Event\+Date}} (event)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \{ use\+State, use\+Memo, use\+Effect, use\+Callback \} from \textquotesingle{}react\textquotesingle{}
+\item 
+\doxymbox{\hyperlink{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \doxymbox{\hyperlink{_dashboard_8jsx_a79d988f803083e22a79ac0290b3ded4e}{Dashboard}} \doxymbox{\hyperlink{_dashboard_8jsx_aefb346f18fbf212e7eeed0172d8a85ad}{css}}
+\item 
+\doxymbox{\hyperlink{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} Rewards from \doxymbox{\hyperlink{_dashboard_8jsx_a6c85e0402e45882fc6fc7c581e71490c}{Rewards}}
+\item 
+\doxymbox{\hyperlink{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \doxymbox{\hyperlink{community_8jsx_ab89281d461f7ebf80ddf1554510491b6}{Community}} from \doxymbox{\hyperlink{_dashboard_8jsx_a7a3e256b5e11e8beca4c739cd9894615}{community}}
+\item 
+export default \doxymbox{\hyperlink{_dashboard_8jsx_a79d988f803083e22a79ac0290b3ded4e}{Dashboard}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{_dashboard_8jsx_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}\index{Dashboard.jsx@{Dashboard.jsx}!formatEventDate@{formatEventDate}}
+\index{formatEventDate@{formatEventDate}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{formatEventDate()}{formatEventDate()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498} 
+function format\+Event\+Date (\begin{DoxyParamCaption}\item[{}]{event}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00110}{110}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \textcolor{keyword}{const}\ \{\ start,\ end\ \}\ =\ \doxymbox{\hyperlink{_dashboard_8jsx_a7bec50b4921bd1ef346495deff881cfa}{getEventDateRange}}(event);}
+\DoxyCodeLine{00112\ \ \ \textcolor{keywordflow}{if}\ (!start)\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{'Date\ not\ set'};}
+\DoxyCodeLine{00113\ \ \ \textcolor{keywordflow}{if}\ (!end\ ||\ start.getTime()\ ===\ end.getTime())\ \textcolor{keywordflow}{return}\ start.toDateString();}
+\DoxyCodeLine{00114\ \ \ \textcolor{keywordflow}{return}\ \`{}\$\{start.toDateString()\}\ -\/\ \$\{end.toDateString()\}\`{};}
+\DoxyCodeLine{00115\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function:\+

@@ -1,0 +1,19 @@
+\doxysection{api.\+js}
+\hypertarget{api_8js_source}{}\label{api_8js_source}\index{src/api.js@{src/api.js}}
+\doxymbox{\hyperlink{api_8js}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00001}\doxymbox{\hyperlink{api_8js_af2c85173c2feb20695d0d84715fadecb}{00001}}\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{api_8js_af2c85173c2feb20695d0d84715fadecb}{prodApiBase}}\ =\ \textcolor{keyword}{import}.meta.env.VITE\_API\_BASE\ ||\ \textcolor{stringliteral}{''};}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00002}00002\ \textcolor{comment}{}}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00003}00003\ \textcolor{comment}{/**}}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00004}00004\ \textcolor{comment}{\ *\ In\ development,\ use\ relative\ URLs\ so\ the\ Vite\ dev\ server\ proxies\ \`{}/api`\ and\ \`{}/uploads`}}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00005}00005\ \textcolor{comment}{\ *\ to\ the\ backend\ (see\ vite.config.js).\ Calling\ localhost:4000\ directly\ often\ breaks\ login}}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00006}00006\ \textcolor{comment}{\ *\ due\ to\ mixed\ setups,\ firewalls,\ or\ CORS\ edge\ cases.}}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00007}00007\ \textcolor{comment}{\ */}}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00008}\doxymbox{\hyperlink{api_8js_a4389dc0f6ae335a90f447e2a8bd376d1}{00008}}\ export\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{api_8js_a4389dc0f6ae335a90f447e2a8bd376d1}{API\_BASE}}\ =\ \textcolor{keyword}{import}.meta.env.DEV\ ?\ \textcolor{stringliteral}{''}\ :\ \doxymbox{\hyperlink{api_8js_af2c85173c2feb20695d0d84715fadecb}{prodApiBase}}.replace(/\(\backslash\)/\$/,\ \textcolor{stringliteral}{''});}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00009}00009\ }
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00010}\doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{00010}}\ export\ \textcolor{keyword}{const}\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}\ =\ (url,\ options\ =\ \{\})\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00011}00011\ \ \ \textcolor{keyword}{const}\ fullUrl\ =\ url.startsWith(\textcolor{stringliteral}{'http'})\ ?\ url\ :\ \`{}\$\{\doxymbox{\hyperlink{api_8js_a4389dc0f6ae335a90f447e2a8bd376d1}{API\_BASE}}\}\$\{url\}\`{};}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00012}00012\ \ \ \textcolor{keywordflow}{return}\ fetch(fullUrl,\ options);}
+\DoxyCodeLine{\Hypertarget{api_8js_source_l00013}00013\ \};}
+
+\end{DoxyCode}

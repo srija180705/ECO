@@ -1,0 +1,875 @@
+\doxysection{Organizer\+Dashboard.\+jsx}
+\hypertarget{_organizer_dashboard_8jsx_source}{}\label{_organizer_dashboard_8jsx_source}\index{src/pages/OrganizerDashboard.jsx@{src/pages/OrganizerDashboard.jsx}}
+\doxymbox{\hyperlink{_organizer_dashboard_8jsx}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00001}00001\ \textcolor{keyword}{import}\ \{\ useEffect,\ useMemo,\ useState\ \}\ from\ \textcolor{stringliteral}{'react'}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00002}00002\ \textcolor{keyword}{import}\ \{\ useLocation,\ useNavigate\ \}\ from\ \textcolor{stringliteral}{'react-\/router-\/dom'}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00003}00003\ \textcolor{keyword}{import}\ Calendar\ from\ \textcolor{stringliteral}{'react-\/calendar'}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00004}00004\ \textcolor{keyword}{import}\ \textcolor{stringliteral}{'react-\/calendar/dist/Calendar.css'}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00005}00005\ \textcolor{keyword}{import}\ \textcolor{stringliteral}{'./Dashboard.css'}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00006}00006\ \textcolor{keyword}{import}\ \textcolor{stringliteral}{'./OrganizerDashboard.css'}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00007}00007\ \textcolor{keyword}{import}\ \{\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}\ \}\ from\ \textcolor{stringliteral}{'../api'}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00008}00008\ \textcolor{keyword}{import}\ \{\ \doxymbox{\hyperlink{format_time_ago_8js_a40e34952a48ac7db201f3debf6637196}{formatTimeAgo}}\ \}\ from\ \textcolor{stringliteral}{'../utils/formatTimeAgo.js'}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00009}00009\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00010}00010\ \textcolor{keyword}{const}\ EMPTY\_EVENT\_FORM\ =\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00011}00011\ \ \ title:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00012}00012\ \ \ organizationName:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00013}00013\ \ \ category:\ \textcolor{stringliteral}{'cleanup'},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00014}00014\ \ \ location:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00015}00015\ \ \ address:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00016}00016\ \ \ description:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00017}00017\ \ \ startDateISO:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00018}00018\ \ \ endDateISO:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00019}00019\ \ \ startHour:\ 9,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00020}00020\ \ \ endHour:\ 17,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00021}00021\ \ \ points:\ 50,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00022}00022\ \ \ distanceKm:\ 0,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00023}00023\ \ \ requiredSkills:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00024}00024\ \ \ volunteerSlots:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00025}00025\ \ \ latitude:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00026}00026\ \ \ longitude:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00027}00027\ \ \ permissionPdf:\ \textcolor{keyword}{null},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00028}00028\ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00029}00029\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00030}00030\ \textcolor{keyword}{function}\ OrganizerDashboard()\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00031}00031\ \ \ \textcolor{keyword}{const}\ location\ =\ useLocation()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00032}00032\ \ \ const\ navigate\ =\ useNavigate()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00033}00033\ \ \ const\ storedUser\ =\ localStorage.getItem('user')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00034}00034\ \ \ const\ user\ =\ location.state?.user\ ||\ (storedUser\ ?\ JSON.parse(storedUser)\ :\ null)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00035}00035\ \ \ const\ firstName\ =\ user?.name\ ?\ user.name.split(\textcolor{charliteral}{'\ '})[0]\ :\ 'Organizer'}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00036}00036\ \ \ const\ token\ =\ localStorage.getItem('token')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00037}00037\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00038}00038\ \ \ const\ [loading,\ setLoading]\ =\ useState(true)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00039}00039\ \ \ const\ [error,\ setError]\ =\ useState('')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00040}00040\ \ \ const\ [actionStatus,\ setActionStatus]\ =\ useState('')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00041}00041\ \ \ const\ [activeTab,\ setActiveTab]\ =\ useState('dashboard')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00042}00042\ \ \ const\ [stats,\ setStats]\ =\ useState(null)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00043}00043\ \ \ const\ [reports,\ setReports]\ =\ useState(null)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00044}00044\ \ \ const\ [events,\ setEvents]\ =\ useState([])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00045}00045\ \ \ const\ [calendarEvents,\ setCalendarEvents]\ =\ useState([])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00046}00046\ \ \ const\ [selectedEvent,\ setSelectedEvent]\ =\ useState(null)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00047}00047\ \ \ const\ [applications,\ setApplications]\ =\ useState([])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00048}00048\ \ \ const\ [showNotifications,\ setShowNotifications]\ =\ useState(false)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00049}00049\ \ \ const\ [showEventModal,\ setShowEventModal]\ =\ useState(false)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00050}00050\ \ \ const\ [editingEvent,\ setEditingEvent]\ =\ useState(null)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00051}00051\ \ \ const\ [eventForm,\ setEventForm]\ =\ useState(EMPTY\_EVENT\_FORM)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00052}00052\ \ \ const\ [eventConflict,\ setEventConflict]\ =\ useState(null)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00053}00053\ \ \ const\ [calendarDate,\ setCalendarDate]\ =\ useState(new\ Date())}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00054}00054\ \ \ const\ [bellNotifications,\ setBellNotifications]\ =\ useState([])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00055}00055\ \ \ const\ [notifUnread,\ setNotifUnread]\ =\ useState(0)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00056}00056\ \ \ const\ [entryNotifBanner,\ setEntryNotifBanner]\ =\ useState('')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00057}00057\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00058}00058\ \ \ const\ headers\ =\ useMemo(()\ =>\ (\{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00059}00059\ \ \ \ \ \textcolor{stringliteral}{'Content-\/Type'}:\ \textcolor{stringliteral}{'application/json'},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00060}00060\ \ \ \ \ Authorization:\ \`{}Bearer\ \$\{token\}\`{},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00061}00061\ \ \ \}),\ [token])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00062}00062\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00063}00063\ \ \ \textcolor{keyword}{const}\ uploadHeaders\ =\ useMemo(()\ =>\ (\{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00064}00064\ \ \ \ \ Authorization:\ \`{}Bearer\ \$\{token\}\`{},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00065}00065\ \ \ \}),\ [token])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00066}00066\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00067}00067\ \ \ \textcolor{keyword}{const}\ eventsForSelectedDate\ =\ useMemo(()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00068}00068\ \ \ \ \ \textcolor{keyword}{const}\ selectedISO\ =\ calendarDate.toISOString().split(\textcolor{charliteral}{'T'})[0]}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00069}00069\ \ \ \ \ \textcolor{keywordflow}{return}\ calendarEvents.filter((event)\ =>\ isEventOnDate(event,\ selectedISO))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00070}00070\ \ \ \},\ [calendarDate,\ calendarEvents])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00071}00071\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00072}00072\ \ \ \textcolor{keyword}{const}\ createdEventsForSelectedDate\ =\ useMemo(()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00073}00073\ \ \ \ \ \textcolor{keyword}{const}\ selectedISO\ =\ calendarDate.toISOString().split(\textcolor{charliteral}{'T'})[0]}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00074}00074\ \ \ \ \ \textcolor{keywordflow}{return}\ events.filter((event)\ =>\ isEventOnDate(event,\ selectedISO))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00075}00075\ \ \ \},\ [calendarDate,\ events])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00076}00076\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00077}00077\ \ \ useEffect(()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00078}00078\ \ \ \ \ \textcolor{keywordflow}{if}\ (!token\ ||\ !user)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00079}00079\ \ \ \ \ \ \ navigate(\textcolor{stringliteral}{'/auth'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00080}00080\ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00081}00081\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00082}00082\ \ \ \ \ if\ (user.role\ !==\ 'organizer'\ ||\ !user.isVerified)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00083}00083\ \ \ \ \ \ \ navigate(\textcolor{stringliteral}{'/dashboard'},\ \{\ state:\ \{\ fromAuth:\ \textcolor{keyword}{true},\ user\ \}\ \})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00084}00084\ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00085}00085\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00086}00086\ \ \ \ \ fetchDashboard()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00087}00087\ \ \ \},\ [])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00088}00088\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00089}00089\ \ \ useEffect(()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00090}00090\ \ \ \ \ \textcolor{keywordflow}{if}\ (!entryNotifBanner)\ \textcolor{keywordflow}{return}\ undefined}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00091}00091\ \ \ \ \ \textcolor{keyword}{const}\ t\ =\ setTimeout(()\ =>\ setEntryNotifBanner(\textcolor{stringliteral}{''}),\ 14000)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00092}00092\ \ \ \ \ return\ ()\ =>\ clearTimeout(t)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00093}00093\ \ \ \},\ [entryNotifBanner])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00094}00094\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00095}00095\ \ \ async\ function\ fetchDashboard()\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00096}00096\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00097}00097\ \ \ \ \ \ \ setLoading(\textcolor{keyword}{true})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00098}00098\ \ \ \ \ \ \ const\ [statsRes,\ eventsRes,\ reportsRes,\ calendarRes,\ notifRes]\ =\ await\ Promise.all([}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00099}00099\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}('/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/organizer/stats',\ \{\ headers\ \}),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00100}00100\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/organizer/events'},\ \{\ headers\ \}),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00101}00101\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/organizer/reports'},\ \{\ headers\ \}),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00102}00102\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/organizer/calendar-\/events'},\ \{\ headers\ \}),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00103}00103\ \ \ \ \ \ \ \ \ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/notifications'},\ \{\ headers\ \}),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00104}00104\ \ \ \ \ \ \ ])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00105}00105\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00106}00106\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!statsRes.ok\ ||\ !eventsRes.ok\ ||\ !reportsRes.ok\ ||\ !calendarRes.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00107}00107\ \ \ \ \ \ \ \ \ throw\ new\ Error(\textcolor{stringliteral}{'Could\ not\ load\ organizer\ data'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00108}00108\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00109}00109\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00110}00110\ \ \ \ \ \ \ setStats(await\ statsRes.json())}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00111}00111\ \ \ \ \ \ \ setEvents(await\ eventsRes.json())}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00112}00112\ \ \ \ \ \ \ setReports(await\ reportsRes.json())}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00113}00113\ \ \ \ \ \ \ setCalendarEvents(await\ calendarRes.json())}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00114}00114\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00115}00115\ \ \ \ \ \ \ if\ (notifRes.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00116}00116\ \ \ \ \ \ \ \ \ const\ nd\ =\ await\ notifRes.json()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00117}00117\ \ \ \ \ \ \ \ \ const\ raw\ =\ Array.isArray(nd.items)\ ?\ nd.items\ :\ []}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00118}00118\ \ \ \ \ \ \ \ \ setBellNotifications(}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00119}00119\ \ \ \ \ \ \ \ \ \ \ raw.map((n)\ =>\ (\{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00120}00120\ \ \ \ \ \ \ \ \ \ \ \ \ id:\ String(n.\_id),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00121}00121\ \ \ \ \ \ \ \ \ \ \ \ \ type:\ n.type\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00122}00122\ \ \ \ \ \ \ \ \ \ \ \ \ title:\ n.title\ ||\ \textcolor{stringliteral}{'Notification'},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00123}00123\ \ \ \ \ \ \ \ \ \ \ \ \ text:\ n.body\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ \ \ time:\ formatTimeAgo(n.createdAt),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00125}00125\ \ \ \ \ \ \ \ \ \ \ \ \ read:\ Boolean(n.read),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ \})),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00127}00127\ \ \ \ \ \ \ \ \ )}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00128}00128\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ unread\ =}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00129}00129\ \ \ \ \ \ \ \ \ \ \ typeof\ nd.unreadCount\ ===\ \textcolor{stringliteral}{'number'}\ ?\ nd.unreadCount\ :\ raw.filter((n)\ =>\ !n.read).length}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00130}00130\ \ \ \ \ \ \ \ \ setNotifUnread(unread)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00131}00131\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (unread\ >\ 0)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ joinUnread\ =\ raw.filter((n)\ =>\ !n.read\ \&\&\ n.type\ ===\ \textcolor{stringliteral}{'volunteer\_joined\_event'}).length}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ previews\ =\ raw}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00134}00134\ \ \ \ \ \ \ \ \ \ \ \ \ .filter((n)\ =>\ !n.read)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ .slice(0,\ 3)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00136}00136\ \ \ \ \ \ \ \ \ \ \ \ \ .map((n)\ =>\ n.title)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \ \ \ .join(\textcolor{stringliteral}{'\ ·\ '})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ setEntryNotifBanner(}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00139}00139\ \ \ \ \ \ \ \ \ \ \ \ \ joinUnread\ >\ 0}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ \`{}Volunteers\ joined\ your\ events\ (\$\{joinUnread\}\ \textcolor{keyword}{new}).\ Open\ the\ bell\ \textcolor{keywordflow}{for}\ details.\$\{previews\ ?\ \`{}\ \$\{previews\}\`{}\ :\ \textcolor{stringliteral}{''}\}\`{}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00141}00141\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ previews}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ \`{}\$\{unread\}\ \textcolor{keyword}{new}\ notification(s):\ \$\{previews\}\`{}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00143}00143\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ \`{}\$\{unread\}\ new\ notification(s)\ —\ open\ the\ bell.\`{},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00144}00144\ \ \ \ \ \ \ \ \ \ \ )}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00145}00145\ \ \ \ \ \ \ \ \ \}\ else\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ setEntryNotifBanner(\textcolor{stringliteral}{''})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00147}00147\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00148}00148\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00149}00149\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00150}00150\ \ \ \ \ \ \ setError(\textcolor{stringliteral}{''})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00151}00151\ \ \ \ \ \}\ catch\ (err)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00152}00152\ \ \ \ \ \ \ setError(err.message\ ||\ \textcolor{stringliteral}{'Failed\ to\ load\ organizer\ dashboard'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00153}00153\ \ \ \ \ \}\ \textcolor{keywordflow}{finally}\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00154}00154\ \ \ \ \ \ \ setLoading(\textcolor{keyword}{false})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00155}00155\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00156}00156\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00157}00157\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00158}00158\ \ \ async\ \textcolor{keyword}{function}\ markAllOrganizerNotificationsRead()\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00159}00159\ \ \ \ \ \textcolor{keywordflow}{if}\ (!token)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00160}00160\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00161}00161\ \ \ \ \ \ \ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\textcolor{stringliteral}{'/api/notifications/read-\/all'},\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00162}00162\ \ \ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'PATCH'},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00163}00163\ \ \ \ \ \ \ \ \ headers,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00164}00164\ \ \ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00165}00165\ \ \ \ \ \ \ setBellNotifications((prev)\ =>\ prev.map((n)\ =>\ (\{\ ...n,\ read:\ true\ \})))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00166}00166\ \ \ \ \ \ \ setNotifUnread(0)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00167}00167\ \ \ \ \ \ \ setEntryNotifBanner('')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00168}00168\ \ \ \ \ \}\ catch\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00169}00169\ \ \ \ \ \ \ \textcolor{comment}{/*\ noop\ */}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00170}00170\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00171}00171\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00172}00172\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00173}00173\ \ \ async\ \textcolor{keyword}{function}\ fetchApplications(eventId)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00174}00174\ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/organizer/event/\$\{eventId\}/applications\`{},\ \{\ headers\ \})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00175}00175\ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00176}00176\ \ \ \ \ \ \ setError(\textcolor{stringliteral}{'Unable\ to\ fetch\ applications\ for\ selected\ event'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00177}00177\ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00178}00178\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00179}00179\ \ \ \ \ const\ data\ =\ await\ res.json()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00180}00180\ \ \ \ \ setSelectedEvent(data.event)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00181}00181\ \ \ \ \ setApplications(data.applications)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00182}00182\ \ \ \ \ setActionStatus(\`{}Loaded\ \$\{data.applications.length\}\ volunteers\ \textcolor{keywordflow}{for}\ \$\{data.event.title\}\`{})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00183}00183\ \ \ \ \ setError(\textcolor{stringliteral}{''})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00184}00184\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00185}00185\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00186}00186\ \ \ async\ \textcolor{keyword}{function}\ confirmVolunteerAttendance(volunteerId)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00187}00187\ \ \ \ \ \textcolor{keywordflow}{if}\ (!selectedEvent?.\_id\ ||\ !volunteerId)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00188}00188\ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/organizer/events/\$\{selectedEvent.\_id\}/confirm-\/attendance\`{},\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00189}00189\ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'PATCH'},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00190}00190\ \ \ \ \ \ \ headers,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00191}00191\ \ \ \ \ \ \ body:\ JSON.stringify(\{\ volunteerId,\ confirmed:\ \textcolor{keyword}{true}\ \}),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00192}00192\ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00193}00193\ \ \ \ \ \textcolor{keyword}{const}\ data\ =\ await\ res.json().catch(()\ =>\ (\{\}))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00194}00194\ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00195}00195\ \ \ \ \ \ \ alert(data.message\ ||\ \textcolor{stringliteral}{'Could\ not\ confirm\ attendance'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00196}00196\ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00197}00197\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00198}00198\ \ \ \ \ await\ fetchApplications(selectedEvent.\_id)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00199}00199\ \ \ \ \ setActionStatus(}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00200}00200\ \ \ \ \ \ \ data.alreadyConfirmed}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00201}00201\ \ \ \ \ \ \ \ \ ?\ 'That\ volunteer\ was\ already\ marked\ attended.'}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00202}00202\ \ \ \ \ \ \ \ \ :\ 'Attendance\ confirmed\ —\ points\ added\ for\ this\ volunteer.',}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00203}00203\ \ \ \ \ )}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00204}00204\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00205}00205\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00206}00206\ \ \ function\ handleEventFormChange(event)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00207}00207\ \ \ \ \ \textcolor{keyword}{const}\ \{\ name,\ value\ \}\ =\ \textcolor{keyword}{event}.target}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00208}00208\ \ \ \ \ \textcolor{keyword}{const}\ nextForm\ =\ \{\ ...eventForm,\ [name]:\ value\ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00209}00209\ \ \ \ \ setEventForm(nextForm)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00210}00210\ \ \ \ \ setEventConflict(findConflict(nextForm,\ editingEvent?.\_id))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00211}00211\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00212}00212\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00213}00213\ \ \ \textcolor{keyword}{function}\ handleEventFileChange(event)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00214}00214\ \ \ \ \ \textcolor{keyword}{const}\ nextForm\ =\ \{\ ...eventForm,\ permissionPdf:\ \textcolor{keyword}{event}.target.files[0]\ ||\ \textcolor{keyword}{null}\ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00215}00215\ \ \ \ \ setEventForm(nextForm)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00216}00216\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00217}00217\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00218}00218\ \ \ \textcolor{keyword}{function}\ findConflict(form,\ ignoreEventId\ =\ \textcolor{keyword}{null})\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00219}00219\ \ \ \ \ \textcolor{keywordflow}{if}\ (!form.location\ ||\ !form.startDateISO\ ||\ !form.endDateISO\ ||\ !form.startHour\ ||\ !form.endHour)\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{null}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00220}00220\ \ \ \ \ \textcolor{keyword}{const}\ start\ =\ hourToMinutes(form.startHour)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00221}00221\ \ \ \ \ const\ end\ =\ hourToMinutes(form.endHour)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00222}00222\ \ \ \ \ if\ (start\ ===\ null\ ||\ end\ ===\ null\ ||\ end\ <=\ start)\ return\ \{\ message:\ \textcolor{stringliteral}{'End\ time\ must\ be\ later\ than\ start\ time'}\ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00223}00223\ \ \ \ \ \textcolor{keywordflow}{if}\ (form.startDateISO\ >\ form.endDateISO)\ \textcolor{keywordflow}{return}\ \{\ message:\ \textcolor{stringliteral}{'End\ date\ must\ be\ on\ or\ after\ start\ date'}\ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00224}00224\ \ \ \ \ \textcolor{keyword}{const}\ sameSlot\ =\ events.find((event)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00225}00225\ \ \ \ \ \ \ if\ (ignoreEventId\ \&\&\ event.\_id\ ===\ ignoreEventId)\ return\ false}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00226}00226\ \ \ \ \ \ \ if\ (event.location.trim().toLowerCase()\ !==\ form.location.trim().toLowerCase())\ return\ false}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00227}00227\ \ \ \ \ \ \ const\ eventStartDate\ =\ event.startDateISO\ ||\ event.dateISO}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00228}00228\ \ \ \ \ \ \ const\ eventEndDate\ =\ event.endDateISO\ ||\ event.startDateISO\ ||\ event.dateISO}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00229}00229\ \ \ \ \ \ \ if\ (!(form.startDateISO\ <=\ eventEndDate\ \&\&\ eventStartDate\ <=\ form.endDateISO))\ return\ false}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00230}00230\ \ \ \ \ \ \ const\ eventStart\ =\ hourToMinutes(event.startHour)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00231}00231\ \ \ \ \ \ \ const\ eventEnd\ =\ hourToMinutes(event.endHour)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00232}00232\ \ \ \ \ \ \ return\ eventStart\ !==\ null\ \&\&\ eventEnd\ !==\ null\ \&\&\ start\ <\ eventEnd\ \&\&\ eventStart\ <\ end}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00233}00233\ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00234}00234\ \ \ \ \ if\ (!sameSlot)\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{null}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00235}00235\ \ \ \ \ \textcolor{keywordflow}{return}\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00236}00236\ \ \ \ \ \ \ message:\ \textcolor{stringliteral}{'Event\ conflict\ detected'},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00237}00237\ \ \ \ \ \ \ event:\ sameSlot,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00238}00238\ \ \ \ \ \ \ suggestion:\ suggestAlternativeTime(start,\ end,\ form,\ ignoreEventId),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00239}00239\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00240}00240\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00241}00241\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00242}00242\ \ \ \textcolor{keyword}{function}\ suggestAlternativeTime(start,\ end,\ form,\ ignoreEventId\ =\ \textcolor{keyword}{null})\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00243}00243\ \ \ \ \ \textcolor{keyword}{const}\ duration\ =\ end\ -\/\ start}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00244}00244\ \ \ \ \ \textcolor{keyword}{const}\ sameDayAndLocation\ =\ events}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00245}00245\ \ \ \ \ \ \ .filter((event)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00246}00246\ \ \ \ \ \ \ \ \ (!ignoreEventId\ ||\ event.\_id\ !==\ ignoreEventId)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00247}00247\ \ \ \ \ \ \ \ \ \&\&\ (form.startDateISO\ <=\ (event.endDateISO\ ||\ event.startDateISO\ ||\ event.dateISO))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00248}00248\ \ \ \ \ \ \ \ \ \&\&\ ((event.startDateISO\ ||\ event.dateISO)\ <=\ form.endDateISO)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00249}00249\ \ \ \ \ \ \ \ \ \&\&\ event.location.trim().toLowerCase()\ ===\ form.location.trim().toLowerCase()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00250}00250\ \ \ \ \ \ \ ))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00251}00251\ \ \ \ \ \ \ .sort((a,\ b)\ =>\ hourToMinutes(a.endHour)\ -\/\ hourToMinutes(b.endHour))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00252}00252\ \ \ \ \ let\ candidateStart\ =\ start}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00253}00253\ \ \ \ \ \textcolor{keywordflow}{for}\ (\textcolor{keyword}{const}\ event\ of\ sameDayAndLocation)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00254}00254\ \ \ \ \ \ \ \textcolor{keyword}{const}\ eventStart\ =\ hourToMinutes(event.startHour)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00255}00255\ \ \ \ \ \ \ const\ eventEnd\ =\ hourToMinutes(event.endHour)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00256}00256\ \ \ \ \ \ \ if\ (eventStart\ !==\ null\ \&\&\ eventEnd\ !==\ null\ \&\&\ candidateStart\ <\ eventEnd\ \&\&\ eventStart\ <\ candidateStart\ +\ duration)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00257}00257\ \ \ \ \ \ \ \ \ candidateStart\ =\ eventEnd}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00258}00258\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00259}00259\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00260}00260\ \ \ \ \ \textcolor{keywordflow}{return}\ \`{}\$\{toHour(candidateStart)\}\ -\/\ \$\{toHour(candidateStart\ +\ duration)\}\`{}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00261}00261\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00262}00262\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00263}00263\ \ \ async\ \textcolor{keyword}{function}\ submitEvent(event)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00264}00264\ \ \ \ \ \textcolor{keyword}{event}.preventDefault()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00265}00265\ \ \ \ \ \textcolor{keyword}{const}\ conflict\ =\ findConflict(eventForm,\ editingEvent?.\_id)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00266}00266\ \ \ \ \ setEventConflict(conflict)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00267}00267\ \ \ \ \ \textcolor{keywordflow}{if}\ (conflict)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00268}00268\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00269}00269\ \ \ \ \ \textcolor{keywordflow}{if}\ (!eventForm.address)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00270}00270\ \ \ \ \ \ \ setError(\textcolor{stringliteral}{'Please\ fill\ the\ event\ address'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00271}00271\ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00272}00272\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00273}00273\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00274}00274\ \ \ \ \ const\ payload\ =\ new\ FormData()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00275}00275\ \ \ \ \ Object.entries(eventForm).forEach(([key,\ value])\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00276}00276\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (key\ ===\ \textcolor{stringliteral}{'permissionPdf'})\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00277}00277\ \ \ \ \ \ \ payload.append(key,\ value)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00278}00278\ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00279}00279\ \ \ \ \ \textcolor{keywordflow}{if}\ (eventForm.permissionPdf)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00280}00280\ \ \ \ \ \ \ payload.append(\textcolor{stringliteral}{'permissionPdf'},\ eventForm.permissionPdf)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00281}00281\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00282}00282\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00283}00283\ \ \ \ \ \textcolor{keyword}{const}\ endpoint\ =\ editingEvent}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00284}00284\ \ \ \ \ \ \ ?\ \`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/organizer/events/\$\{editingEvent.\_id\}\`{}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00285}00285\ \ \ \ \ \ \ :\ \textcolor{stringliteral}{'/api/organizer/events'}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00286}00286\ \ \ \ \ \textcolor{keyword}{const}\ method\ =\ editingEvent\ ?\ \textcolor{stringliteral}{'PUT'}\ :\ \textcolor{stringliteral}{'POST'}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00287}00287\ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(endpoint,\ \{\ method,\ headers:\ uploadHeaders,\ body:\ payload\ \})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00288}00288\ \ \ \ \ \textcolor{keyword}{const}\ data\ =\ await\ res.json()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00289}00289\ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00290}00290\ \ \ \ \ \ \ setEventConflict(data.conflict\ ?\ \{\ message:\ data.message,\ event:\ data.conflict\ \}\ :\ \textcolor{keyword}{null})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00291}00291\ \ \ \ \ \ \ setError(data.message\ ||\ 'Could\ not\ save\ event')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00292}00292\ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00293}00293\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00294}00294\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00295}00295\ \ \ \ \ setShowEventModal(false)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00296}00296\ \ \ \ \ setEditingEvent(null)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00297}00297\ \ \ \ \ setEventForm(EMPTY\_EVENT\_FORM)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00298}00298\ \ \ \ \ await\ fetchDashboard()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00299}00299\ \ \ \ \ setError('')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00300}00300\ \ \ \ \ setActionStatus('Event\ saved.\ After\ admin\ approval,\ post\ it\ to\ the\ volunteer\ dashboard\ when\ ready.')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00301}00301\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00302}00302\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00303}00303\ \ \ async\ function\ deleteEvent(eventId)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00304}00304\ \ \ \ \ \textcolor{keyword}{const}\ confirmed\ =\ window.confirm(\textcolor{stringliteral}{'Delete\ this\ event\ and\ all\ related\ applications?'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00305}00305\ \ \ \ \ \textcolor{keywordflow}{if}\ (!confirmed)\ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00306}00306\ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/organizer/events/\$\{eventId\}\`{},\ \{\ method:\ \textcolor{stringliteral}{'DELETE'},\ headers\ \})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00307}00307\ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00308}00308\ \ \ \ \ \ \ setError(\textcolor{stringliteral}{'Could\ not\ delete\ event'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00309}00309\ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00310}00310\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00311}00311\ \ \ \ \ if\ (selectedEvent?.\_id\ ===\ eventId)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00312}00312\ \ \ \ \ \ \ setSelectedEvent(\textcolor{keyword}{null})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00313}00313\ \ \ \ \ \ \ setApplications([])}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00314}00314\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00315}00315\ \ \ \ \ await\ fetchDashboard()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00316}00316\ \ \ \ \ setActionStatus('Event\ deleted.')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00317}00317\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00318}00318\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00319}00319\ \ \ async\ function\ togglePublish(eventId,\ publish)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00320}00320\ \ \ \ \ setActionStatus(\textcolor{stringliteral}{''})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00321}00321\ \ \ \ \ const\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/events/\$\{eventId\}/publish\`{},\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00322}00322\ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'PUT'},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00323}00323\ \ \ \ \ \ \ headers,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00324}00324\ \ \ \ \ \ \ body:\ JSON.stringify(\{\ publish\ \}),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00325}00325\ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00326}00326\ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00327}00327\ \ \ \ \ \ \ const\ data\ =\ await\ res.json().catch(()\ =>\ (\{\}))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00328}00328\ \ \ \ \ \ \ setError(data.message\ ||\ \textcolor{stringliteral}{'Could\ not\ update\ dashboard\ posting\ status'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00329}00329\ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00330}00330\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00331}00331\ \ \ \ \ await\ fetchDashboard()}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00332}00332\ \ \ \ \ setError('')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00333}00333\ \ \ \ \ setActionStatus(publish\ ?\ 'Event\ posted\ to\ the\ volunteer\ dashboard.'\ :\ 'Event\ removed\ from\ the\ volunteer\ dashboard.')}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00334}00334\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00335}00335\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00336}00336\ \ \ function\ openCreateModal()\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00337}00337\ \ \ \ \ setEditingEvent(\textcolor{keyword}{null})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00338}00338\ \ \ \ \ setEventForm(EMPTY\_EVENT\_FORM)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00339}00339\ \ \ \ \ setEventConflict(null)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00340}00340\ \ \ \ \ setShowEventModal(true)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00341}00341\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00342}00342\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00343}00343\ \ \ function\ openEditModal(event)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00344}00344\ \ \ \ \ setEditingEvent(event)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00345}00345\ \ \ \ \ setEventForm(\{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00346}00346\ \ \ \ \ \ \ title:\ \textcolor{keyword}{event}.title\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00347}00347\ \ \ \ \ \ \ organizationName:\ \textcolor{keyword}{event}.organizationName\ ||\ user?.name\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00348}00348\ \ \ \ \ \ \ category:\ \textcolor{keyword}{event}.category\ ||\ \textcolor{stringliteral}{'cleanup'},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00349}00349\ \ \ \ \ \ \ location:\ \textcolor{keyword}{event}.location\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00350}00350\ \ \ \ \ \ \ address:\ \textcolor{keyword}{event}.address\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00351}00351\ \ \ \ \ \ \ description:\ \textcolor{keyword}{event}.description\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00352}00352\ \ \ \ \ \ \ startDateISO:\ \textcolor{keyword}{event}.startDateISO\ ||\ \textcolor{keyword}{event}.dateISO\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00353}00353\ \ \ \ \ \ \ endDateISO:\ \textcolor{keyword}{event}.endDateISO\ ||\ \textcolor{keyword}{event}.startDateISO\ ||\ \textcolor{keyword}{event}.dateISO\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00354}00354\ \ \ \ \ \ \ startHour:\ \textcolor{keyword}{event}.startHour\ ||\ 9,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00355}00355\ \ \ \ \ \ \ endHour:\ \textcolor{keyword}{event}.endHour\ ||\ 17,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00356}00356\ \ \ \ \ \ \ points:\ \textcolor{keyword}{event}.points\ ||\ 50,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00357}00357\ \ \ \ \ \ \ distanceKm:\ \textcolor{keyword}{event}.distanceKm\ ||\ 0,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00358}00358\ \ \ \ \ \ \ requiredSkills:\ (\textcolor{keyword}{event}.requiredSkills\ ||\ []).join(\textcolor{stringliteral}{',\ '}),}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00359}00359\ \ \ \ \ \ \ volunteerSlots:\ \textcolor{keyword}{event}.volunteerSlots\ ||\ 0,}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00360}00360\ \ \ \ \ \ \ latitude:\ \textcolor{keyword}{event}.coordinates?.coordinates?.[1]\ ??\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00361}00361\ \ \ \ \ \ \ longitude:\ \textcolor{keyword}{event}.coordinates?.coordinates?.[0]\ ??\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00362}00362\ \ \ \ \ \ \ permissionPdf:\ \textcolor{keyword}{null},}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00363}00363\ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00364}00364\ \ \ \ \ setEventConflict(\textcolor{keyword}{null})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00365}00365\ \ \ \ \ setShowEventModal(\textcolor{keyword}{true})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00366}00366\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00367}00367\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00368}00368\ \ \ \textcolor{keyword}{function}\ logout()\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00369}00369\ \ \ \ \ localStorage.removeItem(\textcolor{stringliteral}{'token'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00370}00370\ \ \ \ \ localStorage.removeItem(\textcolor{stringliteral}{'user'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00371}00371\ \ \ \ \ navigate(\textcolor{stringliteral}{'/auth'})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00372}00372\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00373}00373\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00374}00374\ \ \ \textcolor{keyword}{function}\ onOpenMapView()\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00375}00375\ \ \ \ \ navigate(\textcolor{stringliteral}{'/map'},\ \{\ state:\ \{\ fromAuth:\ \textcolor{keyword}{true},\ user\ \}\ \})}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00376}00376\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00377}00377\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00378}00378\ \ \ \textcolor{keyword}{function}\ getNotificationCount()\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00379}00379\ \ \ \ \ \textcolor{keywordflow}{return}\ notifUnread}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00380}00380\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00381}00381\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00382}00382\ \ \ \textcolor{keywordflow}{if}\ (loading)\ \textcolor{keywordflow}{return}\ <div\ className=\textcolor{stringliteral}{"{}organizer-\/loading"{}}>Loading\ organizer\ dashboard...</div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00383}00383\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00384}00384\ \ \ \textcolor{keywordflow}{return}\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00385}00385\ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}dashboard-\/layout"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00386}00386\ \ \ \ \ \ \ <aside\ className=\textcolor{stringliteral}{"{}sidebar"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00387}00387\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}sidebar-\/scroll"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00388}00388\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}sidebar-\/top"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00389}00389\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}sidebar-\/brand"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00390}00390\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}brand-\/logo"{}}>🌿</div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00391}00391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00392}00392\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h1\ className=\textcolor{stringliteral}{"{}brand-\/name"{}}>Eco\ Volunteer</h1>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00393}00393\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}brand-\/subtitle"{}}>Organizer\ Panel</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00394}00394\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00395}00395\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00396}00396\ \ \ \ \ \ \ \ \ \ \ \ \ <nav\ className=\textcolor{stringliteral}{"{}sidebar-\/nav"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00397}00397\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\{\`{}nav-\/item\ \$\{activeTab\ ===\ \textcolor{stringliteral}{'dashboard'}\ ?\ \textcolor{stringliteral}{'active'}\ :\ \textcolor{stringliteral}{''}\}\`{}\}\ onClick=\{()\ =>\ setActiveTab(\textcolor{stringliteral}{'dashboard'})\}>\doxymbox{\hyperlink{_dashboard_8jsx_a79d988f803083e22a79ac0290b3ded4e}{Dashboard}}</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00398}00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\{\`{}nav-\/item\ \$\{activeTab\ ===\ \textcolor{stringliteral}{'events'}\ ?\ \textcolor{stringliteral}{'active'}\ :\ \textcolor{stringliteral}{''}\}\`{}\}\ onClick=\{()\ =>\ setActiveTab(\textcolor{stringliteral}{'events'})\}>Events</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00399}00399\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\{\`{}nav-\/item\ \$\{activeTab\ ===\ \textcolor{stringliteral}{'volunteers'}\ ?\ \textcolor{stringliteral}{'active'}\ :\ \textcolor{stringliteral}{''}\}\`{}\}\ onClick=\{()\ =>\ setActiveTab(\textcolor{stringliteral}{'volunteers'})\}>Volunteers</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00400}00400\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\{\`{}nav-\/item\ \$\{activeTab\ ===\ \textcolor{stringliteral}{'reports'}\ ?\ \textcolor{stringliteral}{'active'}\ :\ \textcolor{stringliteral}{''}\}\`{}\}\ onClick=\{()\ =>\ setActiveTab(\textcolor{stringliteral}{'reports'})\}>Reports</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00401}00401\ \ \ \ \ \ \ \ \ \ \ \ \ </nav>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00402}00402\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00403}00403\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00404}00404\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}sidebar-\/footer-\/portal"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00405}00405\ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}sidebar-\/footer-\/btn\ sidebar-\/footer-\/btn-\/primary"{}}\ onClick=\{()\ =>\ fetchDashboard()\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00406}00406\ \ \ \ \ \ \ \ \ \ \ \ \ Refresh}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00407}00407\ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00408}00408\ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}sidebar-\/footer-\/btn"{}}\ onClick=\{logout\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00409}00409\ \ \ \ \ \ \ \ \ \ \ \ \ Logout}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00410}00410\ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00411}00411\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}sidebar-\/user"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00412}00412\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}user-\/avatar\ organizer-\/avatar"{}}>\{firstName[0]\}</div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00413}00413\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}user-\/info"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00414}00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}user-\/name"{}}>\{firstName\}</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00415}00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}user-\/points"{}}>Verified\ Organizer</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00416}00416\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00417}00417\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00418}00418\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00419}00419\ \ \ \ \ \ \ </aside>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00420}00420\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00421}00421\ \ \ \ \ \ \ <main\ className=\textcolor{stringliteral}{"{}dashboard-\/main"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00422}00422\ \ \ \ \ \ \ \ \ \{error\ \&\&\ <div\ className=\textcolor{stringliteral}{"{}organizer-\/error-\/banner"{}}>\{error\}</div>\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00423}00423\ \ \ \ \ \ \ \ \ \{actionStatus\ \&\&\ <div\ className=\textcolor{stringliteral}{"{}organizer-\/success-\/banner"{}}>\{actionStatus\}</div>\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00424}00424\ \ \ \ \ \ \ \ \ \{entryNotifBanner\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00425}00425\ \ \ \ \ \ \ \ \ \ \ <div}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00426}00426\ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}organizer-\/success-\/banner"{}}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00427}00427\ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{\ background:\ \textcolor{stringliteral}{'\#eef2ff'},\ borderColor:\ \textcolor{stringliteral}{'\#c7d2fe'},\ color:\ \textcolor{stringliteral}{'\#312e81'},\ display:\ \textcolor{stringliteral}{'flex'},\ justifyContent:\ \textcolor{stringliteral}{'space-\/between'},\ alignItems:\ \textcolor{stringliteral}{'center'},\ gap:\ 12\ \}\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00428}00428\ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00429}00429\ \ \ \ \ \ \ \ \ \ \ \ \ <span>🔔\ \{entryNotifBanner\}</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00430}00430\ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}filter-\/btn"{}}\ onClick=\{()\ =>\ setEntryNotifBanner(\textcolor{stringliteral}{''})\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00431}00431\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Dismiss}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00432}00432\ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00433}00433\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00434}00434\ \ \ \ \ \ \ \ \ )\ :\ null\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00435}00435\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00436}00436\ \ \ \ \ \ \ \ \ <header\ className=\textcolor{stringliteral}{"{}dashboard-\/header"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00437}00437\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}header-\/title"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00438}00438\ \ \ \ \ \ \ \ \ \ \ \ \ <h2>Welcome\ back,\ \{firstName\}\ <span\ className=\textcolor{stringliteral}{"{}wave"{}}>👋</span></h2>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00439}00439\ \ \ \ \ \ \ \ \ \ \ \ \ <p>Manage\ your\ events,\ volunteers,\ communication,\ and\ reports.</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00440}00440\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00441}00441\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/top-\/actions"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00442}00442\ \ \ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}organizer-\/create-\/btn"{}}\ onClick=\{openCreateModal\}>+\ Create\ Event</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00443}00443\ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}organizer-\/bell-\/btn"{}}\ onClick=\{()\ =>\ setShowNotifications((current)\ =>\ !current)\}\ aria-\/label=\textcolor{stringliteral}{"{}Notifications"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00444}00444\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <svg\ fill=\textcolor{stringliteral}{"{}none"{}}\ stroke=\textcolor{stringliteral}{"{}currentColor"{}}\ strokeWidth=\textcolor{stringliteral}{"{}2"{}}\ viewBox=\textcolor{stringliteral}{"{}0\ 0\ 24\ 24"{}}\ width=\textcolor{stringliteral}{"{}22"{}}\ height=\textcolor{stringliteral}{"{}22"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00445}00445\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <path\ strokeLinecap=\textcolor{stringliteral}{"{}round"{}}\ strokeLinejoin=\textcolor{stringliteral}{"{}round"{}}\ d=\textcolor{stringliteral}{"{}M15\ 17h5l-\/1.405-\/1.405A2.032\ 2.032\ 0\ 0118\ 14.158V11a6.002\ 6.002\ 0\ 00-\/4-\/5.659V5a2\ 2\ 0\ 10-\/4\ 0v.341C7.67\ 6.165\ 6\ 8.388\ 6\ 11v3.159c0\ .538-\/.214\ 1.055-\/.595\ 1.436L4\ 17h5m6\ 0a3\ 3\ 0\ 11-\/6\ 0h6z"{}}\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00446}00446\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </svg>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00447}00447\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{getNotificationCount()\ >\ 0\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00448}00448\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}organizer-\/bell-\/count"{}}>\{getNotificationCount()\ >\ 99\ ?\ \textcolor{stringliteral}{'99+'}\ :\ getNotificationCount()\}</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00449}00449\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ null\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00450}00450\ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00451}00451\ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}map-\/view-\/btn"{}}\ onClick=\{()\ =>\ navigate(\textcolor{stringliteral}{'/complaints'})\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00452}00452\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Complaints}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00453}00453\ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00454}00454\ \ \ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}map-\/view-\/btn"{}}\ onClick=\{onOpenMapView\}>Map\ View</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00455}00455\ \ \ \ \ \ \ \ \ \ \ \ \ \{showNotifications\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00456}00456\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/notification-\/popover"{}}\ style=\{\{\ maxHeight:\ 360,\ overflowY:\ \textcolor{stringliteral}{'auto'}\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00457}00457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ display:\ \textcolor{stringliteral}{'flex'},\ justifyContent:\ \textcolor{stringliteral}{'space-\/between'},\ alignItems:\ \textcolor{stringliteral}{'center'},\ marginBottom:\ 8\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00458}00458\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <strong\ style=\{\{\ fontSize:\ 13\ \}\}>Notifications</strong>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00459}00459\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{bellNotifications.length\ >\ 0\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00460}00460\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}filter-\/btn"{}}\ style=\{\{\ fontSize:\ 11,\ padding:\ \textcolor{stringliteral}{'4px\ 8px'}\ \}\}\ onClick=\{()\ =>\ markAllOrganizerNotificationsRead()\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00461}00461\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Mark\ all\ read}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00462}00462\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00463}00463\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ null\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00464}00464\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00465}00465\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{bellNotifications.length\ ===\ 0\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00466}00466\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p\ style=\{\{\ margin:\ 0,\ color:\ \textcolor{stringliteral}{'\#64748b'},\ fontSize:\ 13\ \}\}>No\ notifications\ yet.</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00467}00467\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00468}00468\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bellNotifications.map((note)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00469}00469\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ key=\{note.id\}\ className=\textcolor{stringliteral}{"{}organizer-\/note-\/item"{}}\ style=\{\{\ opacity:\ note.read\ ?\ 0.7\ :\ 1\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00470}00470\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <strong>\{note.title\}</strong>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00471}00471\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ fontWeight:\ 400,\ fontSize:\ 13\ \}\}>\{note.text\}</div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00472}00472\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>\{note.time\}</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00473}00473\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00474}00474\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00475}00475\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00476}00476\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00477}00477\ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00478}00478\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00479}00479\ \ \ \ \ \ \ \ \ </header>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00480}00480\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00481}00481\ \ \ \ \ \ \ \ \ \{activeTab\ ===\ \textcolor{stringliteral}{'dashboard'}\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00482}00482\ \ \ \ \ \ \ \ \ \ \ <>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00483}00483\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}stats-\/grid"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00484}00484\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}stat-\/card\ stat-\/blue"{}}><div\ className=\textcolor{stringliteral}{"{}stat-\/info"{}}><h3>\{stats?.totalEvents\ ||\ 0\}</h3><p>Total\ Events</p></div></div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00485}00485\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}stat-\/card\ stat-\/green"{}}><div\ className=\textcolor{stringliteral}{"{}stat-\/info"{}}><h3>\{stats?.upcomingEvents\ ||\ 0\}</h3><p>Upcoming\ Events</p></div></div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00486}00486\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}stat-\/card\ stat-\/orange"{}}><div\ className=\textcolor{stringliteral}{"{}stat-\/info"{}}><h3>\{stats?.pastEvents\ ||\ 0\}</h3><p>Past\ Events</p></div></div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00487}00487\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00488}00488\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00489}00489\ \ \ \ \ \ \ \ \ \ \ \ \ <section\ className=\textcolor{stringliteral}{"{}organizer-\/section"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00490}00490\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h3>Upcoming\ and\ Past\ Events</h3>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00491}00491\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/dual-\/list"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00492}00492\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00493}00493\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4>Upcoming</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00494}00494\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{(stats?.upcomingEventsList\ ||\ []).map((event)\ =>\ <p\ key=\{\textcolor{keyword}{event}.\_id\}>\{\textcolor{keyword}{event}.title\}\ -\/\ \{\doxymbox{\hyperlink{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}{formatEventDate}}(event)\}\ (\{\textcolor{keyword}{event}.startHour\}:00-\/\{\textcolor{keyword}{event}.endHour\}:00)</p>)\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00495}00495\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00496}00496\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00497}00497\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4>Past</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00498}00498\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{(stats?.pastEventsList\ ||\ []).map((event)\ =>\ <p\ key=\{\textcolor{keyword}{event}.\_id\}>\{\textcolor{keyword}{event}.title\}\ -\/\ \{\doxymbox{\hyperlink{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}{formatEventDate}}(event)\}</p>)\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00499}00499\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00500}00500\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00501}00501\ \ \ \ \ \ \ \ \ \ \ \ \ </section>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00502}00502\ \ \ \ \ \ \ \ \ \ \ </>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00503}00503\ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00504}00504\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00505}00505\ \ \ \ \ \ \ \ \ \{activeTab\ ===\ \textcolor{stringliteral}{'events'}\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00506}00506\ \ \ \ \ \ \ \ \ \ \ <section\ className=\textcolor{stringliteral}{"{}organizer-\/section"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00507}00507\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/view-\/header"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00508}00508\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h3>Event\ Management\ \&\ Calendar\ List</h3>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00509}00509\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}organizer-\/refresh-\/btn"{}}\ onClick=\{fetchDashboard\}>Refresh</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00510}00510\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00511}00511\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/events-\/calendar-\/wrap"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00512}00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/calendar-\/card"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00513}00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4>Event\ Calendar</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00514}00514\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <Calendar}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00515}00515\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{(value)\ =>\ setCalendarDate(value)\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00516}00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value=\{calendarDate\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00517}00517\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tileClassName=\{(\{\ date,\ view\ \})\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00518}00518\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (view\ !==\ \textcolor{stringliteral}{'month'})\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{''}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00519}00519\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ iso\ =\ date.toISOString().split(\textcolor{charliteral}{'T'})[0]}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00520}00520\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ calendarEvents.some((event)\ =>\ isEventOnDate(event,\ iso))\ ?\ \textcolor{stringliteral}{'has-\/event-\/date'}\ :\ \textcolor{stringliteral}{''}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00521}00521\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00522}00522\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00523}00523\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00524}00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/date-\/events-\/card"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00525}00525\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4>Events\ on\ \{calendarDate.toDateString()\}</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00526}00526\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/date-\/subsection"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00527}00527\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h5>All\ Events\ Happening</h5>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00528}00528\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{eventsForSelectedDate.length\ ===\ 0\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00529}00529\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p\ className=\textcolor{stringliteral}{"{}organizer-\/date-\/empty"{}}>No\ scheduled\ events\ \textcolor{keywordflow}{for}\ \textcolor{keyword}{this}\ day.</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00530}00530\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00531}00531\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ eventsForSelectedDate.map((event)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00532}00532\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ key=\{\textcolor{keyword}{event}.\_id\}\ className=\textcolor{stringliteral}{"{}organizer-\/date-\/event-\/item"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00533}00533\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <strong>\{\textcolor{keyword}{event}.title\}</strong>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00534}00534\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>\{\doxymbox{\hyperlink{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}{formatEventDate}}(event)\}\ |\ \{\textcolor{keyword}{event}.startHour\}:00\ -\/\ \{\textcolor{keyword}{event}.endHour\}:00</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00535}00535\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <small>\{\textcolor{keyword}{event}.location\}</small>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00536}00536\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00537}00537\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00538}00538\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00539}00539\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00540}00540\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/date-\/subsection"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00541}00541\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h5>My\ Created\ Events</h5>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00542}00542\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{createdEventsForSelectedDate.length\ ===\ 0\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00543}00543\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p\ className=\textcolor{stringliteral}{"{}organizer-\/date-\/empty"{}}>You\ have\ not\ created\ events\ \textcolor{keywordflow}{for}\ \textcolor{keyword}{this}\ day.</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00544}00544\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00545}00545\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ createdEventsForSelectedDate.map((event)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00546}00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ key=\{\textcolor{keyword}{event}.\_id\}\ className=\textcolor{stringliteral}{"{}organizer-\/date-\/event-\/item\ created"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00547}00547\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <strong>\{\textcolor{keyword}{event}.title\}</strong>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00548}00548\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>\{\doxymbox{\hyperlink{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}{formatEventDate}}(event)\}\ |\ \{\textcolor{keyword}{event}.startHour\}:00\ -\/\ \{\textcolor{keyword}{event}.endHour\}:00</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00549}00549\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <small>\{\textcolor{keyword}{event}.location\}\ |\ \{\textcolor{keyword}{event}.status\ ||\ \textcolor{stringliteral}{'pending'}\}</small>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00550}00550\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00551}00551\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00552}00552\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00553}00553\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00554}00554\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00555}00555\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00556}00556\ \ \ \ \ \ \ \ \ \ \ \ \ <h4\ className=\textcolor{stringliteral}{"{}organizer-\/list-\/title"{}}>My\ Created\ Events</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00557}00557\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/calendar-\/list"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00558}00558\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{events.map((event)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00559}00559\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ key=\{\textcolor{keyword}{event}.\_id\}\ className=\textcolor{stringliteral}{"{}organizer-\/event-\/row"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00560}00560\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00561}00561\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <strong>\{\textcolor{keyword}{event}.title\}</strong>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00562}00562\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>\{\textcolor{keyword}{event}.location\}\ |\ \{\doxymbox{\hyperlink{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}{formatEventDate}}(event)\}\ |\ \{\textcolor{keyword}{event}.startHour\}:00-\/\{\textcolor{keyword}{event}.endHour\}:00</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00563}00563\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <small>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00564}00564\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Status:\ \{\textcolor{keyword}{event}.status\ ||\ \textcolor{stringliteral}{'pending'}\}\ |\ \{\textcolor{keyword}{event}.isPublished\ ?\ \textcolor{stringliteral}{'Posted\ to\ dashboard'}\ :\ \textcolor{stringliteral}{'Not\ posted'}\}\ |\ Skills:\ \{(\textcolor{keyword}{event}.requiredSkills\ ||\ []).join(\textcolor{stringliteral}{',\ '})\ ||\ \textcolor{stringliteral}{'Not\ specified'}\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00565}00565\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </small>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00566}00566\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00567}00567\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/row-\/actions"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00568}00568\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}event-\/card-\/btn"{}}\ onClick=\{()\ =>\ openEditModal(event)\}>Edit</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00569}00569\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}event-\/card-\/btn\ danger"{}}\ onClick=\{()\ =>\ deleteEvent(event.\_id)\}>Delete</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00570}00570\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}event-\/card-\/btn"{}}\ onClick=\{()\ =>\ \{\ setActiveTab(\textcolor{stringliteral}{'volunteers'});\ fetchApplications(event.\_id)\ \}\}>Applicants</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00571}00571\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00572}00572\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00573}00573\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}event-\/card-\/btn"{}}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00574}00574\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ disabled=\{!\textcolor{keyword}{event}.approved\ ||\ \textcolor{keyword}{event}.isPublished\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00575}00575\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ title=\{!\textcolor{keyword}{event}.approved\ ?\ \textcolor{stringliteral}{'Admin\ approval\ is\ required\ before\ posting'}\ :\ \textcolor{keyword}{event}.isPublished\ ?\ \textcolor{stringliteral}{'Already\ posted'}\ :\ \textcolor{stringliteral}{'Post\ to\ volunteer\ dashboard'}\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00576}00576\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ togglePublish(event.\_id,\ \textcolor{keyword}{true})\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00577}00577\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00578}00578\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Post\ to\ \doxymbox{\hyperlink{_dashboard_8jsx_a79d988f803083e22a79ac0290b3ded4e}{Dashboard}}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00579}00579\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00580}00580\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00581}00581\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00582}00582\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}event-\/card-\/btn\ danger"{}}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00583}00583\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ disabled=\{!\textcolor{keyword}{event}.isPublished\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00584}00584\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ title=\{!\textcolor{keyword}{event}.isPublished\ ?\ \textcolor{stringliteral}{'This\ event\ is\ not\ posted\ yet'}\ :\ \textcolor{stringliteral}{'Remove\ from\ volunteer\ dashboard'}\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00585}00585\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ togglePublish(event.\_id,\ \textcolor{keyword}{false})\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00586}00586\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00587}00587\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Unpost}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00588}00588\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00589}00589\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00590}00590\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00591}00591\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00592}00592\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00593}00593\ \ \ \ \ \ \ \ \ \ \ </section>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00594}00594\ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00595}00595\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00596}00596\ \ \ \ \ \ \ \ \ \{activeTab\ ===\ \textcolor{stringliteral}{'volunteers'}\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00597}00597\ \ \ \ \ \ \ \ \ \ \ <section\ className=\textcolor{stringliteral}{"{}organizer-\/section"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00598}00598\ \ \ \ \ \ \ \ \ \ \ \ \ <h3>Volunteer\ Management</h3>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00599}00599\ \ \ \ \ \ \ \ \ \ \ \ \ \{selectedEvent\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00600}00600\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}selected-\/event-\/summary"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00601}00601\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <strong>\{selectedEvent.title\}</strong>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00602}00602\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>\{selectedEvent.location\}\ |\ \{\doxymbox{\hyperlink{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}{formatEventDate}}(selectedEvent)\}</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00603}00603\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00604}00604\ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00605}00605\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00606}00606\ \ \ \ \ \ \ \ \ \ \ \ \ \{!selectedEvent\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00607}00607\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}event-\/list"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00608}00608\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{events.map((event)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00609}00609\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ key=\{\textcolor{keyword}{event}.\_id\}\ className=\textcolor{stringliteral}{"{}event-\/selector-\/btn"{}}\ onClick=\{()\ =>\ fetchApplications(event.\_id)\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00610}00610\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>\{\textcolor{keyword}{event}.title\}\ (\{\textcolor{keyword}{event}.location\})</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00611}00611\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>\{\textcolor{keyword}{event}.applicantCount\}\ applicants</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00612}00612\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00613}00613\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00614}00614\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00615}00615\ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00616}00616\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}applications-\/list"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00617}00617\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}applications-\/controls"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00618}00618\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}event-\/card-\/btn"{}}\ onClick=\{()\ =>\ \{\ setSelectedEvent(\textcolor{keyword}{null});\ setApplications([]);\ setActionStatus(\textcolor{stringliteral}{''});\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00619}00619\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ←\ Back\ to\ my\ events}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00620}00620\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00621}00621\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}applications-\/summary"{}}>Showing\ \{applications.length\}\ volunteer\{applications.length\ ===\ 1\ ?\ \textcolor{stringliteral}{''}\ :\ \textcolor{charliteral}{'s'}\}</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00622}00622\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00623}00623\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p\ style=\{\{\ color:\ \textcolor{stringliteral}{'\#64748b'},\ fontSize:\ 14,\ marginBottom:\ 12\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00624}00624\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ After\ someone\ participates,\ confirm\ attendance\ here\ —\ they\ receive\ \textcolor{keyword}{event}\ points\ and\ badges\ update\ automatically.}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00625}00625\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00626}00626\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{applications.length\ ===\ 0\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00627}00627\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}no-\/applications"{}}>No\ volunteer\ applications\ found\ \textcolor{keywordflow}{for}\ \textcolor{keyword}{this}\ \textcolor{keyword}{event}.</div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00628}00628\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00629}00629\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00630}00630\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{!selectedEvent?.isPublished\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00631}00631\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/error-\/banner"{}}\ style=\{\{\ marginBottom:\ 16\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00632}00632\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ This\ \textcolor{keyword}{event}\ is\ not\ posted\ to\ volunteers,\ so\ attendance\ cannot\ be\ confirmed\ until\ it\ is\ posted.}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00633}00633\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00634}00634\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ \textcolor{keyword}{null}\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00635}00635\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{applications.map((application)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00636}00636\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ profile\ =\ application.volunteerProfile}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00637}00637\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ vid\ =\ application.volunteerId}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00638}00638\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ canConfirm\ =}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00639}00639\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ selectedEvent?.isPublished\ \&\&}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00640}00640\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ application.status\ !==\ \textcolor{stringliteral}{'withdrawn'}\ \&\&}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00641}00641\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ application.status\ !==\ \textcolor{stringliteral}{'rejected'}\ \&\&}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00642}00642\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ !application.attended}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00643}00643\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00644}00644\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ key=\{application.\_id\}\ className=\textcolor{stringliteral}{"{}application-\/item"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00645}00645\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}app-\/header"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00646}00646\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}app-\/info"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00647}00647\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4>\{application.volunteerName\}</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00648}00648\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>\{application.volunteerEmail\}</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00649}00649\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00650}00650\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}app-\/status"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00651}00651\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{application.status\ ===\ \textcolor{stringliteral}{'withdrawn'}\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00652}00652\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ className=\textcolor{stringliteral}{"{}app-\/status-\/badge\ withdrawn"{}}>Withdrawn</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00653}00653\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00654}00654\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{application.attended\ \&\&\ <span\ className=\textcolor{stringliteral}{"{}app-\/status-\/badge\ attended"{}}>Attended</span>\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00655}00655\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00656}00656\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00657}00657\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{profile\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00658}00658\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}app-\/notes"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00659}00659\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>City:</strong>\ \{profile.city\ ||\ \textcolor{stringliteral}{'—'}\}</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00660}00660\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p><strong>Interests:</strong>\ \{(profile.interests\ ||\ []).join(\textcolor{stringliteral}{',\ '})\ ||\ \textcolor{stringliteral}{'—'}\}</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00661}00661\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00662}00662\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00663}00663\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{application.notes\ \&\&\ <p\ className=\textcolor{stringliteral}{"{}app-\/notes"{}}>\{application.notes\}</p>\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00664}00664\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ style=\{\{\ display:\ \textcolor{stringliteral}{'flex'},\ alignItems:\ \textcolor{stringliteral}{'center'},\ gap:\ 10,\ marginTop:\ 10,\ cursor:\ canConfirm\ ?\ \textcolor{stringliteral}{'pointer'}\ :\ \textcolor{stringliteral}{'default'}\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00665}00665\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00666}00666\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}checkbox"{}}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00667}00667\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ checked=\{Boolean(application.attended)\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00668}00668\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ disabled=\{!canConfirm\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00669}00669\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{(e)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00670}00670\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (e.target.checked)\ confirmVolunteerAttendance(vid)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00671}00671\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00672}00672\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00673}00673\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Confirm\ attendance\ (awards\ points)</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00674}00674\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00675}00675\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00676}00676\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00677}00677\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \})\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00678}00678\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00679}00679\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00680}00680\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00681}00681\ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00682}00682\ \ \ \ \ \ \ \ \ \ \ </section>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00683}00683\ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00684}00684\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00685}00685\ \ \ \ \ \ \ \ \ \{activeTab\ ===\ \textcolor{stringliteral}{'reports'}\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00686}00686\ \ \ \ \ \ \ \ \ \ \ <section\ className=\textcolor{stringliteral}{"{}organizer-\/section"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00687}00687\ \ \ \ \ \ \ \ \ \ \ \ \ <h3>Analytics\ \&\ reports</h3>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00688}00688\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/report-\/grid"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00689}00689\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}stat-\/card\ stat-\/blue"{}}><div\ className=\textcolor{stringliteral}{"{}stat-\/info"{}}><h3>\{reports?.totalApplications\ ||\ 0\}</h3><p>Total\ Applications</p></div></div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00690}00690\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}stat-\/card\ stat-\/green"{}}><div\ className=\textcolor{stringliteral}{"{}stat-\/info"{}}><h3>\{reports?.attendanceCount\ ||\ 0\}</h3><p>Attendance\ Tracked</p></div></div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00691}00691\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}stat-\/card\ stat-\/orange"{}}><div\ className=\textcolor{stringliteral}{"{}stat-\/info"{}}><h3>\{reports?.participationRate\ ||\ 0\}\%</h3><p>Participation\ Rate</p></div></div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00692}00692\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}stat-\/card\ stat-\/pink"{}}><div\ className=\textcolor{stringliteral}{"{}stat-\/info"{}}><h3>\{reports?.volunteerHoursLogged\ ||\ 0\}</h3><p>Volunteer\ Hours</p></div></div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00693}00693\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00694}00694\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/past-\/events-\/section"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00695}00695\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4\ className=\textcolor{stringliteral}{"{}organizer-\/form-\/section-\/title"{}}>Past\ events\ you\ conducted</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00696}00696\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p\ style=\{\{\ color:\ \textcolor{stringliteral}{'\#64748b'},\ fontSize:\ 14,\ marginBottom:\ 12\ \}\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00697}00697\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Completed\ events\ (by\ end\ date)\ with\ how\ many\ people\ \textcolor{keywordtype}{signed}\ up.}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00698}00698\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00699}00699\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{pastConductedEvents.length\ ===\ 0\ ?\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00700}00700\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p\ className=\textcolor{stringliteral}{"{}organizer-\/date-\/empty"{}}>No\ past\ events\ yet.</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00701}00701\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00702}00702\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <table\ className=\textcolor{stringliteral}{"{}organizer-\/past-\/events-\/table"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00703}00703\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <thead>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00704}00704\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <tr>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00705}00705\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <th>Event</th>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00706}00706\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <th>Start\ –\ end</th>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00707}00707\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <th>Location</th>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00708}00708\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <th>Joined</th>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00709}00709\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </tr>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00710}00710\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </thead>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00711}00711\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <tbody>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00712}00712\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{pastConductedEvents.map((evt)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00713}00713\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <tr\ key=\{evt.\_id\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00714}00714\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <td>\{evt.title\}</td>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00715}00715\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <td>\{\doxymbox{\hyperlink{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}{formatEventDate}}(evt)\}</td>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00716}00716\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <td>\{evt.location\ ||\ \textcolor{stringliteral}{'—'}\}</td>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00717}00717\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <td>\{joinCountDisplay(evt)\}</td>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00718}00718\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </tr>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00719}00719\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00720}00720\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </tbody>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00721}00721\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </table>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00722}00722\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00723}00723\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00724}00724\ \ \ \ \ \ \ \ \ \ \ </section>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00725}00725\ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00726}00726\ \ \ \ \ \ \ </main>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00727}00727\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00728}00728\ \ \ \ \ \ \ \{showEventModal\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00729}00729\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/modal-\/overlay"{}}\ onClick=\{()\ =>\ setShowEventModal(\textcolor{keyword}{false})\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00730}00730\ \ \ \ \ \ \ \ \ \ \ <form\ className=\textcolor{stringliteral}{"{}organizer-\/modal\ organizer-\/event-\/modal"{}}\ onClick=\{(e)\ =>\ e.stopPropagation()\}\ onSubmit=\{submitEvent\}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00731}00731\ \ \ \ \ \ \ \ \ \ \ \ \ <h2>\{editingEvent\ ?\ \textcolor{stringliteral}{'Edit\ Event'}\ :\ \textcolor{stringliteral}{'Create\ New\ Event'}\}</h2>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00732}00732\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/form-\/grid"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00733}00733\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4\ className=\textcolor{stringliteral}{"{}organizer-\/form-\/section-\/title"{}}>Basics</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00734}00734\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00735}00735\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Event\ title</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00736}00736\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ name=\textcolor{stringliteral}{"{}title"{}}\ value=\{eventForm.title\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}Title"{}}\ required\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00737}00737\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00738}00738\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00739}00739\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Organization\ name</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00740}00740\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ name=\textcolor{stringliteral}{"{}organizationName"{}}\ value=\{eventForm.organizationName\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}Organization\ Name"{}}\ required\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00741}00741\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00742}00742\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00743}00743\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Category</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00744}00744\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <select\ name=\textcolor{stringliteral}{"{}category"{}}\ value=\{eventForm.category\}\ onChange=\{handleEventFormChange\}\ required>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00745}00745\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <option\ value=\textcolor{stringliteral}{"{}cleanup"{}}>Cleanup</option>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00746}00746\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <option\ value=\textcolor{stringliteral}{"{}planting"{}}>Planting</option>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00747}00747\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <option\ value=\textcolor{stringliteral}{"{}recycling"{}}>Recycling</option>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00748}00748\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <option\ value=\textcolor{stringliteral}{"{}awareness"{}}>Awareness</option>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00749}00749\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </select>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00750}00750\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00751}00751\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00752}00752\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4\ className=\textcolor{stringliteral}{"{}organizer-\/form-\/section-\/title"{}}>Where</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00753}00753\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label\ organizer-\/field-\/full"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00754}00754\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Location\ (area\ /\ landmark)</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00755}00755\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ name=\textcolor{stringliteral}{"{}location"{}}\ value=\{eventForm.location\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}Location\ (Area\ Name,\ City,\ State)"{}}\ required\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00756}00756\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00757}00757\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00758}00758\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4\ className=\textcolor{stringliteral}{"{}organizer-\/form-\/section-\/title"{}}>Schedule</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00759}00759\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00760}00760\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Start\ date</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00761}00761\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ type=\textcolor{stringliteral}{"{}date"{}}\ name=\textcolor{stringliteral}{"{}startDateISO"{}}\ value=\{eventForm.startDateISO\}\ onChange=\{handleEventFormChange\}\ required\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00762}00762\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00763}00763\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00764}00764\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>End\ date</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00765}00765\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ type=\textcolor{stringliteral}{"{}date"{}}\ name=\textcolor{stringliteral}{"{}endDateISO"{}}\ value=\{eventForm.endDateISO\}\ onChange=\{handleEventFormChange\}\ required\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00766}00766\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00767}00767\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00768}00768\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Start\ time\ (hour\ 1–24)</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00769}00769\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ type=\textcolor{stringliteral}{"{}number"{}}\ name=\textcolor{stringliteral}{"{}startHour"{}}\ value=\{eventForm.startHour\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}e.g.\ 9\ for\ 9:00"{}}\ min=\textcolor{stringliteral}{"{}1"{}}\ max=\textcolor{stringliteral}{"{}24"{}}\ required\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00770}00770\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00771}00771\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00772}00772\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>End\ time\ (hour\ 1–24)</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00773}00773\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ type=\textcolor{stringliteral}{"{}number"{}}\ name=\textcolor{stringliteral}{"{}endHour"{}}\ value=\{eventForm.endHour\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}e.g.\ 17\ for\ 17:00"{}}\ min=\textcolor{stringliteral}{"{}1"{}}\ max=\textcolor{stringliteral}{"{}24"{}}\ required\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00774}00774\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00775}00775\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00776}00776\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4\ className=\textcolor{stringliteral}{"{}organizer-\/form-\/section-\/title"{}}>Volunteers\ \&\ rewards</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00777}00777\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00778}00778\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Volunteer\ points</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00779}00779\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ type=\textcolor{stringliteral}{"{}number"{}}\ name=\textcolor{stringliteral}{"{}points"{}}\ value=\{eventForm.points\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}Points"{}}\ min=\textcolor{stringliteral}{"{}0"{}}\ required\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00780}00780\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00781}00781\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00782}00782\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Distance\ (km)</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00783}00783\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ type=\textcolor{stringliteral}{"{}number"{}}\ name=\textcolor{stringliteral}{"{}distanceKm"{}}\ value=\{eventForm.distanceKm\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}Distance\ km"{}}\ min=\textcolor{stringliteral}{"{}0"{}}\ step=\textcolor{stringliteral}{"{}0.1"{}}\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00784}00784\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00785}00785\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00786}00786\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Max\ volunteers</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00787}00787\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ type=\textcolor{stringliteral}{"{}number"{}}\ name=\textcolor{stringliteral}{"{}volunteerSlots"{}}\ value=\{eventForm.volunteerSlots\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}0\ =\ no\ limit"{}}\ min=\textcolor{stringliteral}{"{}0"{}}\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00788}00788\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00789}00789\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00790}00790\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Latitude\ (optional)</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00791}00791\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ type=\textcolor{stringliteral}{"{}number"{}}\ name=\textcolor{stringliteral}{"{}latitude"{}}\ value=\{eventForm.latitude\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}e.g.\ 17.385"{}}\ step=\textcolor{stringliteral}{"{}any"{}}\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00792}00792\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00793}00793\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00794}00794\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Longitude\ (optional)</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00795}00795\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ type=\textcolor{stringliteral}{"{}number"{}}\ name=\textcolor{stringliteral}{"{}longitude"{}}\ value=\{eventForm.longitude\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}e.g.\ 78.4867"{}}\ step=\textcolor{stringliteral}{"{}any"{}}\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00796}00796\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00797}00797\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ className=\textcolor{stringliteral}{"{}organizer-\/field-\/label\ organizer-\/field-\/full"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00798}00798\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span>Required\ skills\ (comma\ separated)</span>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00799}00799\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input\ name=\textcolor{stringliteral}{"{}requiredSkills"{}}\ value=\{eventForm.requiredSkills\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}Required\ skills"{}}\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00800}00800\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00801}00801\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00802}00802\ \ \ \ \ \ \ \ \ \ \ \ \ <textarea\ name=\textcolor{stringliteral}{"{}description"{}}\ value=\{eventForm.description\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}Description"{}}\ required\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00803}00803\ \ \ \ \ \ \ \ \ \ \ \ \ <textarea\ name=\textcolor{stringliteral}{"{}address"{}}\ value=\{eventForm.address\}\ onChange=\{handleEventFormChange\}\ placeholder=\textcolor{stringliteral}{"{}Address"{}}\ required\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00804}00804\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/permission-\/help"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00805}00805\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4>Event\ permission\ slip\ guidance</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00806}00806\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>This\ \textcolor{keyword}{event}\ will\ require\ admin\ review\ and\ approval\ before\ it\ can\ be\ published\ to\ volunteers.</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00807}00807\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>Please\ include\ the\ following\ details\ in\ your\ \textcolor{keyword}{event}\ permission\ slip\ PDF:</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00808}00808\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <ul>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00809}00809\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <li>When\ the\ \textcolor{keyword}{event}\ is\ conducted:\ start\ date,\ end\ date,\ and\ timing.</li>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00810}00810\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <li>Where\ the\ \textcolor{keyword}{event}\ is\ conducted:\ location\ and\ full\ address.</li>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00811}00811\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <li>How\ the\ \textcolor{keyword}{event}\ is\ conducted:\ activity\ plan,\ expected\ process,\ and\ organizer\ contact\ responsibility.</li>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00812}00812\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </ul>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00813}00813\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00814}00814\ \ \ \ \ \ \ \ \ \ \ \ \ <input\ type=\textcolor{stringliteral}{"{}file"{}}\ accept=\textcolor{stringliteral}{"{}application/pdf"{}}\ onChange=\{handleEventFileChange\}\ />}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00815}00815\ \ \ \ \ \ \ \ \ \ \ \ \ \{eventForm.permissionPdf\ \&\&\ <span\ className=\textcolor{stringliteral}{"{}file-\/name"{}}>Selected:\ \{eventForm.permissionPdf.name\}</span>\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00816}00816\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00817}00817\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/conflict-\/preview"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00818}00818\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <h4>Existing\ events\ (same\ organizer)</h4>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00819}00819\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{events.map((event)\ =>\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00820}00820\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p\ key=\{\textcolor{keyword}{event}.\_id\}>\{\textcolor{keyword}{event}.location\}\ |\ \{\doxymbox{\hyperlink{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}{formatEventDate}}(event)\}\ |\ \{\textcolor{keyword}{event}.startHour\}:00-\/\{\textcolor{keyword}{event}.endHour\}:00</p>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00821}00821\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00822}00822\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00823}00823\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00824}00824\ \ \ \ \ \ \ \ \ \ \ \ \ \{eventConflict\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00825}00825\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/conflict-\/alert"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00826}00826\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <strong>\{eventConflict.message\}</strong>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00827}00827\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{eventConflict.event\ \&\&\ <p>Conflicts\ with:\ \{eventConflict.event.title\}\ (\{eventConflict.event.startHour\}:00-\/\{eventConflict.event.endHour\}:00)</p>\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00828}00828\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{eventConflict.suggestion\ \&\&\ <p>Suggested\ slot:\ \{eventConflict.suggestion\}</p>\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00829}00829\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00830}00830\ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00831}00831\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00832}00832\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}organizer-\/modal-\/actions"{}}>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00833}00833\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ onClick=\{()\ =>\ setShowEventModal(\textcolor{keyword}{false})\}>Cancel</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00834}00834\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}submit"{}}\ disabled=\{Boolean(eventConflict)\}>Save\ Event</button>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00835}00835\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00836}00836\ \ \ \ \ \ \ \ \ \ \ </form>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00837}00837\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00838}00838\ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00839}00839\ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00840}00840\ \ \ )}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00841}00841\ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00842}00842\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00843}00843\ \textcolor{keyword}{function}\ hourToMinutes(value)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00844}00844\ \ \ \textcolor{keyword}{const}\ hour\ =\ Number(value)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00845}00845\ \ \ \textcolor{keywordflow}{if}\ (!Number.isFinite(hour))\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{null}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00846}00846\ \ \ \textcolor{keywordflow}{return}\ Math.min(24,\ Math.max(1,\ Math.floor(hour)))\ *\ 60}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00847}00847\ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00848}00848\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00849}00849\ \textcolor{keyword}{function}\ toHour(totalMinutes)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00850}00850\ \ \ \textcolor{keyword}{const}\ safeMinutes\ =\ Math.max(60,\ Math.min(totalMinutes,\ 1440))}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00851}00851\ \ \ \textcolor{keywordflow}{return}\ \`{}\$\{Math.floor(safeMinutes\ /\ 60)\}:00\`{}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00852}00852\ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00853}00853\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00854}00854\ \textcolor{keyword}{function}\ \doxymbox{\hyperlink{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}{formatEventDate}}(event)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00855}00855\ \ \ \textcolor{keyword}{const}\ start\ =\ \textcolor{keyword}{event}.startDateISO\ ||\ \textcolor{keyword}{event}.dateISO\ ||\ \textcolor{stringliteral}{''}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00856}00856\ \ \ \textcolor{keyword}{const}\ end\ =\ \textcolor{keyword}{event}.endDateISO\ ||\ \textcolor{keyword}{event}.startDateISO\ ||\ \textcolor{keyword}{event}.dateISO\ ||\ \textcolor{stringliteral}{''}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00857}00857\ \ \ \textcolor{keywordflow}{if}\ (!start)\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{'Date\ not\ set'}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00858}00858\ \ \ \textcolor{keywordflow}{if}\ (!end\ ||\ start\ ===\ end)\ \textcolor{keywordflow}{return}\ start}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00859}00859\ \ \ \textcolor{keywordflow}{return}\ \`{}\$\{start\}\ -\/\ \$\{end\}\`{}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00860}00860\ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00861}00861\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00862}00862\ \textcolor{keyword}{function}\ isEventOnDate(event,\ isoDate)\ \{}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00863}00863\ \ \ \textcolor{keyword}{const}\ start\ =\ \textcolor{keyword}{event}.startDateISO\ ||\ \textcolor{keyword}{event}.dateISO\ ||\ \textcolor{stringliteral}{''}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00864}00864\ \ \ \textcolor{keyword}{const}\ end\ =\ \textcolor{keyword}{event}.endDateISO\ ||\ \textcolor{keyword}{event}.startDateISO\ ||\ \textcolor{keyword}{event}.dateISO\ ||\ \textcolor{stringliteral}{''}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00865}00865\ \ \ \textcolor{keywordflow}{if}\ (!start)\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00866}00866\ \ \ \textcolor{keywordflow}{return}\ start\ <=\ isoDate\ \&\&\ isoDate\ <=\ (end\ ||\ start)}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00867}00867\ \}}
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00868}00868\ }
+\DoxyCodeLine{\Hypertarget{_organizer_dashboard_8jsx_source_l00869}00869\ export\ \textcolor{keywordflow}{default}\ OrganizerDashboard}
+
+\end{DoxyCode}

@@ -1,0 +1,419 @@
+\doxysection{src/\+pages/\+\+Dashboard.jsx File Reference}
+\hypertarget{_dashboard_8jsx}{}\label{_dashboard_8jsx}\index{src/pages/Dashboard.jsx@{src/pages/Dashboard.jsx}}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a5559105f55daf9fab5d56509db18467b}{read\+Stored\+User}} ()
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a91ee9e3311437737e42dbb70d6ac6470}{storage\+Key\+Total\+Points}} (user\+Id)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_af710e90bc5be151521f0cc074ac69f5c}{storage\+Key\+Joined}} (user\+Id)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a84bc2fefc61781407ee31214020ebd03}{storage\+Key\+Attended}} (user\+Id)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_ab8b643998eed145335013a6815b106d6}{read\+Initial\+Total\+Points}} (stored\+User)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a8a89dba572b9ab343ad99d802b79ff5c}{normalize\+Joined\+Events}} (ids)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_ae029ddf40293397f3300253ef211c90b}{normalize\+Event}} (event)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a22699c277aefc5600d00d52ef30930c2}{volunteer\+Summary\+Line}} (event)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_aa9a6edd32f61c446711472a5e130ba50}{parse\+Date\+Only}} (iso)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_af38adbbdf6fa14940812f259aab5dd46}{start\+Of\+Today}} ()
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_aa69a42128cf63dc7fb823dc6a9919431}{is\+Past\+Event}} (event)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a7bec50b4921bd1ef346495deff881cfa}{get\+Event\+Date\+Range}} (event)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_a9d11fe3c8bde57df058459cb34245ebf}{get\+Event\+Timing}} (event)
+\item 
+function \doxymbox{\hyperlink{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}{format\+Event\+Date}} (event)
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \{ use\+State, use\+Memo, use\+Effect, use\+Callback \} from \textquotesingle{}react\textquotesingle{}
+\item 
+\doxymbox{\hyperlink{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \doxymbox{\hyperlink{_dashboard_8jsx_a79d988f803083e22a79ac0290b3ded4e}{Dashboard}} \doxymbox{\hyperlink{_dashboard_8jsx_aefb346f18fbf212e7eeed0172d8a85ad}{css}}
+\item 
+\doxymbox{\hyperlink{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} Rewards from \doxymbox{\hyperlink{_dashboard_8jsx_a6c85e0402e45882fc6fc7c581e71490c}{Rewards}}
+\item 
+\doxymbox{\hyperlink{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \doxymbox{\hyperlink{community_8jsx_ab89281d461f7ebf80ddf1554510491b6}{Community}} from \doxymbox{\hyperlink{_dashboard_8jsx_a7a3e256b5e11e8beca4c739cd9894615}{community}}
+\item 
+export default \doxymbox{\hyperlink{_dashboard_8jsx_a79d988f803083e22a79ac0290b3ded4e}{Dashboard}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{_dashboard_8jsx_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498}\index{Dashboard.jsx@{Dashboard.jsx}!formatEventDate@{formatEventDate}}
+\index{formatEventDate@{formatEventDate}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{formatEventDate()}{formatEventDate()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_add0ac8ea0c08c7706c4314f585d6e498} 
+function format\+Event\+Date (\begin{DoxyParamCaption}\item[{}]{event}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00110}{110}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00110\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00111\ \ \ \textcolor{keyword}{const}\ \{\ start,\ end\ \}\ =\ \doxymbox{\hyperlink{_dashboard_8jsx_a7bec50b4921bd1ef346495deff881cfa}{getEventDateRange}}(event);}
+\DoxyCodeLine{00112\ \ \ \textcolor{keywordflow}{if}\ (!start)\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{'Date\ not\ set'};}
+\DoxyCodeLine{00113\ \ \ \textcolor{keywordflow}{if}\ (!end\ ||\ start.getTime()\ ===\ end.getTime())\ \textcolor{keywordflow}{return}\ start.toDateString();}
+\DoxyCodeLine{00114\ \ \ \textcolor{keywordflow}{return}\ \`{}\$\{start.toDateString()\}\ -\/\ \$\{end.toDateString()\}\`{};}
+\DoxyCodeLine{00115\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function:\+
+% FIG 0
+\Hypertarget{_dashboard_8jsx_a7bec50b4921bd1ef346495deff881cfa}\index{Dashboard.jsx@{Dashboard.jsx}!getEventDateRange@{getEventDateRange}}
+\index{getEventDateRange@{getEventDateRange}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{getEventDateRange()}{getEventDateRange()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_a7bec50b4921bd1ef346495deff881cfa} 
+function get\+Event\+Date\+Range (\begin{DoxyParamCaption}\item[{}]{event}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00095}{95}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00095\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00096\ \ \ \textcolor{keyword}{const}\ start\ =\ \doxymbox{\hyperlink{_dashboard_8jsx_aa9a6edd32f61c446711472a5e130ba50}{parseDateOnly}}(event.startDateISO\ ||\ event.dateISO);}
+\DoxyCodeLine{00097\ \ \ \textcolor{keyword}{const}\ end\ =\ \doxymbox{\hyperlink{_dashboard_8jsx_aa9a6edd32f61c446711472a5e130ba50}{parseDateOnly}}(event.endDateISO\ ||\ event.dateISO\ ||\ event.startDateISO);}
+\DoxyCodeLine{00098\ \ \ \textcolor{keywordflow}{return}\ \{\ start,\ end\ \};}
+\DoxyCodeLine{00099\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function:\+
+% FIG 1
+Here is the caller graph for this function:\+
+% FIG 2
+\Hypertarget{_dashboard_8jsx_a9d11fe3c8bde57df058459cb34245ebf}\index{Dashboard.jsx@{Dashboard.jsx}!getEventTiming@{getEventTiming}}
+\index{getEventTiming@{getEventTiming}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{getEventTiming()}{getEventTiming()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_a9d11fe3c8bde57df058459cb34245ebf} 
+function get\+Event\+Timing (\begin{DoxyParamCaption}\item[{}]{event}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00101}{101}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00101\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00102\ \ \ \textcolor{keyword}{const}\ \{\ start,\ end\ \}\ =\ \doxymbox{\hyperlink{_dashboard_8jsx_a7bec50b4921bd1ef346495deff881cfa}{getEventDateRange}}(event);}
+\DoxyCodeLine{00103\ \ \ \textcolor{keyword}{const}\ today\ =\ \doxymbox{\hyperlink{_dashboard_8jsx_af38adbbdf6fa14940812f259aab5dd46}{startOfToday}}();}
+\DoxyCodeLine{00104\ \ \ \textcolor{keywordflow}{if}\ (!start\ ||\ !end)\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{'upcoming'};}
+\DoxyCodeLine{00105\ \ \ \textcolor{keywordflow}{if}\ (start\ <=\ today\ \&\&\ end\ >=\ today)\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{'ongoing'};}
+\DoxyCodeLine{00106\ \ \ \textcolor{keywordflow}{if}\ (start\ >\ today)\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{'upcoming'};}
+\DoxyCodeLine{00107\ \ \ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{'past'};}
+\DoxyCodeLine{00108\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function:\+
+% FIG 3
+\Hypertarget{_dashboard_8jsx_aa69a42128cf63dc7fb823dc6a9919431}\index{Dashboard.jsx@{Dashboard.jsx}!isPastEvent@{isPastEvent}}
+\index{isPastEvent@{isPastEvent}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{isPastEvent()}{isPastEvent()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_aa69a42128cf63dc7fb823dc6a9919431} 
+function is\+Past\+Event (\begin{DoxyParamCaption}\item[{}]{event}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00089}{89}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00089\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00090\ \ \ \textcolor{keyword}{const}\ end\ =\ \doxymbox{\hyperlink{_dashboard_8jsx_aa9a6edd32f61c446711472a5e130ba50}{parseDateOnly}}(event.endDateISO\ ||\ event.dateISO\ ||\ event.startDateISO);}
+\DoxyCodeLine{00091\ \ \ \textcolor{keywordflow}{if}\ (!end)\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00092\ \ \ \textcolor{keywordflow}{return}\ end\ <\ \doxymbox{\hyperlink{_dashboard_8jsx_af38adbbdf6fa14940812f259aab5dd46}{startOfToday}}();}
+\DoxyCodeLine{00093\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function:\+
+% FIG 4
+\Hypertarget{_dashboard_8jsx_ae029ddf40293397f3300253ef211c90b}\index{Dashboard.jsx@{Dashboard.jsx}!normalizeEvent@{normalizeEvent}}
+\index{normalizeEvent@{normalizeEvent}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{normalizeEvent()}{normalizeEvent()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_ae029ddf40293397f3300253ef211c90b} 
+function normalize\+Event (\begin{DoxyParamCaption}\item[{}]{event}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00046}{46}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00046\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00047\ \ \ \textcolor{keyword}{const}\ \textcolor{keywordtype}{id}\ =\ String(event.\_id\ ||\ event.id);}
+\DoxyCodeLine{00048\ \ \ \textcolor{keyword}{const}\ dateISO\ =\ \textcolor{keyword}{event}.dateISO\ ||\ \textcolor{keyword}{event}.date\ ||\ \textcolor{keyword}{event}.startDateISO\ ||\ \textcolor{keyword}{event}.endDateISO\ ||\ \textcolor{stringliteral}{''};}
+\DoxyCodeLine{00049\ \ \ \textcolor{keyword}{const}\ volunteerCount\ =}
+\DoxyCodeLine{00050\ \ \ \ \ typeof\ \textcolor{keyword}{event}.volunteerCount\ ===\ \textcolor{stringliteral}{'number'}}
+\DoxyCodeLine{00051\ \ \ \ \ \ \ ?\ \textcolor{keyword}{event}.volunteerCount}
+\DoxyCodeLine{00052\ \ \ \ \ \ \ :\ Math.max((event.volunteers\ ||\ []).length,\ Number(event.applicantCount)\ ||\ 0);}
+\DoxyCodeLine{00053\ \ \ \textcolor{keyword}{const}\ maxVolunteers\ =\ Number(event.maxVolunteers\ ??\ event.volunteerSlots\ ??\ 0)\ ||\ 0;}
+\DoxyCodeLine{00054\ \ \ \textcolor{keywordflow}{return}\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ ...event,}
+\DoxyCodeLine{00056\ \ \ \ \ id,}
+\DoxyCodeLine{00057\ \ \ \ \ dateISO,}
+\DoxyCodeLine{00058\ \ \ \ \ organizationName:\ \textcolor{keyword}{event}.organizationName\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{00059\ \ \ \ \ category:\ \textcolor{keyword}{event}.category\ ||\ \textcolor{stringliteral}{'cleanup'},}
+\DoxyCodeLine{00060\ \ \ \ \ location:\ \textcolor{keyword}{event}.location\ ||\ \textcolor{stringliteral}{'Hyderabad'},}
+\DoxyCodeLine{00061\ \ \ \ \ address:\ \textcolor{keyword}{event}.address\ ||\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{00062\ \ \ \ \ distanceKm:\ Number(event.distanceKm)\ ||\ 0,}
+\DoxyCodeLine{00063\ \ \ \ \ points:\ Number(event.points)\ ||\ 0,}
+\DoxyCodeLine{00064\ \ \ \ \ volunteerCount,}
+\DoxyCodeLine{00065\ \ \ \ \ maxVolunteers,}
+\DoxyCodeLine{00066\ \ \ \};}
+\DoxyCodeLine{00067\ \}}
+
+\end{DoxyCode}
+\Hypertarget{_dashboard_8jsx_a8a89dba572b9ab343ad99d802b79ff5c}\index{Dashboard.jsx@{Dashboard.jsx}!normalizeJoinedEvents@{normalizeJoinedEvents}}
+\index{normalizeJoinedEvents@{normalizeJoinedEvents}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{normalizeJoinedEvents()}{normalizeJoinedEvents()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_a8a89dba572b9ab343ad99d802b79ff5c} 
+function normalize\+Joined\+Events (\begin{DoxyParamCaption}\item[{}]{ids}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00041}{41}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00041\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00042\ \ \ \textcolor{keywordflow}{if}\ (!Array.isArray(ids))\ \textcolor{keywordflow}{return}\ [];}
+\DoxyCodeLine{00043\ \ \ \textcolor{keywordflow}{return}\ ids.map((\textcolor{keywordtype}{id})\ =>\ String(\textcolor{keywordtype}{id}));}
+\DoxyCodeLine{00044\ \}}
+
+\end{DoxyCode}
+\Hypertarget{_dashboard_8jsx_aa9a6edd32f61c446711472a5e130ba50}\index{Dashboard.jsx@{Dashboard.jsx}!parseDateOnly@{parseDateOnly}}
+\index{parseDateOnly@{parseDateOnly}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{parseDateOnly()}{parseDateOnly()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_aa9a6edd32f61c446711472a5e130ba50} 
+function parse\+Date\+Only (\begin{DoxyParamCaption}\item[{}]{iso}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00076}{76}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordflow}{if}\ (!iso)\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{null};}
+\DoxyCodeLine{00078\ \ \ \textcolor{keyword}{const}\ [year,\ month,\ day]\ =\ iso.split(\textcolor{charliteral}{'-\/'}).map(Number);}
+\DoxyCodeLine{00079\ \ \ \textcolor{keywordflow}{if}\ (!year\ ||\ !month\ ||\ !day)\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{null};}
+\DoxyCodeLine{00080\ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{new}\ Date(year,\ month\ -\/\ 1,\ day);}
+\DoxyCodeLine{00081\ \}}
+
+\end{DoxyCode}
+Here is the caller graph for this function:\+
+% FIG 5
+\Hypertarget{_dashboard_8jsx_ab8b643998eed145335013a6815b106d6}\index{Dashboard.jsx@{Dashboard.jsx}!readInitialTotalPoints@{readInitialTotalPoints}}
+\index{readInitialTotalPoints@{readInitialTotalPoints}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{readInitialTotalPoints()}{readInitialTotalPoints()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_ab8b643998eed145335013a6815b106d6} 
+function read\+Initial\+Total\+Points (\begin{DoxyParamCaption}\item[{}]{stored\+User}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00030}{30}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00031\ \ \ \textcolor{keyword}{const}\ uid\ =\ storedUser?.\_id\ ?\ String(storedUser.\_id)\ :\ \textcolor{stringliteral}{''};}
+\DoxyCodeLine{00032\ \ \ \textcolor{keyword}{const}\ eco\ =\ parseInt(localStorage.getItem(\doxymbox{\hyperlink{_dashboard_8jsx_a91ee9e3311437737e42dbb70d6ac6470}{storageKeyTotalPoints}}(uid))\ ||\ \textcolor{charliteral}{'0'},\ 10);}
+\DoxyCodeLine{00033\ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00034\ \ \ \ \ \textcolor{keyword}{const}\ up\ =\ typeof\ storedUser?.points\ ===\ \textcolor{stringliteral}{'number'}\ ?\ storedUser.points\ :\ 0;}
+\DoxyCodeLine{00035\ \ \ \ \ \textcolor{keywordflow}{return}\ Math.max(eco,\ up);}
+\DoxyCodeLine{00036\ \ \ \}\ \textcolor{keywordflow}{catch}\ \{}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordflow}{return}\ eco;}
+\DoxyCodeLine{00038\ \ \ \}}
+\DoxyCodeLine{00039\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function:\+
+% FIG 6
+\Hypertarget{_dashboard_8jsx_a5559105f55daf9fab5d56509db18467b}\index{Dashboard.jsx@{Dashboard.jsx}!readStoredUser@{readStoredUser}}
+\index{readStoredUser@{readStoredUser}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{readStoredUser()}{readStoredUser()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_a5559105f55daf9fab5d56509db18467b} 
+function read\+Stored\+User (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00009}{9}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00009\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00010\ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00011\ \ \ \ \ \textcolor{keyword}{const}\ raw\ =\ localStorage.getItem(\textcolor{stringliteral}{'user'});}
+\DoxyCodeLine{00012\ \ \ \ \ \textcolor{keywordflow}{return}\ raw\ ?\ JSON.parse(raw)\ :\ \textcolor{keyword}{null};}
+\DoxyCodeLine{00013\ \ \ \}\ \textcolor{keywordflow}{catch}\ \{}
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{null};}
+\DoxyCodeLine{00015\ \ \ \}}
+\DoxyCodeLine{00016\ \}}
+
+\end{DoxyCode}
+\Hypertarget{_dashboard_8jsx_af38adbbdf6fa14940812f259aab5dd46}\index{Dashboard.jsx@{Dashboard.jsx}!startOfToday@{startOfToday}}
+\index{startOfToday@{startOfToday}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{startOfToday()}{startOfToday()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_af38adbbdf6fa14940812f259aab5dd46} 
+function start\+Of\+Today (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00083}{83}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00083\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00084\ \ \ \textcolor{keyword}{const}\ today\ =\ \textcolor{keyword}{new}\ Date();}
+\DoxyCodeLine{00085\ \ \ today.setHours(0,\ 0,\ 0,\ 0);}
+\DoxyCodeLine{00086\ \ \ \textcolor{keywordflow}{return}\ today;}
+\DoxyCodeLine{00087\ \}}
+
+\end{DoxyCode}
+Here is the caller graph for this function:\+
+% FIG 7
+\Hypertarget{_dashboard_8jsx_a84bc2fefc61781407ee31214020ebd03}\index{Dashboard.jsx@{Dashboard.jsx}!storageKeyAttended@{storageKeyAttended}}
+\index{storageKeyAttended@{storageKeyAttended}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{storageKeyAttended()}{storageKeyAttended()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_a84bc2fefc61781407ee31214020ebd03} 
+function storage\+Key\+Attended (\begin{DoxyParamCaption}\item[{}]{user\+Id}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00026}{26}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00026\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00027\ \ \ \textcolor{keywordflow}{return}\ userId\ ?\ \`{}eco\_attended\_events:\$\{userId\}\`{}\ :\ \textcolor{stringliteral}{'eco\_attended\_events'};}
+\DoxyCodeLine{00028\ \}}
+
+\end{DoxyCode}
+\Hypertarget{_dashboard_8jsx_af710e90bc5be151521f0cc074ac69f5c}\index{Dashboard.jsx@{Dashboard.jsx}!storageKeyJoined@{storageKeyJoined}}
+\index{storageKeyJoined@{storageKeyJoined}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{storageKeyJoined()}{storageKeyJoined()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_af710e90bc5be151521f0cc074ac69f5c} 
+function storage\+Key\+Joined (\begin{DoxyParamCaption}\item[{}]{user\+Id}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00022}{22}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00023\ \ \ \textcolor{keywordflow}{return}\ userId\ ?\ \`{}eco\_joined\_events:\$\{userId\}\`{}\ :\ \textcolor{stringliteral}{'eco\_joined\_events'};}
+\DoxyCodeLine{00024\ \}}
+
+\end{DoxyCode}
+\Hypertarget{_dashboard_8jsx_a91ee9e3311437737e42dbb70d6ac6470}\index{Dashboard.jsx@{Dashboard.jsx}!storageKeyTotalPoints@{storageKeyTotalPoints}}
+\index{storageKeyTotalPoints@{storageKeyTotalPoints}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{storageKeyTotalPoints()}{storageKeyTotalPoints()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_a91ee9e3311437737e42dbb70d6ac6470} 
+function storage\+Key\+Total\+Points (\begin{DoxyParamCaption}\item[{}]{user\+Id}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00018}{18}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00018\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00019\ \ \ \textcolor{keywordflow}{return}\ userId\ ?\ \`{}eco\_total\_points:\$\{userId\}\`{}\ :\ \textcolor{stringliteral}{'eco\_total\_points'};}
+\DoxyCodeLine{00020\ \}}
+
+\end{DoxyCode}
+Here is the caller graph for this function:\+
+% FIG 8
+\Hypertarget{_dashboard_8jsx_a22699c277aefc5600d00d52ef30930c2}\index{Dashboard.jsx@{Dashboard.jsx}!volunteerSummaryLine@{volunteerSummaryLine}}
+\index{volunteerSummaryLine@{volunteerSummaryLine}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{volunteerSummaryLine()}{volunteerSummaryLine()}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_a22699c277aefc5600d00d52ef30930c2} 
+function volunteer\+Summary\+Line (\begin{DoxyParamCaption}\item[{}]{event}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00069}{69}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00070\ \ \ \textcolor{keyword}{const}\ n\ =\ \textcolor{keyword}{event}.volunteerCount\ ??\ 0;}
+\DoxyCodeLine{00071\ \ \ \textcolor{keyword}{const}\ max\ =\ \textcolor{keyword}{event}.maxVolunteers;}
+\DoxyCodeLine{00072\ \ \ \textcolor{keywordflow}{if}\ (max\ \&\&\ max\ >\ 0)\ \textcolor{keywordflow}{return}\ \`{}👥\ \$\{n\}\ /\ \$\{max\}\ volunteers\`{};}
+\DoxyCodeLine{00073\ \ \ \textcolor{keywordflow}{return}\ \`{}👥\ \$\{n\}\ volunteers\`{};}
+\DoxyCodeLine{00074\ \}}
+
+\end{DoxyCode}
+
+
+\label{doc-var-members}
+\Hypertarget{_dashboard_8jsx_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{_dashboard_8jsx_a7a3e256b5e11e8beca4c739cd9894615}\index{Dashboard.jsx@{Dashboard.jsx}!community@{community}}
+\index{community@{community}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{community}{community}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_a7a3e256b5e11e8beca4c739cd9894615} 
+\doxymbox{\hyperlink{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \doxymbox{\hyperlink{community_8jsx_ab89281d461f7ebf80ddf1554510491b6}{Community}} from community}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00007}{7}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+\Hypertarget{_dashboard_8jsx_aefb346f18fbf212e7eeed0172d8a85ad}\index{Dashboard.jsx@{Dashboard.jsx}!css@{css}}
+\index{css@{css}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{css}{css}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_aefb346f18fbf212e7eeed0172d8a85ad} 
+\doxymbox{\hyperlink{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \doxymbox{\hyperlink{_dashboard_8jsx_a79d988f803083e22a79ac0290b3ded4e}{Dashboard}} css}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00003}{3}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+\Hypertarget{_dashboard_8jsx_a79d988f803083e22a79ac0290b3ded4e}\index{Dashboard.jsx@{Dashboard.jsx}!Dashboard@{Dashboard}}
+\index{Dashboard@{Dashboard}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{Dashboard}{Dashboard}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_a79d988f803083e22a79ac0290b3ded4e} 
+function Dashboard}
+
+@type \{\{ id:\+ string, title:\+ string, text:\+ string, time:\+ string, read:\+ boolean \}\+[]\+\}
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l01044}{1044}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+\Hypertarget{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}\index{Dashboard.jsx@{Dashboard.jsx}!import@{import}}
+\index{import@{import}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{import}{import}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488} 
+import \{ use\+State, use\+Memo, use\+Effect, use\+Callback \} from \textquotesingle{}react\textquotesingle{}}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00001}{1}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \{\ useState,\ useMemo,\ useEffect,\ useCallback\ \}\ from\ \textcolor{stringliteral}{'react'};}
+
+\end{DoxyCode}
+\Hypertarget{_dashboard_8jsx_a6c85e0402e45882fc6fc7c581e71490c}\index{Dashboard.jsx@{Dashboard.jsx}!Rewards@{Rewards}}
+\index{Rewards@{Rewards}!Dashboard.jsx@{Dashboard.jsx}}
+\doxysubsubsection{\texorpdfstring{Rewards}{Rewards}}
+{\footnotesize\ttfamily \label{_dashboard_8jsx_a6c85e0402e45882fc6fc7c581e71490c} 
+\doxymbox{\hyperlink{_dashboard_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} Rewards from Rewards}
+
+
+
+Definition at line \doxymbox{\hyperlink{_dashboard_8jsx_source_l00006}{6}} of file \doxymbox{\hyperlink{_dashboard_8jsx_source}{Dashboard.\+jsx}}.
+

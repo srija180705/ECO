@@ -1,0 +1,39 @@
+\doxysection{Splash.\+jsx}
+\hypertarget{_splash_8jsx_source}{}\label{_splash_8jsx_source}\index{src/pages/Splash.jsx@{src/pages/Splash.jsx}}
+\doxymbox{\hyperlink{_splash_8jsx}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00001}00001\ \textcolor{keyword}{import}\ \{\ useEffect\ \}\ from\ \textcolor{stringliteral}{'react'}}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00002}00002\ \textcolor{keyword}{import}\ \{\ useNavigate\ \}\ from\ \textcolor{stringliteral}{'react-\/router-\/dom'}}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00003}00003\ }
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00004}00004\ \textcolor{keyword}{function}\ Splash()\ \{}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00005}00005\ \ \ \textcolor{keyword}{const}\ navigate\ =\ useNavigate()}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00006}00006\ }
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00007}00007\ \ \ useEffect(()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00008}00008\ \ \ \ \ \textcolor{keyword}{const}\ timer\ =\ setTimeout(()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00009}00009\ \ \ \ \ \ \ navigate(\textcolor{stringliteral}{'/auth'})}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00010}00010\ \ \ \ \ \},\ 2200)}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00011}00011\ }
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00012}00012\ \ \ \ \ \textcolor{keywordflow}{return}\ ()\ =>\ clearTimeout(timer)}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00013}00013\ \ \ \},\ [navigate])}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00014}00014\ }
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00015}00015\ \ \ \textcolor{keywordflow}{return}\ (}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00016}00016\ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}splash-\/container"{}}>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00017}00017\ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}splash-\/content"{}}>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00018}00018\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}splash-\/leaf"{}}>🌿</div>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00019}00019\ \ \ \ \ \ \ \ \ <h1>Eco\ Volunteer\ Match</h1>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00020}00020\ \ \ \ \ \ \ \ \ <p\ className=\textcolor{stringliteral}{"{}splash-\/tagline"{}}>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00021}00021\ \ \ \ \ \ \ \ \ \ \ Connecting\ volunteers\ with\ environmental\ opportunities\ —\ sign\ in\ to\ explore\ events\ near\ you.}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00022}00022\ \ \ \ \ \ \ \ \ </p>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00023}00023\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}loading-\/dots"{}}>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00024}00024\ \ \ \ \ \ \ \ \ \ \ <span></span>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00025}00025\ \ \ \ \ \ \ \ \ \ \ <span></span>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00026}00026\ \ \ \ \ \ \ \ \ \ \ <span></span>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00027}00027\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00028}00028\ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00029}00029\ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00030}00030\ \ \ )}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00031}00031\ \}}
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00032}00032\ }
+\DoxyCodeLine{\Hypertarget{_splash_8jsx_source_l00033}00033\ export\ \textcolor{keywordflow}{default}\ Splash}
+
+\end{DoxyCode}

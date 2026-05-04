@@ -1,0 +1,687 @@
+\doxysection{src/\+pages/\+community.jsx File Reference}
+\hypertarget{community_8jsx}{}\label{community_8jsx}\index{src/pages/community.jsx@{src/pages/community.jsx}}
+\doxysubsubsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+function \doxymbox{\hyperlink{community_8jsx_a5559105f55daf9fab5d56509db18467b}{read\+Stored\+User}} ()
+\item 
+function \doxymbox{\hyperlink{community_8jsx_aded2e603bf0dbd35d446bcfb1ca1a313}{time\+Ago}} (iso)
+\item 
+function default \doxymbox{\hyperlink{community_8jsx_ab89281d461f7ebf80ddf1554510491b6}{Community}} ()
+\end{DoxyCompactItemize}
+\doxysubsubsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+\doxymbox{\hyperlink{community_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \{ use\+Effect, use\+Memo, use\+State \} from "{}react"{}
+\item 
+\doxymbox{\hyperlink{community_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \doxymbox{\hyperlink{_dashboard_8jsx_a7a3e256b5e11e8beca4c739cd9894615}{community}} \doxymbox{\hyperlink{community_8jsx_a73958da5215a12339fe309a083ded211}{css}}
+\item 
+const \doxymbox{\hyperlink{community_8jsx_aa9c3f00ad89212e52eb3139dbebbfc28}{API\+\_\+\+URL}} = \textquotesingle{}/\+\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/\+posts\textquotesingle{}
+\item 
+const \doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}
+\end{DoxyCompactItemize}
+
+
+\label{doc-func-members}
+\Hypertarget{community_8jsx_doc-func-members}
+\doxysubsection{Function Documentation}
+\Hypertarget{community_8jsx_ab89281d461f7ebf80ddf1554510491b6}\index{community.jsx@{community.jsx}!Community@{Community}}
+\index{Community@{Community}!community.jsx@{community.jsx}}
+\doxysubsubsection{\texorpdfstring{Community()}{Community()}}
+{\footnotesize\ttfamily \label{community_8jsx_ab89281d461f7ebf80ddf1554510491b6} 
+function default Community (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{community_8jsx_source_l00097}{97}} of file \doxymbox{\hyperlink{community_8jsx_source}{community.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00097\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00098\ \ \ \textcolor{keyword}{const}\ me\ =\ \doxymbox{\hyperlink{community_8jsx_a5559105f55daf9fab5d56509db18467b}{readStoredUser}}();}
+\DoxyCodeLine{00099\ \ \ \textcolor{keyword}{const}\ refreshMe\ =\ async\ ()\ =>\ \{\ \};}
+\DoxyCodeLine{00100\ \ \ \textcolor{keyword}{const}\ [posts,\ setPosts]\ =\ useState([]);}
+\DoxyCodeLine{00101\ \ \ \textcolor{keyword}{const}\ [text,\ setText]\ =\ useState(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00102\ \ \ \textcolor{keyword}{const}\ [imageFile,\ setImageFile]\ =\ useState(\textcolor{keyword}{null});}
+\DoxyCodeLine{00103\ \ \ \textcolor{keyword}{const}\ [imagePreview,\ setImagePreview]\ =\ useState(\textcolor{keyword}{null});}
+\DoxyCodeLine{00104\ \ \ \textcolor{keyword}{const}\ [loading,\ setLoading]\ =\ useState(\textcolor{keyword}{true});}
+\DoxyCodeLine{00105\ \ \ \textcolor{keyword}{const}\ [err,\ setErr]\ =\ useState(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00106\ \ \ \textcolor{keyword}{const}\ [showEmojiPicker,\ setShowEmojiPicker]\ =\ useState(\textcolor{keyword}{false});}
+\DoxyCodeLine{00107\ \ \ \textcolor{keyword}{const}\ [editingPostId,\ setEditingPostId]\ =\ useState(\textcolor{keyword}{null});}
+\DoxyCodeLine{00108\ \ \ \textcolor{keyword}{const}\ [editingText,\ setEditingText]\ =\ useState(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00109\ }
+\DoxyCodeLine{00110\ \ \ async\ \textcolor{keyword}{function}\ load()\ \{}
+\DoxyCodeLine{00111\ \ \ \ \ setLoading(\textcolor{keyword}{true});}
+\DoxyCodeLine{00112\ \ \ \ \ setErr(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00113\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00114\ \ \ \ \ \ \ \textcolor{keyword}{const}\ list\ =\ await\ \doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}.listPosts();}
+\DoxyCodeLine{00115\ \ \ \ \ \ \ setPosts(list);}
+\DoxyCodeLine{00116\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (e)\ \{}
+\DoxyCodeLine{00117\ \ \ \ \ \ \ setErr(e?.message\ ||\ \textcolor{stringliteral}{"{}Failed\ to\ load\ posts"{}});}
+\DoxyCodeLine{00118\ \ \ \ \ \}\ \textcolor{keywordflow}{finally}\ \{}
+\DoxyCodeLine{00119\ \ \ \ \ \ \ setLoading(\textcolor{keyword}{false});}
+\DoxyCodeLine{00120\ \ \ \ \ \}}
+\DoxyCodeLine{00121\ \ \ \}}
+\DoxyCodeLine{00122\ }
+\DoxyCodeLine{00123\ \ \ useEffect(()\ =>\ \{}
+\DoxyCodeLine{00124\ \ \ \ \ load();}
+\DoxyCodeLine{00125\ \ \ \},\ []);}
+\DoxyCodeLine{00126\ }
+\DoxyCodeLine{00127\ \ \ useEffect(()\ =>\ \{}
+\DoxyCodeLine{00128\ \ \ \ \ \textcolor{keyword}{const}\ token\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'});}
+\DoxyCodeLine{00129\ \ \ \ \ \textcolor{keywordflow}{if}\ (!token)\ \textcolor{keywordflow}{return}\ undefined;}
+\DoxyCodeLine{00130\ }
+\DoxyCodeLine{00131\ \ \ \ \ \textcolor{comment}{//\ REST\ uses\ Vite\ proxy\ in\ dev;\ Socket.IO\ must\ talk\ to\ the\ API\ port\ directly.}}
+\DoxyCodeLine{00132\ \ \ \ \ \textcolor{keyword}{const}\ socketUrl\ =\ \textcolor{keyword}{import}.meta.env.DEV}
+\DoxyCodeLine{00133\ \ \ \ \ \ \ ?\ \textcolor{stringliteral}{'http://localhost:4000'}}
+\DoxyCodeLine{00134\ \ \ \ \ \ \ :\ (\doxymbox{\hyperlink{api_8js_a4389dc0f6ae335a90f447e2a8bd376d1}{API\_BASE}}\ ||\ window.location.origin);}
+\DoxyCodeLine{00135\ \ \ \ \ \textcolor{keyword}{const}\ socket\ =\ io(socketUrl,\ \{}
+\DoxyCodeLine{00136\ \ \ \ \ \ \ auth:\ \{\ token\ \},}
+\DoxyCodeLine{00137\ \ \ \ \ \ \ withCredentials:\ \textcolor{keyword}{true},}
+\DoxyCodeLine{00138\ \ \ \ \ \ \ transports:\ [\textcolor{stringliteral}{'websocket'},\ \textcolor{stringliteral}{'polling'}],}
+\DoxyCodeLine{00139\ \ \ \ \ \});}
+\DoxyCodeLine{00140\ }
+\DoxyCodeLine{00141\ \ \ \ \ socket.on(\textcolor{stringliteral}{'community:post\_created'},\ (post)\ =>\ \{}
+\DoxyCodeLine{00142\ \ \ \ \ \ \ setPosts((prev)\ =>\ \{}
+\DoxyCodeLine{00143\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (prev.some((item)\ =>\ String(item.\_id)\ ===\ String(post.\_id)))\ \textcolor{keywordflow}{return}\ prev;}
+\DoxyCodeLine{00144\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return}\ [post,\ ...prev];}
+\DoxyCodeLine{00145\ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00146\ \ \ \ \ \});}
+\DoxyCodeLine{00147\ }
+\DoxyCodeLine{00148\ \ \ \ \ socket.on(\textcolor{stringliteral}{'community:post\_updated'},\ (post)\ =>\ \{}
+\DoxyCodeLine{00149\ \ \ \ \ \ \ setPosts((prev)\ =>}
+\DoxyCodeLine{00150\ \ \ \ \ \ \ \ \ prev.map((item)\ =>\ (String(item.\_id)\ ===\ String(post.\_id)\ ?\ post\ :\ item))}
+\DoxyCodeLine{00151\ \ \ \ \ \ \ );}
+\DoxyCodeLine{00152\ \ \ \ \ \});}
+\DoxyCodeLine{00153\ }
+\DoxyCodeLine{00154\ \ \ \ \ socket.on(\textcolor{stringliteral}{'community:post\_deleted'},\ (\{\ \_id\ \})\ =>\ \{}
+\DoxyCodeLine{00155\ \ \ \ \ \ \ setPosts((prev)\ =>\ prev.filter((item)\ =>\ String(item.\_id)\ !==\ String(\_id)));}
+\DoxyCodeLine{00156\ \ \ \ \ \});}
+\DoxyCodeLine{00157\ }
+\DoxyCodeLine{00158\ \ \ \ \ socket.on(\textcolor{stringliteral}{'connect\_error'},\ (error)\ =>\ \{}
+\DoxyCodeLine{00159\ \ \ \ \ \ \ console.warn(\textcolor{stringliteral}{'Community\ realtime\ connection\ failed:'},\ error.message);}
+\DoxyCodeLine{00160\ \ \ \ \ \});}
+\DoxyCodeLine{00161\ }
+\DoxyCodeLine{00162\ \ \ \ \ \textcolor{keywordflow}{return}\ ()\ =>\ \{}
+\DoxyCodeLine{00163\ \ \ \ \ \ \ socket.disconnect();}
+\DoxyCodeLine{00164\ \ \ \ \ \};}
+\DoxyCodeLine{00165\ \ \ \},\ []);}
+\DoxyCodeLine{00166\ }
+\DoxyCodeLine{00167\ \ \ \textcolor{keyword}{const}\ canPost\ =\ useMemo(()\ =>\ text.trim().length\ >\ 0\ ||\ imageFile\ !==\ \textcolor{keyword}{null},\ [text,\ imageFile]);}
+\DoxyCodeLine{00168\ }
+\DoxyCodeLine{00169\ \ \ \textcolor{keyword}{function}\ handleImageSelect(e)\ \{}
+\DoxyCodeLine{00170\ \ \ \ \ \textcolor{keyword}{const}\ file\ =\ e.target.files[0];}
+\DoxyCodeLine{00171\ \ \ \ \ \textcolor{keywordflow}{if}\ (file)\ \{}
+\DoxyCodeLine{00172\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (file.size\ >\ 10\ *\ 1024\ *\ 1024)\ \{}
+\DoxyCodeLine{00173\ \ \ \ \ \ \ \ \ setErr(\textcolor{stringliteral}{"{}Image\ size\ must\ be\ less\ than\ 10MB.\ Large\ images\ will\ be\ automatically\ compressed."{}});}
+\DoxyCodeLine{00174\ \ \ \ \ \ \ \ \ e.target.value\ =\ \textcolor{stringliteral}{"{}"{}};}
+\DoxyCodeLine{00175\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00176\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00177\ \ \ \ \ \ \ setErr(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00178\ \ \ \ \ \ \ setImageFile(file);}
+\DoxyCodeLine{00179\ \ \ \ \ \ \ \textcolor{keyword}{const}\ reader\ =\ \textcolor{keyword}{new}\ FileReader();}
+\DoxyCodeLine{00180\ \ \ \ \ \ \ reader.onloadend\ =\ ()\ =>\ \{}
+\DoxyCodeLine{00181\ \ \ \ \ \ \ \ \ setImagePreview(reader.result);}
+\DoxyCodeLine{00182\ \ \ \ \ \ \ \};}
+\DoxyCodeLine{00183\ \ \ \ \ \ \ reader.readAsDataURL(file);}
+\DoxyCodeLine{00184\ \ \ \ \ \}}
+\DoxyCodeLine{00185\ \ \ \}}
+\DoxyCodeLine{00186\ }
+\DoxyCodeLine{00187\ \ \ \textcolor{keyword}{function}\ removeImage()\ \{}
+\DoxyCodeLine{00188\ \ \ \ \ setImageFile(\textcolor{keyword}{null});}
+\DoxyCodeLine{00189\ \ \ \ \ setImagePreview(\textcolor{keyword}{null});}
+\DoxyCodeLine{00190\ \ \ \}}
+\DoxyCodeLine{00191\ }
+\DoxyCodeLine{00192\ \ \ \textcolor{keyword}{const}\ addEmoji\ =\ (emoji)\ =>\ \{}
+\DoxyCodeLine{00193\ \ \ \ \ setText(text\ +\ emoji);}
+\DoxyCodeLine{00194\ \ \ \ \ setShowEmojiPicker(\textcolor{keyword}{false});}
+\DoxyCodeLine{00195\ \ \ \};}
+\DoxyCodeLine{00196\ }
+\DoxyCodeLine{00197\ \ \ async\ \textcolor{keyword}{function}\ onCreatePost(e)\ \{}
+\DoxyCodeLine{00198\ \ \ \ \ e.preventDefault();}
+\DoxyCodeLine{00199\ \ \ \ \ \textcolor{keywordflow}{if}\ (!canPost)\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00200\ }
+\DoxyCodeLine{00201\ \ \ \ \ setErr(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00202\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00203\ \ \ \ \ \ \ await\ \doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}.createPost(text.trim(),\ imageFile);}
+\DoxyCodeLine{00204\ \ \ \ \ \ \ setText(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00205\ \ \ \ \ \ \ setImageFile(\textcolor{keyword}{null});}
+\DoxyCodeLine{00206\ \ \ \ \ \ \ setImagePreview(\textcolor{keyword}{null});}
+\DoxyCodeLine{00207\ \ \ \ \ \ \ await\ load();}
+\DoxyCodeLine{00208\ \ \ \ \ \ \ await\ refreshMe();}
+\DoxyCodeLine{00209\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (e2)\ \{}
+\DoxyCodeLine{00210\ \ \ \ \ \ \ setErr(e2?.message\ ||\ \textcolor{stringliteral}{"{}Failed\ to\ create\ post"{}});}
+\DoxyCodeLine{00211\ \ \ \ \ \}}
+\DoxyCodeLine{00212\ \ \ \}}
+\DoxyCodeLine{00213\ }
+\DoxyCodeLine{00214\ \ \ async\ \textcolor{keyword}{function}\ handleLike(postId)\ \{}
+\DoxyCodeLine{00215\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00216\ \ \ \ \ \ \ \textcolor{keyword}{const}\ updatedPost\ =\ await\ \doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}.likePost(postId);}
+\DoxyCodeLine{00217\ \ \ \ \ \ \ setPosts((prevPosts)\ =>}
+\DoxyCodeLine{00218\ \ \ \ \ \ \ \ \ prevPosts.map((p)\ =>\ (p.\_id\ ===\ postId\ ?\ updatedPost\ :\ p))}
+\DoxyCodeLine{00219\ \ \ \ \ \ \ );}
+\DoxyCodeLine{00220\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (error)\ \{}
+\DoxyCodeLine{00221\ \ \ \ \ \ \ console.error(\textcolor{stringliteral}{"{}Failed\ to\ like\ post:"{}},\ error);}
+\DoxyCodeLine{00222\ \ \ \ \ \}}
+\DoxyCodeLine{00223\ \ \ \}}
+\DoxyCodeLine{00224\ }
+\DoxyCodeLine{00225\ \ \ \textcolor{keyword}{function}\ isPostLiked(post)\ \{}
+\DoxyCodeLine{00226\ \ \ \ \ \textcolor{keywordflow}{if}\ (!me?.\_id)\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00227\ \ \ \ \ \textcolor{keywordflow}{return}\ post.likedBy?.some(}
+\DoxyCodeLine{00228\ \ \ \ \ \ \ (user)\ =>\ String(user.\_id\ ||\ user)\ ===\ String(me.\_id)}
+\DoxyCodeLine{00229\ \ \ \ \ );}
+\DoxyCodeLine{00230\ \ \ \}}
+\DoxyCodeLine{00231\ }
+\DoxyCodeLine{00232\ \ \ \textcolor{keyword}{function}\ isPostOwner(post)\ \{}
+\DoxyCodeLine{00233\ \ \ \ \ \textcolor{keyword}{const}\ myId\ =\ me?.\_id\ ||\ me?.id;}
+\DoxyCodeLine{00234\ \ \ \ \ \textcolor{keywordflow}{if}\ (!myId)\ \textcolor{keywordflow}{return}\ \textcolor{keyword}{false};}
+\DoxyCodeLine{00235\ \ \ \ \ \textcolor{keywordflow}{return}\ String(post.userId?.\_id\ ||\ post.userId)\ ===\ String(myId);}
+\DoxyCodeLine{00236\ \ \ \}}
+\DoxyCodeLine{00237\ }
+\DoxyCodeLine{00238\ \ \ async\ \textcolor{keyword}{function}\ handleDelete(postId)\ \{}
+\DoxyCodeLine{00239\ \ \ \ \ \textcolor{keywordflow}{if}\ (!confirm(\textcolor{stringliteral}{"{}Are\ you\ sure\ you\ want\ to\ delete\ this\ post?"{}}))\ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00240\ }
+\DoxyCodeLine{00241\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00242\ \ \ \ \ \ \ await\ \doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}.deletePost(postId);}
+\DoxyCodeLine{00243\ \ \ \ \ \ \ await\ load();}
+\DoxyCodeLine{00244\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (error)\ \{}
+\DoxyCodeLine{00245\ \ \ \ \ \ \ console.error(\textcolor{stringliteral}{"{}Failed\ to\ delete\ post:"{}},\ error);}
+\DoxyCodeLine{00246\ \ \ \ \ \ \ setErr(error?.message\ ||\ \textcolor{stringliteral}{"{}Failed\ to\ delete\ post"{}});}
+\DoxyCodeLine{00247\ \ \ \ \ \}}
+\DoxyCodeLine{00248\ \ \ \}}
+\DoxyCodeLine{00249\ }
+\DoxyCodeLine{00250\ \ \ \textcolor{keyword}{function}\ startEdit(post)\ \{}
+\DoxyCodeLine{00251\ \ \ \ \ setEditingPostId(post.\_id\ ||\ post.id);}
+\DoxyCodeLine{00252\ \ \ \ \ setEditingText(post.content\ ||\ \textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00253\ \ \ \}}
+\DoxyCodeLine{00254\ }
+\DoxyCodeLine{00255\ \ \ \textcolor{keyword}{function}\ cancelEdit()\ \{}
+\DoxyCodeLine{00256\ \ \ \ \ setEditingPostId(\textcolor{keyword}{null});}
+\DoxyCodeLine{00257\ \ \ \ \ setEditingText(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00258\ \ \ \}}
+\DoxyCodeLine{00259\ }
+\DoxyCodeLine{00260\ \ \ async\ \textcolor{keyword}{function}\ saveEdit(postId)\ \{}
+\DoxyCodeLine{00261\ \ \ \ \ \textcolor{keyword}{const}\ nextContent\ =\ editingText.trim();}
+\DoxyCodeLine{00262\ \ \ \ \ \textcolor{keywordflow}{if}\ (!nextContent)\ \{}
+\DoxyCodeLine{00263\ \ \ \ \ \ \ setErr(\textcolor{stringliteral}{"{}Post\ content\ cannot\ be\ empty"{}});}
+\DoxyCodeLine{00264\ \ \ \ \ \ \ \textcolor{keywordflow}{return};}
+\DoxyCodeLine{00265\ \ \ \ \ \}}
+\DoxyCodeLine{00266\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00267\ \ \ \ \ \ \ \textcolor{keyword}{const}\ updatedPost\ =\ await\ \doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}.updatePost(postId,\ nextContent);}
+\DoxyCodeLine{00268\ \ \ \ \ \ \ setPosts((prev)\ =>}
+\DoxyCodeLine{00269\ \ \ \ \ \ \ \ \ prev.map((item)\ =>\ (String(item.\_id\ ||\ item.id)\ ===\ String(postId)\ ?\ updatedPost\ :\ item))}
+\DoxyCodeLine{00270\ \ \ \ \ \ \ );}
+\DoxyCodeLine{00271\ \ \ \ \ \ \ cancelEdit();}
+\DoxyCodeLine{00272\ \ \ \ \ \ \ setErr(\textcolor{stringliteral}{"{}"{}});}
+\DoxyCodeLine{00273\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (error)\ \{}
+\DoxyCodeLine{00274\ \ \ \ \ \ \ setErr(error?.message\ ||\ \textcolor{stringliteral}{"{}Failed\ to\ edit\ post"{}});}
+\DoxyCodeLine{00275\ \ \ \ \ \}}
+\DoxyCodeLine{00276\ \ \ \}}
+\DoxyCodeLine{00277\ }
+\DoxyCodeLine{00278\ \ \ \textcolor{keyword}{const}\ emojis\ =\ [\textcolor{stringliteral}{"{}😀"{}},\ \textcolor{stringliteral}{"{}😃"{}},\ \textcolor{stringliteral}{"{}😄"{}},\ \textcolor{stringliteral}{"{}😁"{}},\ \textcolor{stringliteral}{"{}😆"{}},\ \textcolor{stringliteral}{"{}😅"{}},\ \textcolor{stringliteral}{"{}😂"{}},\ \textcolor{stringliteral}{"{}🤣"{}},\ \textcolor{stringliteral}{"{}😊"{}},\ \textcolor{stringliteral}{"{}😇"{}},\ \textcolor{stringliteral}{"{}🙂"{}},\ \textcolor{stringliteral}{"{}🙃"{}},\ \textcolor{stringliteral}{"{}😉"{}},\ \textcolor{stringliteral}{"{}😌"{}},\ \textcolor{stringliteral}{"{}😍"{}},\ \textcolor{stringliteral}{"{}🥰"{}},\ \textcolor{stringliteral}{"{}😘"{}},\ \textcolor{stringliteral}{"{}😗"{}},\ \textcolor{stringliteral}{"{}😙"{}},\ \textcolor{stringliteral}{"{}😚"{}},\ \textcolor{stringliteral}{"{}😋"{}},\ \textcolor{stringliteral}{"{}😛"{}},\ \textcolor{stringliteral}{"{}😝"{}},\ \textcolor{stringliteral}{"{}😜"{}},\ \textcolor{stringliteral}{"{}🤪"{}},\ \textcolor{stringliteral}{"{}🤨"{}},\ \textcolor{stringliteral}{"{}🧐"{}},\ \textcolor{stringliteral}{"{}🤓"{}},\ \textcolor{stringliteral}{"{}😎"{}},\ \textcolor{stringliteral}{"{}🥸"{}},\ \textcolor{stringliteral}{"{}🤩"{}},\ \textcolor{stringliteral}{"{}🥳"{}},\ \textcolor{stringliteral}{"{}😏"{}},\ \textcolor{stringliteral}{"{}😒"{}},\ \textcolor{stringliteral}{"{}😞"{}},\ \textcolor{stringliteral}{"{}😔"{}},\ \textcolor{stringliteral}{"{}😟"{}},\ \textcolor{stringliteral}{"{}😕"{}},\ \textcolor{stringliteral}{"{}🙁"{}},\ \textcolor{stringliteral}{"{}☹️"{}},\ \textcolor{stringliteral}{"{}😣"{}},\ \textcolor{stringliteral}{"{}😖"{}},\ \textcolor{stringliteral}{"{}😫"{}},\ \textcolor{stringliteral}{"{}😩"{}},\ \textcolor{stringliteral}{"{}🥺"{}},\ \textcolor{stringliteral}{"{}😢"{}},\ \textcolor{stringliteral}{"{}😭"{}},\ \textcolor{stringliteral}{"{}😤"{}},\ \textcolor{stringliteral}{"{}😠"{}},\ \textcolor{stringliteral}{"{}😡"{}},\ \textcolor{stringliteral}{"{}🤬"{}},\ \textcolor{stringliteral}{"{}🤯"{}},\ \textcolor{stringliteral}{"{}😳"{}},\ \textcolor{stringliteral}{"{}🥵"{}},\ \textcolor{stringliteral}{"{}🥶"{}},\ \textcolor{stringliteral}{"{}😱"{}},\ \textcolor{stringliteral}{"{}😨"{}},\ \textcolor{stringliteral}{"{}😰"{}},\ \textcolor{stringliteral}{"{}😥"{}},\ \textcolor{stringliteral}{"{}😓"{}},\ \textcolor{stringliteral}{"{}🤗"{}},\ \textcolor{stringliteral}{"{}🤔"{}},\ \textcolor{stringliteral}{"{}🤭"{}},\ \textcolor{stringliteral}{"{}🤫"{}},\ \textcolor{stringliteral}{"{}🤥"{}},\ \textcolor{stringliteral}{"{}😶"{}},\ \textcolor{stringliteral}{"{}😐"{}},\ \textcolor{stringliteral}{"{}😑"{}},\ \textcolor{stringliteral}{"{}😬"{}},\ \textcolor{stringliteral}{"{}🙄"{}},\ \textcolor{stringliteral}{"{}😯"{}},\ \textcolor{stringliteral}{"{}😦"{}},\ \textcolor{stringliteral}{"{}😧"{}},\ \textcolor{stringliteral}{"{}😮"{}},\ \textcolor{stringliteral}{"{}😲"{}},\ \textcolor{stringliteral}{"{}🥱"{}},\ \textcolor{stringliteral}{"{}😴"{}},\ \textcolor{stringliteral}{"{}🤤"{}},\ \textcolor{stringliteral}{"{}😪"{}},\ \textcolor{stringliteral}{"{}😵"{}},\ \textcolor{stringliteral}{"{}🤐"{}},\ \textcolor{stringliteral}{"{}🥴"{}},\ \textcolor{stringliteral}{"{}🤢"{}},\ \textcolor{stringliteral}{"{}🤮"{}},\ \textcolor{stringliteral}{"{}🤧"{}},\ \textcolor{stringliteral}{"{}😷"{}},\ \textcolor{stringliteral}{"{}🤒"{}},\ \textcolor{stringliteral}{"{}🤕"{}},\ \textcolor{stringliteral}{"{}🤑"{}},\ \textcolor{stringliteral}{"{}🤠"{}},\ \textcolor{stringliteral}{"{}😈"{}},\ \textcolor{stringliteral}{"{}👿"{}},\ \textcolor{stringliteral}{"{}👹"{}},\ \textcolor{stringliteral}{"{}👺"{}},\ \textcolor{stringliteral}{"{}🤡"{}},\ \textcolor{stringliteral}{"{}💩"{}},\ \textcolor{stringliteral}{"{}👻"{}},\ \textcolor{stringliteral}{"{}💀"{}},\ \textcolor{stringliteral}{"{}☠️"{}},\ \textcolor{stringliteral}{"{}👽"{}},\ \textcolor{stringliteral}{"{}👾"{}},\ \textcolor{stringliteral}{"{}🤖"{}},\ \textcolor{stringliteral}{"{}🎃"{}},\ \textcolor{stringliteral}{"{}😺"{}},\ \textcolor{stringliteral}{"{}😸"{}},\ \textcolor{stringliteral}{"{}😹"{}},\ \textcolor{stringliteral}{"{}😻"{}},\ \textcolor{stringliteral}{"{}😼"{}},\ \textcolor{stringliteral}{"{}😽"{}},\ \textcolor{stringliteral}{"{}🙀"{}},\ \textcolor{stringliteral}{"{}😿"{}},\ \textcolor{stringliteral}{"{}😾"{}},\ \textcolor{stringliteral}{"{}👍"{}},\ \textcolor{stringliteral}{"{}👎"{}},\ \textcolor{stringliteral}{"{}👌"{}},\ \textcolor{stringliteral}{"{}✌️"{}},\ \textcolor{stringliteral}{"{}🤞"{}},\ \textcolor{stringliteral}{"{}🤟"{}},\ \textcolor{stringliteral}{"{}🤘"{}},\ \textcolor{stringliteral}{"{}🤙"{}},\ \textcolor{stringliteral}{"{}👈"{}},\ \textcolor{stringliteral}{"{}👉"{}},\ \textcolor{stringliteral}{"{}👆"{}},\ \textcolor{stringliteral}{"{}🖕"{}},\ \textcolor{stringliteral}{"{}👇"{}},\ \textcolor{stringliteral}{"{}☝️"{}},\ \textcolor{stringliteral}{"{}✊"{}},\ \textcolor{stringliteral}{"{}👊"{}},\ \textcolor{stringliteral}{"{}🤛"{}},\ \textcolor{stringliteral}{"{}🤜"{}},\ \textcolor{stringliteral}{"{}👏"{}},\ \textcolor{stringliteral}{"{}🙌"{}},\ \textcolor{stringliteral}{"{}👐"{}},\ \textcolor{stringliteral}{"{}🤲"{}},\ \textcolor{stringliteral}{"{}🤝"{}},\ \textcolor{stringliteral}{"{}🙏"{}},\ \textcolor{stringliteral}{"{}✍️"{}},\ \textcolor{stringliteral}{"{}💅"{}},\ \textcolor{stringliteral}{"{}🤳"{}},\ \textcolor{stringliteral}{"{}💪"{}},\ \textcolor{stringliteral}{"{}🦾"{}},\ \textcolor{stringliteral}{"{}🦵"{}},\ \textcolor{stringliteral}{"{}🦿"{}},\ \textcolor{stringliteral}{"{}🦶"{}},\ \textcolor{stringliteral}{"{}👣"{}},\ \textcolor{stringliteral}{"{}👀"{}},\ \textcolor{stringliteral}{"{}👁️"{}},\ \textcolor{stringliteral}{"{}👃"{}},\ \textcolor{stringliteral}{"{}👄"{}},\ \textcolor{stringliteral}{"{}👅"{}},\ \textcolor{stringliteral}{"{}👂"{}},\ \textcolor{stringliteral}{"{}🦻"{}},\ \textcolor{stringliteral}{"{}❤️"{}},\ \textcolor{stringliteral}{"{}🧡"{}},\ \textcolor{stringliteral}{"{}💛"{}},\ \textcolor{stringliteral}{"{}💚"{}},\ \textcolor{stringliteral}{"{}💙"{}},\ \textcolor{stringliteral}{"{}💜"{}},\ \textcolor{stringliteral}{"{}🖤"{}},\ \textcolor{stringliteral}{"{}🤍"{}},\ \textcolor{stringliteral}{"{}🤎"{}},\ \textcolor{stringliteral}{"{}💔"{}},\ \textcolor{stringliteral}{"{}❤️‍🔥"{}},\ \textcolor{stringliteral}{"{}💗"{}},\ \textcolor{stringliteral}{"{}💓"{}},\ \textcolor{stringliteral}{"{}💞"{}},\ \textcolor{stringliteral}{"{}💕"{}},\ \textcolor{stringliteral}{"{}💖"{}},\ \textcolor{stringliteral}{"{}💘"{}},\ \textcolor{stringliteral}{"{}💝"{}},\ \textcolor{stringliteral}{"{}💟"{}},\ \textcolor{stringliteral}{"{}🔥"{}},\ \textcolor{stringliteral}{"{}✨"{}},\ \textcolor{stringliteral}{"{}⭐"{}},\ \textcolor{stringliteral}{"{}🌟"{}},\ \textcolor{stringliteral}{"{}💫"{}},\ \textcolor{stringliteral}{"{}⚡"{}},\ \textcolor{stringliteral}{"{}☀️"{}},\ \textcolor{stringliteral}{"{}🌙"{}},\ \textcolor{stringliteral}{"{}🌍"{}},\ \textcolor{stringliteral}{"{}🌎"{}},\ \textcolor{stringliteral}{"{}🌏"{}},\ \textcolor{stringliteral}{"{}🌈"{}},\ \textcolor{stringliteral}{"{}☁️"{}},\ \textcolor{stringliteral}{"{}⛅"{}},\ \textcolor{stringliteral}{"{}❄️"{}},\ \textcolor{stringliteral}{"{}🌊"{}},\ \textcolor{stringliteral}{"{}🎉"{}},\ \textcolor{stringliteral}{"{}🎊"{}},\ \textcolor{stringliteral}{"{}🎈"{}},\ \textcolor{stringliteral}{"{}🎁"{}},\ \textcolor{stringliteral}{"{}🏆"{}},\ \textcolor{stringliteral}{"{}🚀"{}},\ \textcolor{stringliteral}{"{}🌱"{}},\ \textcolor{stringliteral}{"{}🌿"{}},\ \textcolor{stringliteral}{"{}🍃"{}},\ \textcolor{stringliteral}{"{}💚"{}},\ \textcolor{stringliteral}{"{}♻️"{}},\ \textcolor{stringliteral}{"{}🌻"{}},\ \textcolor{stringliteral}{"{}🌸"{}},\ \textcolor{stringliteral}{"{}🌺"{}},\ \textcolor{stringliteral}{"{}🐘"{}},\ \textcolor{stringliteral}{"{}🦁"{}},\ \textcolor{stringliteral}{"{}🐒"{}},\ \textcolor{stringliteral}{"{}🐢"{}},\ \textcolor{stringliteral}{"{}🦋"{}},\ \textcolor{stringliteral}{"{}🐝"{}},\ \textcolor{stringliteral}{"{}🌲"{}},\ \textcolor{stringliteral}{"{}🏔️"{}},\ \textcolor{stringliteral}{"{}⛰️"{}},\ \textcolor{stringliteral}{"{}🏕️"{}},\ \textcolor{stringliteral}{"{}🚴"{}},\ \textcolor{stringliteral}{"{}🏊"{}},\ \textcolor{stringliteral}{"{}🧘"{}},\ \textcolor{stringliteral}{"{}🤝"{}},\ \textcolor{stringliteral}{"{}💡"{}},\ \textcolor{stringliteral}{"{}📚"{}},\ \textcolor{stringliteral}{"{}🎯"{}},\ \textcolor{stringliteral}{"{}⭐"{}},\ \textcolor{stringliteral}{"{}✅"{}},\ \textcolor{stringliteral}{"{}💯"{}}];}
+\DoxyCodeLine{00279\ }
+\DoxyCodeLine{00280\ \ \ \textcolor{keywordflow}{return}\ (}
+\DoxyCodeLine{00281\ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}page"{}}>}
+\DoxyCodeLine{00282\ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}pageHeader"{}}>}
+\DoxyCodeLine{00283\ \ \ \ \ \ \ \ \ <div>}
+\DoxyCodeLine{00284\ \ \ \ \ \ \ \ \ \ \ <h1\ className=\textcolor{stringliteral}{"{}pageTitle"{}}>\doxymbox{\hyperlink{community_8jsx_ab89281d461f7ebf80ddf1554510491b6}{Community</h1>}}}
+\DoxyCodeLine{00285\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}pageSub"{}}>Share\ your\ experiences\ \&\ inspire\ others</div>}
+\DoxyCodeLine{00286\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00287\ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00288\ }
+\DoxyCodeLine{00289\ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}card"{}}>}
+\DoxyCodeLine{00290\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}cardTitleRow"{}}>}
+\DoxyCodeLine{00291\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}cardTitle"{}}>}
+\DoxyCodeLine{00292\ \ \ \ \ \ \ \ \ \ \ \ \ <MessageSquarePlus\ size=\{18\}\ />\ Create\ a\ post}
+\DoxyCodeLine{00293\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00294\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}mutedSmall"{}}>Posting\ as\ \{me?.name\ ||\ \textcolor{stringliteral}{"{}User"{}}\}</div>}
+\DoxyCodeLine{00295\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00296\ }
+\DoxyCodeLine{00297\ \ \ \ \ \ \ \ \ <form\ onSubmit=\{onCreatePost\}\ className=\textcolor{stringliteral}{"{}postForm"{}}>}
+\DoxyCodeLine{00298\ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ position:\ \textcolor{stringliteral}{"{}relative"{}}\ \}\}>}
+\DoxyCodeLine{00299\ \ \ \ \ \ \ \ \ \ \ \ \ <textarea}
+\DoxyCodeLine{00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}textarea"{}}}
+\DoxyCodeLine{00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value=\{text\}}
+\DoxyCodeLine{00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{(e)\ =>\ setText(e.target.value)\}}
+\DoxyCodeLine{00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ placeholder=\textcolor{stringliteral}{"{}Share\ something\ about\ your\ volunteering\ journey..."{}}}
+\DoxyCodeLine{00304\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rows=\{4\}}
+\DoxyCodeLine{00305\ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{00306\ }
+\DoxyCodeLine{00307\ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{00308\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{00309\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ setShowEmojiPicker(!showEmojiPicker)\}}
+\DoxyCodeLine{00310\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{}
+\DoxyCodeLine{00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ position:\ \textcolor{stringliteral}{"{}absolute"{}},}
+\DoxyCodeLine{00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bottom:\ 8,}
+\DoxyCodeLine{00313\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ right:\ 8,}
+\DoxyCodeLine{00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ background:\ \textcolor{stringliteral}{"{}white"{}},}
+\DoxyCodeLine{00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ border:\ \textcolor{stringliteral}{"{}1px\ solid\ \#ddd"{}},}
+\DoxyCodeLine{00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ borderRadius:\ \textcolor{stringliteral}{"{}20px"{}},}
+\DoxyCodeLine{00317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cursor:\ \textcolor{stringliteral}{"{}pointer"{}},}
+\DoxyCodeLine{00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fontSize:\ \textcolor{stringliteral}{"{}18px"{}},}
+\DoxyCodeLine{00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ padding:\ \textcolor{stringliteral}{"{}4px\ 8px"{}}}
+\DoxyCodeLine{00320\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{00321\ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{00322\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ 😊}
+\DoxyCodeLine{00323\ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{00324\ }
+\DoxyCodeLine{00325\ \ \ \ \ \ \ \ \ \ \ \ \ \{showEmojiPicker\ \&\&\ (}
+\DoxyCodeLine{00326\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{}
+\DoxyCodeLine{00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ position:\ \textcolor{stringliteral}{"{}absolute"{}},}
+\DoxyCodeLine{00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ bottom:\ \textcolor{stringliteral}{"{}100\%"{}},}
+\DoxyCodeLine{00329\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ right:\ 0,}
+\DoxyCodeLine{00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ marginBottom:\ \textcolor{stringliteral}{"{}8px"{}},}
+\DoxyCodeLine{00331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ background:\ \textcolor{stringliteral}{"{}white"{}},}
+\DoxyCodeLine{00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ border:\ \textcolor{stringliteral}{"{}1px\ solid\ \#e2e8f0"{}},}
+\DoxyCodeLine{00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ borderRadius:\ \textcolor{stringliteral}{"{}12px"{}},}
+\DoxyCodeLine{00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ padding:\ \textcolor{stringliteral}{"{}8px"{}},}
+\DoxyCodeLine{00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ display:\ \textcolor{stringliteral}{"{}grid"{}},}
+\DoxyCodeLine{00336\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gridTemplateColumns:\ \textcolor{stringliteral}{"{}repeat(8,\ 1fr)"{}},}
+\DoxyCodeLine{00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gap:\ \textcolor{stringliteral}{"{}6px"{}},}
+\DoxyCodeLine{00338\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ boxShadow:\ \textcolor{stringliteral}{"{}0\ 4px\ 12px\ rgba(0,0,0,0.15)"{}},}
+\DoxyCodeLine{00339\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ zIndex:\ 1000,}
+\DoxyCodeLine{00340\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ maxHeight:\ \textcolor{stringliteral}{"{}300px"{}},}
+\DoxyCodeLine{00341\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ overflowY:\ \textcolor{stringliteral}{"{}auto"{}}}
+\DoxyCodeLine{00342\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}>}
+\DoxyCodeLine{00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{emojis.map(emoji\ =>\ (}
+\DoxyCodeLine{00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ key=\{emoji\}}
+\DoxyCodeLine{00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ addEmoji(emoji)\}}
+\DoxyCodeLine{00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{}
+\DoxyCodeLine{00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fontSize:\ \textcolor{stringliteral}{"{}22px"{}},}
+\DoxyCodeLine{00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cursor:\ \textcolor{stringliteral}{"{}pointer"{}},}
+\DoxyCodeLine{00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ background:\ \textcolor{stringliteral}{"{}none"{}},}
+\DoxyCodeLine{00352\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ border:\ \textcolor{stringliteral}{"{}none"{}},}
+\DoxyCodeLine{00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ padding:\ \textcolor{stringliteral}{"{}6px"{}},}
+\DoxyCodeLine{00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ borderRadius:\ \textcolor{stringliteral}{"{}8px"{}},}
+\DoxyCodeLine{00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ transition:\ \textcolor{stringliteral}{"{}background\ 0.2s"{}}}
+\DoxyCodeLine{00356\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onMouseEnter=\{(e)\ =>\ e.currentTarget.style.background\ =\ \textcolor{stringliteral}{"{}\#f1f5f9"{}}\}}
+\DoxyCodeLine{00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onMouseLeave=\{(e)\ =>\ e.currentTarget.style.background\ =\ \textcolor{stringliteral}{"{}transparent"{}}\}}
+\DoxyCodeLine{00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{00360\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{emoji\}}
+\DoxyCodeLine{00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{00362\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{00363\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00364\ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{00365\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00366\ }
+\DoxyCodeLine{00367\ \ \ \ \ \ \ \ \ \ \ \{imagePreview\ \&\&\ (}
+\DoxyCodeLine{00368\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ marginTop:\ 12,\ position:\ \textcolor{stringliteral}{"{}relative"{}}\ \}\}>}
+\DoxyCodeLine{00369\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <img}
+\DoxyCodeLine{00370\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ src=\{imagePreview\}}
+\DoxyCodeLine{00371\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alt=\textcolor{stringliteral}{"{}Preview"{}}}
+\DoxyCodeLine{00372\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{}
+\DoxyCodeLine{00373\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ width:\ \textcolor{stringliteral}{"{}100\%"{}},}
+\DoxyCodeLine{00374\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ maxHeight:\ \textcolor{stringliteral}{"{}300px"{}},}
+\DoxyCodeLine{00375\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ objectFit:\ \textcolor{stringliteral}{"{}cover"{}},}
+\DoxyCodeLine{00376\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ borderRadius:\ \textcolor{stringliteral}{"{}12px"{}}}
+\DoxyCodeLine{00377\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{00378\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{00379\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{00380\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{00381\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{removeImage\}}
+\DoxyCodeLine{00382\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{}
+\DoxyCodeLine{00383\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ position:\ \textcolor{stringliteral}{"{}absolute"{}},}
+\DoxyCodeLine{00384\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ top:\ 8,}
+\DoxyCodeLine{00385\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ right:\ 8,}
+\DoxyCodeLine{00386\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ background:\ \textcolor{stringliteral}{"{}rgba(0,0,0,0.6)"{}},}
+\DoxyCodeLine{00387\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ border:\ \textcolor{stringliteral}{"{}none"{}},}
+\DoxyCodeLine{00388\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ borderRadius:\ \textcolor{stringliteral}{"{}50\%"{}},}
+\DoxyCodeLine{00389\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ width:\ \textcolor{stringliteral}{"{}32px"{}},}
+\DoxyCodeLine{00390\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ height:\ \textcolor{stringliteral}{"{}32px"{}},}
+\DoxyCodeLine{00391\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ display:\ \textcolor{stringliteral}{"{}flex"{}},}
+\DoxyCodeLine{00392\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alignItems:\ \textcolor{stringliteral}{"{}center"{}},}
+\DoxyCodeLine{00393\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ justifyContent:\ \textcolor{stringliteral}{"{}center"{}},}
+\DoxyCodeLine{00394\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cursor:\ \textcolor{stringliteral}{"{}pointer"{}},}
+\DoxyCodeLine{00395\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ color:\ \textcolor{stringliteral}{"{}white"{}}}
+\DoxyCodeLine{00396\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{00397\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{00398\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <X\ size=\{18\}\ />}
+\DoxyCodeLine{00399\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{00400\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00401\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{00402\ }
+\DoxyCodeLine{00403\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}rowBetween"{}}\ style=\{\{\ marginTop:\ 12\ \}\}>}
+\DoxyCodeLine{00404\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ display:\ \textcolor{stringliteral}{"{}flex"{}},\ gap:\ 10,\ alignItems:\ \textcolor{stringliteral}{"{}center"{}}\ \}\}>}
+\DoxyCodeLine{00405\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label}
+\DoxyCodeLine{00406\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ htmlFor=\textcolor{stringliteral}{"{}image-\/upload"{}}}
+\DoxyCodeLine{00407\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{}
+\DoxyCodeLine{00408\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cursor:\ \textcolor{stringliteral}{"{}pointer"{}},}
+\DoxyCodeLine{00409\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ display:\ \textcolor{stringliteral}{"{}flex"{}},}
+\DoxyCodeLine{00410\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alignItems:\ \textcolor{stringliteral}{"{}center"{}},}
+\DoxyCodeLine{00411\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gap:\ 6,}
+\DoxyCodeLine{00412\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ padding:\ \textcolor{stringliteral}{"{}8px\ 12px"{}},}
+\DoxyCodeLine{00413\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ borderRadius:\ \textcolor{stringliteral}{"{}8px"{}},}
+\DoxyCodeLine{00414\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ border:\ \textcolor{stringliteral}{"{}1px\ solid\ rgba(15,23,42,0.1)"{}},}
+\DoxyCodeLine{00415\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ background:\ \textcolor{stringliteral}{"{}white"{}}}
+\DoxyCodeLine{00416\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{00417\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{00418\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <ImageIcon\ size=\{18\}\ />}
+\DoxyCodeLine{00419\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <span\ style=\{\{\ fontSize:\ 14,\ fontWeight:\ 600\ \}\}>Add\ Photo</span>}
+\DoxyCodeLine{00420\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </label>}
+\DoxyCodeLine{00421\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input}
+\DoxyCodeLine{00422\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{id}=\textcolor{stringliteral}{"{}image-\/upload"{}}}
+\DoxyCodeLine{00423\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}file"{}}}
+\DoxyCodeLine{00424\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ accept=\textcolor{stringliteral}{"{}image/*"{}}}
+\DoxyCodeLine{00425\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{handleImageSelect\}}
+\DoxyCodeLine{00426\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{\ display:\ \textcolor{stringliteral}{"{}none"{}}\ \}\}}
+\DoxyCodeLine{00427\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{00428\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}mutedSmall"{}}>\{text.trim().length\}/380</div>}
+\DoxyCodeLine{00429\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00430\ \ \ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}primaryBtn\ smallBtn"{}}\ disabled=\{!canPost\}\ type=\textcolor{stringliteral}{"{}submit"{}}>}
+\DoxyCodeLine{00431\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <Send\ size=\{16\}\ />}
+\DoxyCodeLine{00432\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Post}
+\DoxyCodeLine{00433\ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{00434\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00435\ \ \ \ \ \ \ \ \ \ \ \{err\ ?\ <div\ className=\textcolor{stringliteral}{"{}errorText"{}}>\{err\}</div>\ :\ \textcolor{keyword}{null}\}}
+\DoxyCodeLine{00436\ \ \ \ \ \ \ \ \ </form>}
+\DoxyCodeLine{00437\ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00438\ }
+\DoxyCodeLine{00439\ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}sectionTitle"{}}\ style=\{\{\ marginTop:\ 18\ \}\}>}
+\DoxyCodeLine{00440\ \ \ \ \ \ \ \ \ Recent\ posts}
+\DoxyCodeLine{00441\ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00442\ }
+\DoxyCodeLine{00443\ \ \ \ \ \ \ \{loading\ ?\ (}
+\DoxyCodeLine{00444\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}mutedSmall"{}}\ style=\{\{\ marginTop:\ 10\ \}\}>}
+\DoxyCodeLine{00445\ \ \ \ \ \ \ \ \ \ \ Loading\ posts...}
+\DoxyCodeLine{00446\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00447\ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{00448\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}grid1"{}}\ style=\{\{\ marginTop:\ 12\ \}\}>}
+\DoxyCodeLine{00449\ \ \ \ \ \ \ \ \ \ \ \{posts.map((p)\ =>\ (}
+\DoxyCodeLine{00450\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ key=\{p.\_id\ ||\ p.id\}\ className=\textcolor{stringliteral}{"{}card"{}}>}
+\DoxyCodeLine{00451\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}rowBetween"{}}>}
+\DoxyCodeLine{00452\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}row"{}}\ style=\{\{\ gap:\ 10\ \}\}>}
+\DoxyCodeLine{00453\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}avatarSmall"{}}>🙂</div>}
+\DoxyCodeLine{00454\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div>}
+\DoxyCodeLine{00455\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}bold"{}}>\{p.userId?.name\ ||\ p.user?.name\ ||\ \textcolor{stringliteral}{"{}Volunteer"{}}\}</div>}
+\DoxyCodeLine{00456\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}mutedSmall"{}}>\{\doxymbox{\hyperlink{community_8jsx_aded2e603bf0dbd35d446bcfb1ca1a313}{timeAgo}}(p.createdAtISO)\}</div>}
+\DoxyCodeLine{00457\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00458\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00459\ }
+\DoxyCodeLine{00460\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{isPostOwner(p)\ \&\&\ (}
+\DoxyCodeLine{00461\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ display:\ \textcolor{stringliteral}{"{}flex"{}},\ gap:\ \textcolor{stringliteral}{"{}8px"{}},\ alignItems:\ \textcolor{stringliteral}{"{}center"{}}\ \}\}>}
+\DoxyCodeLine{00462\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{00463\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{00464\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ startEdit(p)\}}
+\DoxyCodeLine{00465\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{}
+\DoxyCodeLine{00466\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ background:\ \textcolor{stringliteral}{"{}transparent"{}},}
+\DoxyCodeLine{00467\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ border:\ \textcolor{stringliteral}{"{}1px\ solid\ rgba(15,\ 23,\ 42,\ 0.2)"{}},}
+\DoxyCodeLine{00468\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ borderRadius:\ \textcolor{stringliteral}{"{}8px"{}},}
+\DoxyCodeLine{00469\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ padding:\ \textcolor{stringliteral}{"{}6px\ 10px"{}},}
+\DoxyCodeLine{00470\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cursor:\ \textcolor{stringliteral}{"{}pointer"{}},}
+\DoxyCodeLine{00471\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ color:\ \textcolor{stringliteral}{"{}\#334155"{}},}
+\DoxyCodeLine{00472\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ display:\ \textcolor{stringliteral}{"{}flex"{}},}
+\DoxyCodeLine{00473\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alignItems:\ \textcolor{stringliteral}{"{}center"{}},}
+\DoxyCodeLine{00474\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gap:\ \textcolor{stringliteral}{"{}6px"{}},}
+\DoxyCodeLine{00475\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fontSize:\ \textcolor{stringliteral}{"{}14px"{}},}
+\DoxyCodeLine{00476\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fontWeight:\ 600}
+\DoxyCodeLine{00477\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{00478\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ title=\textcolor{stringliteral}{"{}Edit\ post"{}}}
+\DoxyCodeLine{00479\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{00480\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <Pencil\ size=\{14\}\ />}
+\DoxyCodeLine{00481\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Edit}
+\DoxyCodeLine{00482\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{00483\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{00484\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{00485\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ handleDelete(p.\_id\ ||\ p.id)\}}
+\DoxyCodeLine{00486\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{}
+\DoxyCodeLine{00487\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ background:\ \textcolor{stringliteral}{"{}transparent"{}},}
+\DoxyCodeLine{00488\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ border:\ \textcolor{stringliteral}{"{}1px\ solid\ rgba(185,\ 28,\ 28,\ 0.2)"{}},}
+\DoxyCodeLine{00489\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ borderRadius:\ \textcolor{stringliteral}{"{}8px"{}},}
+\DoxyCodeLine{00490\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ padding:\ \textcolor{stringliteral}{"{}6px\ 10px"{}},}
+\DoxyCodeLine{00491\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ cursor:\ \textcolor{stringliteral}{"{}pointer"{}},}
+\DoxyCodeLine{00492\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ color:\ \textcolor{stringliteral}{"{}\#b91c1c"{}},}
+\DoxyCodeLine{00493\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ display:\ \textcolor{stringliteral}{"{}flex"{}},}
+\DoxyCodeLine{00494\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alignItems:\ \textcolor{stringliteral}{"{}center"{}},}
+\DoxyCodeLine{00495\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ gap:\ \textcolor{stringliteral}{"{}6px"{}},}
+\DoxyCodeLine{00496\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fontSize:\ \textcolor{stringliteral}{"{}14px"{}},}
+\DoxyCodeLine{00497\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ fontWeight:\ 600}
+\DoxyCodeLine{00498\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{00499\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ title=\textcolor{stringliteral}{"{}Delete\ post"{}}}
+\DoxyCodeLine{00500\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{00501\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <Trash2\ size=\{14\}\ />}
+\DoxyCodeLine{00502\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Delete}
+\DoxyCodeLine{00503\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{00504\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00505\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{00506\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00507\ }
+\DoxyCodeLine{00508\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{String(editingPostId)\ ===\ String(p.\_id\ ||\ p.id)\ ?\ (}
+\DoxyCodeLine{00509\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ marginTop:\ 12\ \}\}>}
+\DoxyCodeLine{00510\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <textarea}
+\DoxyCodeLine{00511\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}textarea"{}}}
+\DoxyCodeLine{00512\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value=\{editingText\}}
+\DoxyCodeLine{00513\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{(e)\ =>\ setEditingText(e.target.value)\}}
+\DoxyCodeLine{00514\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ rows=\{3\}}
+\DoxyCodeLine{00515\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{00516\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ marginTop:\ 8,\ display:\ \textcolor{stringliteral}{"{}flex"{}},\ gap:\ 8\ \}\}>}
+\DoxyCodeLine{00517\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}primaryBtn\ smallBtn"{}}\ onClick=\{()\ =>\ saveEdit(p.\_id\ ||\ p.id)\}>Save</button>}
+\DoxyCodeLine{00518\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}button"{}}\ className=\textcolor{stringliteral}{"{}pillBtn"{}}\ onClick=\{cancelEdit\}>Cancel</button>}
+\DoxyCodeLine{00519\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00520\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00521\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\ :\ (}
+\DoxyCodeLine{00522\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ marginTop:\ 12,\ fontSize:\ 16,\ lineHeight:\ 1.5\ \}\}>}
+\DoxyCodeLine{00523\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{p.content\}}
+\DoxyCodeLine{00524\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00525\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{00526\ }
+\DoxyCodeLine{00527\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{p.imageUrl\ \&\&\ (}
+\DoxyCodeLine{00528\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ marginTop:\ 12\ \}\}>}
+\DoxyCodeLine{00529\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <img}
+\DoxyCodeLine{00530\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ src=\{p.imageUrl\}}
+\DoxyCodeLine{00531\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ alt=\textcolor{stringliteral}{"{}Post"{}}}
+\DoxyCodeLine{00532\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{}
+\DoxyCodeLine{00533\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ width:\ \textcolor{stringliteral}{"{}100\%"{}},}
+\DoxyCodeLine{00534\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ maxHeight:\ \textcolor{stringliteral}{"{}400px"{}},}
+\DoxyCodeLine{00535\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ objectFit:\ \textcolor{stringliteral}{"{}cover"{}},}
+\DoxyCodeLine{00536\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ borderRadius:\ \textcolor{stringliteral}{"{}12px"{}}}
+\DoxyCodeLine{00537\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{00538\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{00539\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00540\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{00541\ }
+\DoxyCodeLine{00542\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ style=\{\{\ marginTop:\ 12\ \}\}>}
+\DoxyCodeLine{00543\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{00544\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{00545\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}pillBtn"{}}}
+\DoxyCodeLine{00546\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ handleLike(p.\_id\ ||\ p.id)\}}
+\DoxyCodeLine{00547\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ style=\{\{}
+\DoxyCodeLine{00548\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ background:\ isPostLiked(p)\ ?\ \textcolor{stringliteral}{"{}\#eafaf3"{}}\ :\ \textcolor{stringliteral}{"{}white"{}},}
+\DoxyCodeLine{00549\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ color:\ isPostLiked(p)\ ?\ \textcolor{stringliteral}{"{}\#067a54"{}}\ :\ \textcolor{stringliteral}{"{}inherit"{}}}
+\DoxyCodeLine{00550\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{00551\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{00552\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <ThumbsUp\ size=\{16\}\ fill=\{isPostLiked(p)\ ?\ \textcolor{stringliteral}{"{}\#067a54"{}}\ :\ \textcolor{stringliteral}{"{}none"{}}\}\ />\{\textcolor{stringliteral}{"{}\ "{}}\}}
+\DoxyCodeLine{00553\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{p.likes\ ||\ 0\}}
+\DoxyCodeLine{00554\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{00555\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00556\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00557\ \ \ \ \ \ \ \ \ \ \ ))\}}
+\DoxyCodeLine{00558\ }
+\DoxyCodeLine{00559\ \ \ \ \ \ \ \ \ \ \ \{posts.length\ ===\ 0\ ?\ (}
+\DoxyCodeLine{00560\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}mutedSmall"{}}>No\ posts\ yet.\ Create\ the\ first\ one!</div>}
+\DoxyCodeLine{00561\ \ \ \ \ \ \ \ \ \ \ )\ :\ null\}}
+\DoxyCodeLine{00562\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{00563\ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{00564\ \ \ \ \ </div>}
+\DoxyCodeLine{00565\ \ \ );}
+\DoxyCodeLine{00566\ \}}
+
+\end{DoxyCode}
+Here is the call graph for this function:\+
+% FIG 0
+Here is the caller graph for this function:\+
+% FIG 1
+\Hypertarget{community_8jsx_a5559105f55daf9fab5d56509db18467b}\index{community.jsx@{community.jsx}!readStoredUser@{readStoredUser}}
+\index{readStoredUser@{readStoredUser}!community.jsx@{community.jsx}}
+\doxysubsubsection{\texorpdfstring{readStoredUser()}{readStoredUser()}}
+{\footnotesize\ttfamily \label{community_8jsx_a5559105f55daf9fab5d56509db18467b} 
+function read\+Stored\+User (\begin{DoxyParamCaption}{}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{community_8jsx_source_l00076}{76}} of file \doxymbox{\hyperlink{community_8jsx_source}{community.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00076\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00077\ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{00078\ \ \ \ \ \textcolor{keyword}{const}\ raw\ =\ localStorage.getItem(\textcolor{stringliteral}{'user'});}
+\DoxyCodeLine{00079\ \ \ \ \ \textcolor{keywordflow}{return}\ raw\ ?\ JSON.parse(raw)\ :\ \textcolor{keyword}{null};}
+\DoxyCodeLine{00080\ \ \ \}\ \textcolor{keywordflow}{catch}\ \{}
+\DoxyCodeLine{00081\ \ \ \ \ \textcolor{keywordflow}{return}\ \textcolor{keyword}{null};}
+\DoxyCodeLine{00082\ \ \ \}}
+\DoxyCodeLine{00083\ \}}
+
+\end{DoxyCode}
+Here is the caller graph for this function:\+
+% FIG 2
+\Hypertarget{community_8jsx_aded2e603bf0dbd35d446bcfb1ca1a313}\index{community.jsx@{community.jsx}!timeAgo@{timeAgo}}
+\index{timeAgo@{timeAgo}!community.jsx@{community.jsx}}
+\doxysubsubsection{\texorpdfstring{timeAgo()}{timeAgo()}}
+{\footnotesize\ttfamily \label{community_8jsx_aded2e603bf0dbd35d446bcfb1ca1a313} 
+function time\+Ago (\begin{DoxyParamCaption}\item[{}]{iso}{}\end{DoxyParamCaption})}
+
+
+
+Definition at line \doxymbox{\hyperlink{community_8jsx_source_l00085}{85}} of file \doxymbox{\hyperlink{community_8jsx_source}{community.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00085\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00086\ \ \ \textcolor{keyword}{const}\ d\ =\ \textcolor{keyword}{new}\ Date(iso).getTime();}
+\DoxyCodeLine{00087\ \ \ \textcolor{keyword}{const}\ diff\ =\ Date.now()\ -\/\ d;}
+\DoxyCodeLine{00088\ \ \ \textcolor{keyword}{const}\ mins\ =\ Math.floor(diff\ /\ 60000);}
+\DoxyCodeLine{00089\ \ \ \textcolor{keywordflow}{if}\ (mins\ <\ 1)\ \textcolor{keywordflow}{return}\ \textcolor{stringliteral}{"{}just\ now"{}};}
+\DoxyCodeLine{00090\ \ \ \textcolor{keywordflow}{if}\ (mins\ <\ 60)\ \textcolor{keywordflow}{return}\ \`{}\$\{mins\}m\ ago\`{};}
+\DoxyCodeLine{00091\ \ \ \textcolor{keyword}{const}\ hrs\ =\ Math.floor(mins\ /\ 60);}
+\DoxyCodeLine{00092\ \ \ \textcolor{keywordflow}{if}\ (hrs\ <\ 24)\ \textcolor{keywordflow}{return}\ \`{}\$\{hrs\}h\ ago\`{};}
+\DoxyCodeLine{00093\ \ \ \textcolor{keyword}{const}\ days\ =\ Math.floor(hrs\ /\ 24);}
+\DoxyCodeLine{00094\ \ \ \textcolor{keywordflow}{return}\ \`{}\$\{days\}d\ ago\`{};}
+\DoxyCodeLine{00095\ \}}
+
+\end{DoxyCode}
+Here is the caller graph for this function:\+
+% FIG 3
+
+
+\label{doc-var-members}
+\Hypertarget{community_8jsx_doc-var-members}
+\doxysubsection{Variable Documentation}
+\Hypertarget{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}\index{community.jsx@{community.jsx}!api@{api}}
+\index{api@{api}!community.jsx@{community.jsx}}
+\doxysubsubsection{\texorpdfstring{api}{api}}
+{\footnotesize\ttfamily \label{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2} 
+const api}
+
+
+
+Definition at line \doxymbox{\hyperlink{community_8jsx_source_l00008}{8}} of file \doxymbox{\hyperlink{community_8jsx_source}{community.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00008\ \ \ \ \ \ \ \ \ \ \ \{}
+\DoxyCodeLine{00009\ \ \ listPosts:\ async\ ()\ =>\ \{}
+\DoxyCodeLine{00010\ \ \ \ \ \textcolor{keyword}{const}\ token\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'});}
+\DoxyCodeLine{00011\ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\doxymbox{\hyperlink{community_8jsx_aa9c3f00ad89212e52eb3139dbebbfc28}{API\_URL}},\ \{}
+\DoxyCodeLine{00012\ \ \ \ \ \ \ headers:\ \{\ Authorization:\ \`{}Bearer\ \$\{token\}\`{}\ \}}
+\DoxyCodeLine{00013\ \ \ \ \ \});}
+\DoxyCodeLine{00014\ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(\textcolor{stringliteral}{"{}Failed\ to\ load\ posts"{}});}
+\DoxyCodeLine{00015\ \ \ \ \ \textcolor{keywordflow}{return}\ res.json();}
+\DoxyCodeLine{00016\ \ \ \},}
+\DoxyCodeLine{00017\ \ \ createPost:\ async\ (content,\ imageFile)\ =>\ \{}
+\DoxyCodeLine{00018\ \ \ \ \ let\ imageUrl\ =\ \textcolor{keyword}{null};}
+\DoxyCodeLine{00019\ \ \ \ \ \textcolor{keywordflow}{if}\ (imageFile)\ \{}
+\DoxyCodeLine{00020\ \ \ \ \ \ \ imageUrl\ =\ await\ \textcolor{keyword}{new}\ Promise((resolve)\ =>\ \{}
+\DoxyCodeLine{00021\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ reader\ =\ \textcolor{keyword}{new}\ FileReader();}
+\DoxyCodeLine{00022\ \ \ \ \ \ \ \ \ reader.onloadend\ =\ ()\ =>\ resolve(reader.result);}
+\DoxyCodeLine{00023\ \ \ \ \ \ \ \ \ reader.readAsDataURL(imageFile);}
+\DoxyCodeLine{00024\ \ \ \ \ \ \ \});}
+\DoxyCodeLine{00025\ \ \ \ \ \}}
+\DoxyCodeLine{00026\ }
+\DoxyCodeLine{00027\ \ \ \ \ \textcolor{keyword}{const}\ token\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'});}
+\DoxyCodeLine{00028\ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\doxymbox{\hyperlink{community_8jsx_aa9c3f00ad89212e52eb3139dbebbfc28}{API\_URL}},\ \{}
+\DoxyCodeLine{00029\ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'POST'},}
+\DoxyCodeLine{00030\ \ \ \ \ \ \ headers:\ \{}
+\DoxyCodeLine{00031\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'Content-\/Type'}:\ \textcolor{stringliteral}{'application/json'},}
+\DoxyCodeLine{00032\ \ \ \ \ \ \ \ \ Authorization:\ \`{}Bearer\ \$\{token\}\`{},}
+\DoxyCodeLine{00033\ \ \ \ \ \ \ \},}
+\DoxyCodeLine{00034\ \ \ \ \ \ \ body:\ JSON.stringify(\{\ content,\ imageUrl\ \}),}
+\DoxyCodeLine{00035\ \ \ \ \ \});}
+\DoxyCodeLine{00036\ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(\textcolor{stringliteral}{"{}Failed\ to\ create\ post"{}});}
+\DoxyCodeLine{00037\ \ \ \ \ \textcolor{keywordflow}{return}\ res.json();}
+\DoxyCodeLine{00038\ \ \ \},}
+\DoxyCodeLine{00039\ \ \ likePost:\ async\ (postId)\ =>\ \{}
+\DoxyCodeLine{00040\ \ \ \ \ \textcolor{keyword}{const}\ token\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'});}
+\DoxyCodeLine{00041\ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}\$\{\doxymbox{\hyperlink{community_8jsx_aa9c3f00ad89212e52eb3139dbebbfc28}{API\_URL}}\}/\$\{postId\}/like\`{},\ \{}
+\DoxyCodeLine{00042\ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'POST'},}
+\DoxyCodeLine{00043\ \ \ \ \ \ \ headers:\ \{}
+\DoxyCodeLine{00044\ \ \ \ \ \ \ \ \ Authorization:\ \`{}Bearer\ \$\{token\}\`{},}
+\DoxyCodeLine{00045\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00046\ \ \ \ \ \});}
+\DoxyCodeLine{00047\ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(\textcolor{stringliteral}{"{}Failed\ to\ like\ post"{}});}
+\DoxyCodeLine{00048\ \ \ \ \ \textcolor{keywordflow}{return}\ res.json();}
+\DoxyCodeLine{00049\ \ \ \},}
+\DoxyCodeLine{00050\ \ \ deletePost:\ async\ (postId)\ =>\ \{}
+\DoxyCodeLine{00051\ \ \ \ \ \textcolor{keyword}{const}\ token\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'});}
+\DoxyCodeLine{00052\ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}\$\{\doxymbox{\hyperlink{community_8jsx_aa9c3f00ad89212e52eb3139dbebbfc28}{API\_URL}}\}/\$\{postId\}\`{},\ \{}
+\DoxyCodeLine{00053\ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'DELETE'},}
+\DoxyCodeLine{00054\ \ \ \ \ \ \ headers:\ \{}
+\DoxyCodeLine{00055\ \ \ \ \ \ \ \ \ Authorization:\ \`{}Bearer\ \$\{token\}\`{},}
+\DoxyCodeLine{00056\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{00057\ \ \ \ \ \});}
+\DoxyCodeLine{00058\ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(\textcolor{stringliteral}{"{}Failed\ to\ delete\ post"{}});}
+\DoxyCodeLine{00059\ \ \ \ \ \textcolor{keywordflow}{return}\ res.json();}
+\DoxyCodeLine{00060\ \ \ \},}
+\DoxyCodeLine{00061\ \ \ updatePost:\ async\ (postId,\ content)\ =>\ \{}
+\DoxyCodeLine{00062\ \ \ \ \ \textcolor{keyword}{const}\ token\ =\ localStorage.getItem(\textcolor{stringliteral}{'token'});}
+\DoxyCodeLine{00063\ \ \ \ \ \textcolor{keyword}{const}\ res\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(\`{}\$\{\doxymbox{\hyperlink{community_8jsx_aa9c3f00ad89212e52eb3139dbebbfc28}{API\_URL}}\}/\$\{postId\}\`{},\ \{}
+\DoxyCodeLine{00064\ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'PATCH'},}
+\DoxyCodeLine{00065\ \ \ \ \ \ \ headers:\ \{}
+\DoxyCodeLine{00066\ \ \ \ \ \ \ \ \ \textcolor{stringliteral}{'Content-\/Type'}:\ \textcolor{stringliteral}{'application/json'},}
+\DoxyCodeLine{00067\ \ \ \ \ \ \ \ \ Authorization:\ \`{}Bearer\ \$\{token\}\`{},}
+\DoxyCodeLine{00068\ \ \ \ \ \ \ \},}
+\DoxyCodeLine{00069\ \ \ \ \ \ \ body:\ JSON.stringify(\{\ content\ \}),}
+\DoxyCodeLine{00070\ \ \ \ \ \});}
+\DoxyCodeLine{00071\ \ \ \ \ \textcolor{keywordflow}{if}\ (!res.ok)\ \textcolor{keywordflow}{throw}\ \textcolor{keyword}{new}\ Error(\textcolor{stringliteral}{"{}Failed\ to\ edit\ post"{}});}
+\DoxyCodeLine{00072\ \ \ \ \ \textcolor{keywordflow}{return}\ res.json();}
+\DoxyCodeLine{00073\ \ \ \}}
+\DoxyCodeLine{00074\ \};}
+
+\end{DoxyCode}
+\Hypertarget{community_8jsx_aa9c3f00ad89212e52eb3139dbebbfc28}\index{community.jsx@{community.jsx}!API\_URL@{API\_URL}}
+\index{API\_URL@{API\_URL}!community.jsx@{community.jsx}}
+\doxysubsubsection{\texorpdfstring{API\_URL}{API\_URL}}
+{\footnotesize\ttfamily \label{community_8jsx_aa9c3f00ad89212e52eb3139dbebbfc28} 
+const API\+\_\+\+URL = \textquotesingle{}/\+\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/\+posts\textquotesingle{}}
+
+
+
+Definition at line \doxymbox{\hyperlink{community_8jsx_source_l00006}{6}} of file \doxymbox{\hyperlink{community_8jsx_source}{community.\+jsx}}.
+
+\Hypertarget{community_8jsx_a73958da5215a12339fe309a083ded211}\index{community.jsx@{community.jsx}!css@{css}}
+\index{css@{css}!community.jsx@{community.jsx}}
+\doxysubsubsection{\texorpdfstring{css}{css}}
+{\footnotesize\ttfamily \label{community_8jsx_a73958da5215a12339fe309a083ded211} 
+\doxymbox{\hyperlink{community_8jsx_a59be084da8908b7d77ff34b25cd84488}{import}} \doxymbox{\hyperlink{_dashboard_8jsx_a7a3e256b5e11e8beca4c739cd9894615}{community}} css}
+
+
+
+Definition at line \doxymbox{\hyperlink{community_8jsx_source_l00005}{5}} of file \doxymbox{\hyperlink{community_8jsx_source}{community.\+jsx}}.
+
+\Hypertarget{community_8jsx_a59be084da8908b7d77ff34b25cd84488}\index{community.jsx@{community.jsx}!import@{import}}
+\index{import@{import}!community.jsx@{community.jsx}}
+\doxysubsubsection{\texorpdfstring{import}{import}}
+{\footnotesize\ttfamily \label{community_8jsx_a59be084da8908b7d77ff34b25cd84488} 
+import \{ use\+Effect, use\+Memo, use\+State \} from "{}react"{}}
+
+
+
+Definition at line \doxymbox{\hyperlink{community_8jsx_source_l00001}{1}} of file \doxymbox{\hyperlink{community_8jsx_source}{community.\+jsx}}.
+
+
+\begin{DoxyCode}{0}
+\DoxyCodeLine{00001\ \{\ useEffect,\ useMemo,\ useState\ \}\ from\ \textcolor{stringliteral}{"{}react"{}};}
+
+\end{DoxyCode}

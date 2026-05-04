@@ -1,0 +1,376 @@
+\doxysection{Auth.\+jsx}
+\hypertarget{_auth_8jsx_source}{}\label{_auth_8jsx_source}\index{src/pages/Auth.jsx@{src/pages/Auth.jsx}}
+\doxymbox{\hyperlink{_auth_8jsx}{Go to the documentation of this file.}}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00001}00001\ \textcolor{keyword}{import}\ \{\ useState\ \}\ from\ \textcolor{stringliteral}{'react'}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00002}00002\ \textcolor{keyword}{import}\ \{\ useNavigate\ \}\ from\ \textcolor{stringliteral}{'react-\/router-\/dom'}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00003}00003\ \textcolor{keyword}{import}\ \{\ ChevronDown,\ Eye,\ EyeOff\ \}\ from\ \textcolor{stringliteral}{'lucide-\/react'}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00004}00004\ \textcolor{keyword}{import}\ \{\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}\ \}\ from\ \textcolor{stringliteral}{'../api.js'}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00005}00005\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00006}00006\ async\ \textcolor{keyword}{function}\ readErrorMessage(response)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00007}00007\ \ \ \textcolor{keyword}{const}\ text\ =\ await\ response.text()}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00008}00008\ \ \ \textcolor{keywordflow}{if}\ (!text)\ \textcolor{keywordflow}{return}\ \`{}Request\ failed\ (\$\{response.status\})\`{}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00009}00009\ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00010}00010\ \ \ \ \ \textcolor{keyword}{const}\ data\ =\ JSON.parse(text)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00011}00011\ \ \ \ \ \textcolor{keywordflow}{return}\ data.message\ ||\ text.slice(0,\ 280)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00012}00012\ \ \ \}\ \textcolor{keywordflow}{catch}\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00013}00013\ \ \ \ \ \textcolor{keywordflow}{return}\ text.slice(0,\ 280)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00014}00014\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00015}00015\ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00016}00016\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00017}00017\ \textcolor{keyword}{function}\ Auth()\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00018}00018\ \ \ \textcolor{keyword}{const}\ navigate\ =\ useNavigate()}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00019}00019\ \ \ const\ [isLogin,\ setIsLogin]\ =\ useState(true)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00020}00020\ \ \ const\ [forgotMode,\ setForgotMode]\ =\ useState(false)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00021}00021\ \ \ const\ [loading,\ setLoading]\ =\ useState(false)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00022}00022\ \ \ const\ [error,\ setError]\ =\ useState('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00023}00023\ \ \ const\ [success,\ setSuccess]\ =\ useState('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00024}00024\ \ \ const\ [showPassword,\ setShowPassword]\ =\ useState(false)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00025}00025\ \ \ const\ [formData,\ setFormData]\ =\ useState(\{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00026}00026\ \ \ \ \ name:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00027}00027\ \ \ \ \ email:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00028}00028\ \ \ \ \ password:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00029}00029\ \ \ \ \ role:\ \textcolor{stringliteral}{''}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00030}00030\ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00031}00031\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00032}00032\ \ \ \textcolor{keyword}{const}\ handleChange\ =\ (e)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00033}00033\ \ \ \ \ \textcolor{keyword}{const}\ \{\ name,\ value\ \}\ =\ e.target}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00034}00034\ \ \ \ \ setFormData(prev\ =>\ (\{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00035}00035\ \ \ \ \ \ \ ...prev,}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00036}00036\ \ \ \ \ \ \ [name]:\ value}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00037}00037\ \ \ \ \ \}))}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00038}00038\ \ \ \ \ setError(\textcolor{stringliteral}{''})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00039}00039\ \ \ \ \ setSuccess('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00040}00040\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00041}00041\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00042}00042\ \ \ const\ handleSubmit\ =\ async\ (e)\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00043}00043\ \ \ \ \ e.preventDefault()}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00044}00044\ \ \ \ \ setError(\textcolor{stringliteral}{''})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00045}00045\ \ \ \ \ setSuccess(\textcolor{stringliteral}{''})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00046}00046\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00047}00047\ \ \ \ \ \textcolor{keywordflow}{if}\ (forgotMode)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00048}00048\ \ \ \ \ \ \ \textcolor{keyword}{const}\ email\ =\ formData.email.trim()}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00049}00049\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (!email)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00050}00050\ \ \ \ \ \ \ \ \ setError(\textcolor{stringliteral}{'Please\ enter\ your\ email'})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00051}00051\ \ \ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00052}00052\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00053}00053\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00054}00054\ \ \ \ \ \ \ try\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00055}00055\ \ \ \ \ \ \ \ \ setLoading(\textcolor{keyword}{true})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00056}00056\ \ \ \ \ \ \ \ \ const\ response\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}('/\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/auth/forgot-\/password',\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00057}00057\ \ \ \ \ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'POST'},}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00058}00058\ \ \ \ \ \ \ \ \ \ \ headers:\ \{\ \textcolor{stringliteral}{'Content-\/Type'}:\ \textcolor{stringliteral}{'application/json;\ charset=utf-\/8'}\ \},}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00059}00059\ \ \ \ \ \ \ \ \ \ \ body:\ JSON.stringify(\{\ email\ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00060}00060\ \ \ \ \ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00061}00061\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00062}00062\ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (response.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00063}00063\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ data\ =\ await\ response.json()}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00064}00064\ \ \ \ \ \ \ \ \ \ \ setSuccess(data.message\ ||\ \textcolor{stringliteral}{'If\ an\ account\ exists\ with\ that\ email,\ a\ reset\ link\ has\ been\ sent.'})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00065}00065\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00066}00066\ \ \ \ \ \ \ \ \ \ \ let\ message\ =\ \textcolor{stringliteral}{'Unable\ to\ send\ reset\ instructions'}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00067}00067\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ text\ =\ await\ response.text()}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00068}00068\ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (text)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00069}00069\ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00070}00070\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ errorData\ =\ JSON.parse(text)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00071}00071\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ message\ =\ errorData.message\ ||\ message}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00072}00072\ \ \ \ \ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00073}00073\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ message\ =\ text}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00074}00074\ \ \ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00075}00075\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00076}00076\ \ \ \ \ \ \ \ \ \ \ setError(message)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00077}00077\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00078}00078\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (err)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00079}00079\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ message\ =\ err?.message\ ||\ \textcolor{stringliteral}{'Unable\ to\ send\ reset\ instructions.\ Please\ try\ again.'}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00080}00080\ \ \ \ \ \ \ \ \ setError(\`{}\$\{message\}\ Check\ backend\ /\doxymbox{\hyperlink{community_8jsx_a28bafe886456c1db3c11a2810bf51cf2}{api}}/auth/forgot-\/password\ and\ email\ env\ setup.\`{})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00081}00081\ \ \ \ \ \ \ \ \ console.error(\textcolor{stringliteral}{'Forgot\ password\ error:'},\ err)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00082}00082\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{finally}\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00083}00083\ \ \ \ \ \ \ \ \ setLoading(\textcolor{keyword}{false})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00084}00084\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00085}00085\ \ \ \ \ \ \ \textcolor{keywordflow}{return}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00086}00086\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00087}00087\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00088}00088\ \ \ \ \ \textcolor{keywordflow}{if}\ (!formData.email\ ||\ !formData.password)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00089}00089\ \ \ \ \ \ \ setError(\textcolor{stringliteral}{'Please\ fill\ in\ all\ required\ fields'})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00090}00090\ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00091}00091\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00092}00092\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00093}00093\ \ \ \ \ if\ (!isLogin\ \&\&\ !formData.name)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00094}00094\ \ \ \ \ \ \ setError(\textcolor{stringliteral}{'Please\ enter\ your\ name'})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00095}00095\ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00096}00096\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00097}00097\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00098}00098\ \ \ \ \ if\ (!isLogin\ \&\&\ !formData.role)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00099}00099\ \ \ \ \ \ \ setError(\textcolor{stringliteral}{'Please\ select\ a\ role'})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00100}00100\ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00101}00101\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00102}00102\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00103}00103\ \ \ \ \ \textcolor{keywordflow}{try}\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00104}00104\ \ \ \ \ \ \ setLoading(true)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00105}00105\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00106}00106\ \ \ \ \ \ \ const\ endpoint\ =\ isLogin\ ?\ \textcolor{stringliteral}{'/api/auth/login'}\ :\ \textcolor{stringliteral}{'/api/auth/register'}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00107}00107\ \ \ \ \ \ \ const\ options\ =\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00108}00108\ \ \ \ \ \ \ \ \ method:\ \textcolor{stringliteral}{'POST'},}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00109}00109\ \ \ \ \ \ \ \ \ headers:\ \{\ \textcolor{stringliteral}{'Content-\/Type'}:\ \textcolor{stringliteral}{'application/json'}\ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00110}00110\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00111}00111\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00112}00112\ \ \ \ \ \ \ options.body\ =\ JSON.stringify(\{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00113}00113\ \ \ \ \ \ \ \ \ name:\ formData.name,}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00114}00114\ \ \ \ \ \ \ \ \ email:\ formData.email,}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00115}00115\ \ \ \ \ \ \ \ \ password:\ formData.password,}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00116}00116\ \ \ \ \ \ \ \ \ role:\ formData.role}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00117}00117\ \ \ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00118}00118\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00119}00119\ \ \ \ \ \ \ \textcolor{keyword}{const}\ response\ =\ await\ \doxymbox{\hyperlink{api_8js_aafc5a401e2df891c589a846b47e99881}{apiFetch}}(endpoint,\ options)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00120}00120\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00121}00121\ \ \ \ \ \ \ \textcolor{keywordflow}{if}\ (response.ok)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00122}00122\ \ \ \ \ \ \ \ \ let\ data}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00123}00123\ \ \ \ \ \ \ \ \ try\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00124}00124\ \ \ \ \ \ \ \ \ \ \ data\ =\ await\ response.json()}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00125}00125\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00126}00126\ \ \ \ \ \ \ \ \ \ \ setError(\textcolor{stringliteral}{'Invalid\ response\ from\ server.\ Try\ again\ or\ restart\ the\ API.'})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00127}00127\ \ \ \ \ \ \ \ \ \ \ return}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00128}00128\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00129}00129\ \ \ \ \ \ \ \ \ if\ (data.token)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00130}00130\ \ \ \ \ \ \ \ \ \ \ const\ user\ =\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00131}00131\ \ \ \ \ \ \ \ \ \ \ \ \ \_id:\ data.user.\_id,}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00132}00132\ \ \ \ \ \ \ \ \ \ \ \ \ id:\ data.user.\_id,}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00133}00133\ \ \ \ \ \ \ \ \ \ \ \ \ name:\ data.user.name,}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00134}00134\ \ \ \ \ \ \ \ \ \ \ \ \ email:\ data.user.email,}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00135}00135\ \ \ \ \ \ \ \ \ \ \ \ \ role:\ data.user.role\ ===\ \textcolor{stringliteral}{'user'}\ ?\ \textcolor{stringliteral}{'volunteer'}\ :\ (data.user.role\ ||\ \textcolor{stringliteral}{'volunteer'}),}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00136}00136\ \ \ \ \ \ \ \ \ \ \ \ \ isVerified:\ data.user.isVerified\ ??\ true,}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00137}00137\ \ \ \ \ \ \ \ \ \ \ \ \ city:\ data.user.city\ ||\ \textcolor{stringliteral}{'Hyderabad'},}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00138}00138\ \ \ \ \ \ \ \ \ \ \ \ \ points:\ data.user.points\ ??\ 0,}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00139}00139\ \ \ \ \ \ \ \ \ \ \ \ \ badges:\ [],}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00140}00140\ \ \ \ \ \ \ \ \ \ \ \ \ joinedEventIds:\ [],}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00141}00141\ \ \ \ \ \ \ \ \ \ \ \ \ interests:\ [],}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00142}00142\ \ \ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00143}00143\ \ \ \ \ \ \ \ \ \ \ localStorage.setItem(\textcolor{stringliteral}{'token'},\ data.token)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00144}00144\ \ \ \ \ \ \ \ \ \ \ localStorage.setItem(\textcolor{stringliteral}{'user'},\ JSON.stringify(user))}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00145}00145\ \ \ \ \ \ \ \ \ \ \ setFormData(\{\ name:\ \textcolor{stringliteral}{''},\ email:\ \textcolor{stringliteral}{''},\ password:\ \textcolor{stringliteral}{''},\ role:\ \textcolor{stringliteral}{''}\ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00146}00146\ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ redirectPath\ =\ user.role\ ===\ \textcolor{stringliteral}{'organizer'}\ ?\ \textcolor{stringliteral}{'/organizer-\/dashboard'}\ :\ (user.role\ ===\ \textcolor{stringliteral}{'admin'}\ ?\ \textcolor{stringliteral}{'/admin'}\ :\ \textcolor{stringliteral}{'/dashboard'})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00147}00147\ \ \ \ \ \ \ \ \ \ \ navigate(redirectPath,\ \{\ state:\ \{\ fromAuth:\ \textcolor{keyword}{true},\ user\ \}\ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00148}00148\ \ \ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00149}00149\ \ \ \ \ \ \ \ \ \ \ setSuccess(data.message\ ||\ \textcolor{stringliteral}{'Registration\ successful.'})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00150}00150\ \ \ \ \ \ \ \ \ \ \ setFormData(\{\ name:\ \textcolor{stringliteral}{''},\ email:\ \textcolor{stringliteral}{''},\ password:\ \textcolor{stringliteral}{''},\ role:\ \textcolor{stringliteral}{''}\ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00151}00151\ \ \ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00152}00152\ \ \ \ \ \ \ \}\ \textcolor{keywordflow}{else}\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00153}00153\ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ message\ =\ await\ readErrorMessage(response)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00154}00154\ \ \ \ \ \ \ \ \ setError(message\ ||\ \textcolor{stringliteral}{'Authentication\ failed'})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00155}00155\ \ \ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00156}00156\ \ \ \ \ \}\ \textcolor{keywordflow}{catch}\ (err)\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00157}00157\ \ \ \ \ \ \ \textcolor{keyword}{const}\ isNetwork\ =}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00158}00158\ \ \ \ \ \ \ \ \ err\ instanceof\ TypeError\ ||}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00159}00159\ \ \ \ \ \ \ \ \ (typeof\ err?.message\ ===\ \textcolor{stringliteral}{'string'}\ \&\&\ err.message.toLowerCase().includes(\textcolor{stringliteral}{'fetch'}))}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00160}00160\ \ \ \ \ \ \ setError(}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00161}00161\ \ \ \ \ \ \ \ \ isNetwork}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00162}00162\ \ \ \ \ \ \ \ \ \ \ ?\ \textcolor{stringliteral}{'Cannot\ reach\ the\ server.\ Start\ the\ backend\ (port\ 4000),\ ensure\ MongoDB\ is\ connected,\ and\ open\ the\ app\ from\ Vite\ (http://localhost:5173)\ so\ /api\ requests\ are\ proxied.'}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00163}00163\ \ \ \ \ \ \ \ \ \ \ :\ (err?.message\ ||\ \textcolor{stringliteral}{'Authentication\ failed.\ Please\ try\ again.'}),}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00164}00164\ \ \ \ \ \ \ )}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00165}00165\ \ \ \ \ \ \ console.error('Auth\ error:',\ err)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00166}00166\ \ \ \ \ \}\ finally\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00167}00167\ \ \ \ \ \ \ setLoading(\textcolor{keyword}{false})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00168}00168\ \ \ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00169}00169\ \ \ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00170}00170\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00171}00171\ \ \ \textcolor{keywordflow}{return}\ (}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00172}00172\ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}auth-\/container"{}}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00173}00173\ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}auth-\/card"{}}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00174}00174\ \ \ \ \ \ \ \ \ <h2>Eco\ Volunteer\ Match</h2>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00175}00175\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00176}00176\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}tabs"{}}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00177}00177\ \ \ \ \ \ \ \ \ \ \ \{!forgotMode\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00178}00178\ \ \ \ \ \ \ \ \ \ \ \ \ <>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00179}00179\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00180}00180\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\{\`{}tab\ \$\{isLogin\ ?\ \textcolor{stringliteral}{'active'}\ :\ \textcolor{stringliteral}{''}\}\`{}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00181}00181\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00182}00182\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00183}00183\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setIsLogin(\textcolor{keyword}{true})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00184}00184\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setForgotMode(false)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00185}00185\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setError('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00186}00186\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setSuccess('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00187}00187\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setFormData(\{\ name:\ \textcolor{stringliteral}{''},\ email:\ \textcolor{stringliteral}{''},\ password:\ \textcolor{stringliteral}{''},\ role:\ \textcolor{stringliteral}{'volunteer'}\ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00188}00188\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00189}00189\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00190}00190\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Login}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00191}00191\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00192}00192\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00193}00193\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\{\`{}tab\ \$\{!isLogin\ ?\ \textcolor{stringliteral}{'active'}\ :\ \textcolor{stringliteral}{''}\}\`{}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00194}00194\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00195}00195\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00196}00196\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setIsLogin(\textcolor{keyword}{false})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00197}00197\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setForgotMode(false)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00198}00198\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setError('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00199}00199\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setSuccess('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00200}00200\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setFormData(\{\ name:\ \textcolor{stringliteral}{''},\ email:\ \textcolor{stringliteral}{''},\ password:\ \textcolor{stringliteral}{''},\ role:\ \textcolor{stringliteral}{''}\ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00201}00201\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00202}00202\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00203}00203\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Register}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00204}00204\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00205}00205\ \ \ \ \ \ \ \ \ \ \ \ \ </>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00206}00206\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00207}00207\ \ \ \ \ \ \ \ \ \ \ \{forgotMode\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00208}00208\ \ \ \ \ \ \ \ \ \ \ \ \ <button\ className=\textcolor{stringliteral}{"{}tab\ active"{}}\ type=\textcolor{stringliteral}{"{}button"{}}>Forgot\ Password</button>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00209}00209\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00210}00210\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00211}00211\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00212}00212\ \ \ \ \ \ \ \ \ \{error\ \&\&\ <div\ className=\textcolor{stringliteral}{"{}error-\/message"{}}>\{error\}</div>\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00213}00213\ \ \ \ \ \ \ \ \ \{success\ \&\&\ <div\ className=\textcolor{stringliteral}{"{}success-\/message"{}}>\{success\}</div>\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00214}00214\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00215}00215\ \ \ \ \ \ \ \ \ <form\ onSubmit=\{handleSubmit\}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00216}00216\ \ \ \ \ \ \ \ \ \ \ \{!isLogin\ \&\&\ !forgotMode\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00217}00217\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}form-\/group"{}}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00218}00218\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ htmlFor=\textcolor{stringliteral}{"{}name"{}}>Full\ Name</label>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00219}00219\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00220}00220\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}text"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00221}00221\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{id}=\textcolor{stringliteral}{"{}name"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00222}00222\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ name=\textcolor{stringliteral}{"{}name"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00223}00223\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value=\{formData.name\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00224}00224\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{handleChange\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00225}00225\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ placeholder=\textcolor{stringliteral}{"{}Enter\ your\ full\ name"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00226}00226\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00227}00227\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00228}00228\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00229}00229\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00230}00230\ \ \ \ \ \ \ \ \ \ \ \{!isLogin\ \&\&\ !forgotMode\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00231}00231\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}form-\/group"{}}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00232}00232\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ htmlFor=\textcolor{stringliteral}{"{}role"{}}>Role</label>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00233}00233\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}auth-\/role-\/select-\/wrap"{}}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00234}00234\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <select}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00235}00235\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{id}=\textcolor{stringliteral}{"{}role"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00236}00236\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ name=\textcolor{stringliteral}{"{}role"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00237}00237\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value=\{formData.role\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00238}00238\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{handleChange\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00239}00239\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}auth-\/role-\/select"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00240}00240\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ required}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00241}00241\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ aria-\/label=\textcolor{stringliteral}{"{}Select\ your\ role"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00242}00242\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00243}00243\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <option\ value=\textcolor{stringliteral}{"{}"{}}\ disabled>Select\ a\ role</option>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00244}00244\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <option\ value=\textcolor{stringliteral}{"{}volunteer"{}}>Volunteer</option>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00245}00245\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <option\ value=\textcolor{stringliteral}{"{}organizer"{}}>Event\ Organizer</option>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00246}00246\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </select>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00247}00247\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <ChevronDown\ className=\textcolor{stringliteral}{"{}auth-\/role-\/chevron"{}}\ size=\{18\}\ strokeWidth=\{2\}\ aria-\/hidden\ />}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00248}00248\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00249}00249\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00250}00250\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00251}00251\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00252}00252\ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}form-\/group"{}}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00253}00253\ \ \ \ \ \ \ \ \ \ \ \ \ <label\ htmlFor=\textcolor{stringliteral}{"{}email"{}}>Email</label>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00254}00254\ \ \ \ \ \ \ \ \ \ \ \ \ <input}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00255}00255\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}email"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00256}00256\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{id}=\textcolor{stringliteral}{"{}email"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00257}00257\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ name=\textcolor{stringliteral}{"{}email"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00258}00258\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value=\{formData.email\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00259}00259\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{handleChange\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00260}00260\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ placeholder=\textcolor{stringliteral}{"{}Enter\ your\ email"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00261}00261\ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00262}00262\ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00263}00263\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00264}00264\ \ \ \ \ \ \ \ \ \ \ \{!forgotMode\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00265}00265\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}form-\/group"{}}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00266}00266\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <label\ htmlFor=\textcolor{stringliteral}{"{}password"{}}>Password</label>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00267}00267\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}password-\/field-\/wrap"{}}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00268}00268\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <input}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00269}00269\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\{showPassword\ ?\ \textcolor{stringliteral}{'text'}\ :\ \textcolor{stringliteral}{'password'}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00270}00270\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keywordtype}{id}=\textcolor{stringliteral}{"{}password"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00271}00271\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ name=\textcolor{stringliteral}{"{}password"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00272}00272\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ autoComplete=\{isLogin\ ?\ \textcolor{stringliteral}{'current-\/password'}\ :\ \textcolor{stringliteral}{'new-\/password'}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00273}00273\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ value=\{formData.password\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00274}00274\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onChange=\{handleChange\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00275}00275\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ placeholder=\textcolor{stringliteral}{"{}Enter\ your\ password"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00276}00276\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ />}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00277}00277\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00278}00278\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00279}00279\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}password-\/toggle-\/btn"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00280}00280\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ tabIndex=\{-\/1\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00281}00281\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ aria-\/label=\{showPassword\ ?\ \textcolor{stringliteral}{'Hide\ password'}\ :\ \textcolor{stringliteral}{'Show\ password'}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00282}00282\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ setShowPassword((v)\ =>\ !v)\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00283}00283\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00284}00284\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{showPassword\ ?\ <EyeOff\ size=\{20\}\ strokeWidth=\{2\}\ />\ :\ <Eye\ size=\{20\}\ strokeWidth=\{2\}\ />\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00285}00285\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00286}00286\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00287}00287\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00288}00288\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00289}00289\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00290}00290\ \ \ \ \ \ \ \ \ \ \ \{forgotMode\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00291}00291\ \ \ \ \ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}form-\/group"{}}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00292}00292\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <p>Enter\ your\ email\ address\ to\ receive\ a\ reset\ link.</p>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00293}00293\ \ \ \ \ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00294}00294\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00295}00295\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00296}00296\ \ \ \ \ \ \ \ \ \ \ <button\ type=\textcolor{stringliteral}{"{}submit"{}}\ className=\textcolor{stringliteral}{"{}btn-\/primary"{}}\ disabled=\{loading\}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00297}00297\ \ \ \ \ \ \ \ \ \ \ \ \ \{loading}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00298}00298\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ \textcolor{stringliteral}{'Processing...'}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00299}00299\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ forgotMode}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00300}00300\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ \textcolor{stringliteral}{'Send\ Reset\ Link'}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00301}00301\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ isLogin}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00302}00302\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ ?\ \textcolor{stringliteral}{'Login'}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00303}00303\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ :\ \textcolor{stringliteral}{'Create\ Account'}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00304}00304\ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00305}00305\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00306}00306\ \ \ \ \ \ \ \ \ </form>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00307}00307\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00308}00308\ \ \ \ \ \ \ \ \ <div\ className=\textcolor{stringliteral}{"{}auth-\/footer"{}}>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00309}00309\ \ \ \ \ \ \ \ \ \ \ \{!forgotMode\ \&\&\ isLogin\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00310}00310\ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00311}00311\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00312}00312\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}link-\/btn"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00313}00313\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00314}00314\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setForgotMode(\textcolor{keyword}{true})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00315}00315\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setIsLogin(true)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00316}00316\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setError('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00317}00317\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setSuccess('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00318}00318\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setFormData(\{\ name:\ \textcolor{stringliteral}{''},\ email:\ \textcolor{stringliteral}{''},\ password:\ \textcolor{stringliteral}{''},\ role:\ \textcolor{stringliteral}{''}\ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00319}00319\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00320}00320\ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00321}00321\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Forgot\ password?}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00322}00322\ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00323}00323\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00324}00324\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00325}00325\ \ \ \ \ \ \ \ \ \ \ \{forgotMode\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00326}00326\ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00327}00327\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00328}00328\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}link-\/btn"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00329}00329\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00330}00330\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setForgotMode(\textcolor{keyword}{false})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00331}00331\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setIsLogin(true)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00332}00332\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setError('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00333}00333\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setSuccess('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00334}00334\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setFormData(\{\ name:\ \textcolor{stringliteral}{''},\ email:\ \textcolor{stringliteral}{''},\ password:\ \textcolor{stringliteral}{''},\ role:\ \textcolor{stringliteral}{''}\ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00335}00335\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00336}00336\ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00337}00337\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ Back\ to\ login}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00338}00338\ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00339}00339\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00340}00340\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00341}00341\ \ \ \ \ \ \ \ \ \ \ \{!forgotMode\ \&\&\ (}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00342}00342\ \ \ \ \ \ \ \ \ \ \ \ \ <p>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00343}00343\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{isLogin\ ?\ \textcolor{stringliteral}{"{}Don't\ have\ an\ account?\ "{}}\ :\ \textcolor{stringliteral}{'Already\ have\ an\ account?\ '}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00344}00344\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ <button}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00345}00345\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ type=\textcolor{stringliteral}{"{}button"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00346}00346\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ className=\textcolor{stringliteral}{"{}link-\/btn"{}}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00347}00347\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ onClick=\{()\ =>\ \{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00348}00348\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \textcolor{keyword}{const}\ nextLogin\ =\ !isLogin}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00349}00349\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setIsLogin(nextLogin)}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00350}00350\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setError(\textcolor{stringliteral}{''})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00351}00351\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setSuccess('')}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00352}00352\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ setFormData(\{}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00353}00353\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ name:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00354}00354\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ email:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00355}00355\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ password:\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00356}00356\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ role:\ nextLogin\ ?\ \textcolor{stringliteral}{'volunteer'}\ :\ \textcolor{stringliteral}{''},}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00357}00357\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \})}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00358}00358\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00359}00359\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ >}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00360}00360\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \{isLogin\ ?\ \textcolor{stringliteral}{'Register'}\ :\ \textcolor{stringliteral}{'Login'}\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00361}00361\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ </button>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00362}00362\ \ \ \ \ \ \ \ \ \ \ \ \ </p>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00363}00363\ \ \ \ \ \ \ \ \ \ \ )\}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00364}00364\ \ \ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00365}00365\ \ \ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00366}00366\ \ \ \ \ </div>}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00367}00367\ \ \ )}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00368}00368\ \}}
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00369}00369\ }
+\DoxyCodeLine{\Hypertarget{_auth_8jsx_source_l00370}00370\ export\ \textcolor{keywordflow}{default}\ Auth}
+
+\end{DoxyCode}
