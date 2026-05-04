@@ -260,6 +260,29 @@ docs/html/index.html
 If your source code changes, regenerate the docs with your Doxygen toolchain and refresh this file.
 
 ---
+
+## 📋 Project Documentation Artifacts
+
+This repository includes comprehensive project documentation in the root directory:
+
+### 📄 **SRS.pdf** — Software Requirements Specification
+Detailed functional and non-functional requirements, use cases, and acceptance criteria for the Eco Volunteer Match platform.
+
+### 📐 **SDS.pdf** — Software Design Specification
+Complete system architecture, component design, data flow diagrams, database schema, and design decisions that guide implementation.
+
+### 📊 **Test_Plan.xlsx** — Test Plan
+Comprehensive testing strategy including:
+- Unit test cases
+- Integration test scenarios
+- Test coverage matrix
+- User acceptance test (UAT) procedures
+- Performance and security test requirements
+
+All three documents provide the blueprint for understanding the project's vision, implementation, and quality assurance approach.
+
+---
+
 ## 🐛 Troubleshooting
 
 **MongoDB not running?**
