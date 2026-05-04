@@ -1,24 +1,5 @@
 <div align="center">
 
-<<<<<<< HEAD
-ECO Volunteer Match is a purpose-built platform that connects volunteers with environmental events, cleanup campaigns, and community sustainability projects.
-
-It is designed to make eco volunteering easy, rewarding, and impactful. Volunteers discover local green initiatives, organizers manage events and participants, and the whole experience is supported by clean full-stack architecture.
-
-> Match passion with purpose.
-> 
-> Volunteer for nature, grow your impact.
-> 
-> Turning local environmental care into shared action.
-=======
-<img src="https://img.shields.io/badge/version-1.0.0-brightgreen?style=for-the-badge" alt="Version"/>
-<img src="https://img.shields.io/badge/license-MIT-blue?style=for-the-badge" alt="License"/>
-<img src="https://img.shields.io/badge/deployment-Vercel-black?style=for-the-badge&logo=vercel" alt="Vercel"/>
-<img src="https://img.shields.io/badge/stack-MERN-61DAFB?style=for-the-badge&logo=react" alt="MERN"/>
-<img src="https://img.shields.io/badge/docs-Doxygen-informational?style=for-the-badge" alt="Doxygen"/>
->>>>>>> 3d2516eb8e5d7d9d696eecc4351d719031d51512
-
-<br/><br/>
 
 # 🌿 Eco Volunteer Match
 
@@ -281,52 +262,30 @@ Comprehensive testing strategy including:
 
 All three documents provide the blueprint for understanding the project's vision, implementation, and quality assurance approach.
 
----
-
-## 🐛 Troubleshooting
-
-**MongoDB not running?**
-```bash
-mongod
-```
-
-**Port 4000 in use?** Change in `server/.env`:
-```env
-PORT=5000
-```
-
-**Frontend can't reach backend?**
-- Verify `CLIENT_ORIGIN=http://localhost:5173` in `.env`
-- Check the Network tab in browser DevTools (F12)
-
-**Registration not saving?**
-```bash
-mongosh
-use eco-volunteer
-db.users.find()
-```
-
----
-
-## 🗺️ Roadmap
-
-- [ ] Project listings with volunteer sign-up flows
-- [ ] Interest-based project recommendation engine
-- [ ] Volunteer activity feed and leaderboard
-- [ ] Email notifications for new nearby projects
-- [ ] Admin dashboard for project organizers
-- [ ] OAuth (Google / GitHub) login support
-
----
-
-## 🤝 Contributing
-
-Pull requests are welcome! For major changes, please open an issue first to discuss what you'd like to change. Ensure all new backend functions include Doxygen-compatible annotations so documentation stays up to date.
-
----
 
 <div align="center">
 
-Made with 💚 for the planet &nbsp;|&nbsp; **Eco Volunteer Match** &nbsp;|&nbsp; [Live Demo](https://eco-five-gold.vercel.app)
+## 🌱 Every Action Counts
+
+The environmental crisis is not a problem for tomorrow — it's a challenge for today,  
+and it requires people like you.
+
+Eco Volunteer Match was built on the belief that technology, when used thoughtfully,  
+can turn individual intent into collective impact.
+
+Whether you're here to volunteer, contribute code, or simply explore —  
+**welcome. You're part of the solution.**
+
+<br/>
+
+*Built with purpose. Deployed with passion. Maintained with care.*
+
+<br/>
+
+**[🌐 Live Demo](https://eco-five-gold.vercel.app)** &nbsp;•&nbsp; **[📚 Doxygen Docs](#-documentation)** &nbsp;•&nbsp; **[⬆ Back to Top](#-eco-volunteer-match)**
+
+<br/>
+
+Made with 💚 for the planet by the Eco Volunteer Match team
 
 </div>
