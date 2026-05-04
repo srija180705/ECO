@@ -94,6 +94,7 @@ router.post("/register", async (req, res, next) => {
   try {
     const { name, email, password, city, role } = req.body;
     if (!email || !password) return res.status(400).json({ message: "email/password required" });
+    if (typeof password !== 'string' || password.length < 4) return res.status(400).json({ message: "Password must be at least 4 characters long" });
     const normalizedEmail = getNormalizedEmail(email);
     if (!normalizedEmail) return res.status(400).json({ message: "Invalid email format" });
 
@@ -199,6 +200,7 @@ router.post('/reset-password', async (req, res, next) => {
   try {
     const { email, token, password } = req.body;
     if (!email || !token || !password) return res.status(400).json({ message: 'Email, token, and password are required' });
+    if (typeof password !== 'string' || password.length < 4) return res.status(400).json({ message: 'Password must be at least 4 characters long' });
     const normalizedEmail = getNormalizedEmail(email);
     if (!normalizedEmail) return res.status(400).json({ message: 'Invalid email format' });
 
