@@ -1,6 +1,14 @@
 # Eco Volunteer Match
 
-A full-stack web application for connecting volunteers with environmental projects.
+ECO Volunteer Match is a purpose-built platform that connects volunteers with environmental events, cleanup campaigns, and community sustainability projects.
+
+It is designed to make eco volunteering easy, rewarding, and impactful. Volunteers discover local green initiatives, organizers manage events and participants, and the whole experience is supported by clean full-stack architecture.
+
+> Match passion with purpose.
+> 
+> Volunteer for nature, grow your impact.
+> 
+> Turning local environmental care into shared action.
 
 ## 🌐 Live Deployment
 
@@ -151,7 +159,18 @@ npm run seed     # Seed database with sample data (if available)
 ```
 
 ---
+## 📘 Doxygen Documentation
+This repository includes generated Doxygen documentation for the full source tree. It provides file references, searchable code listings, and documentation for frontend pages and backend API routes.
 
+To view the generated docs locally, open:
+
+```text
+docs/html/index.html
+```
+
+If your source code changes, regenerate the docs with your Doxygen toolchain and refresh this file.
+
+---
 ## 🐛 Troubleshooting
 
 ### Backend Connection Issues

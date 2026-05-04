@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=11"/>
 <meta name="generator" content="Doxygen 1.16.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>ECO Project: Main Page</title>
+<title>ECO Project Doxygen Docs</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -18,6 +18,55 @@
 <script type="text/javascript" src="search/searchdata.js"></script>
 <script type="text/javascript" src="search/search.js"></script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<style>
+  .hero-banner {
+    background: linear-gradient(135deg, #1b5e20 0%, #66bb6a 100%);
+    color: #fff;
+    border-radius: 16px;
+    padding: 28px 26px;
+    margin-bottom: 24px;
+    box-shadow: 0 18px 50px rgba(0,0,0,0.12);
+  }
+  .hero-banner h1 {
+    margin: 0 0 12px;
+    font-size: 2.3em;
+    line-height: 1.05;
+  }
+  .hero-banner p {
+    margin: 0;
+    font-size: 1.05em;
+    opacity: 0.93;
+    max-width: 760px;
+  }
+  .docs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(235px, 1fr));
+    gap: 18px;
+    margin-top: 26px;
+  }
+  .docs-card {
+    background: #fff;
+    color: #1c1c1c;
+    border: 1px solid #e2e8f0;
+    border-radius: 14px;
+    padding: 18px;
+    box-shadow: 0 8px 22px rgba(0,0,0,0.07);
+  }
+  .docs-card h3 {
+    margin-top: 0;
+    font-size: 1.1em;
+  }
+  .docs-card p {
+    margin: 0 0 12px;
+    line-height: 1.55;
+    color: #505050;
+  }
+  .docs-card a {
+    color: #0077cc;
+    text-decoration: none;
+  }
+  .docs-card a:hover { text-decoration: underline; }
+</style>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -26,9 +75,9 @@
  <tbody>
  <tr id="projectrow">
   <td id="projectalign">
-   <div id="projectname">ECO Project
+   <div id="projectname">ECO Project Doxygen Docs
    </div>
-   <div id="projectbrief">Full-stack project with backend, frontend, and APIs</div>
+   <div id="projectbrief">Full-stack React + Node.js application documentation for frontend, backend, and API workflows</div>
   </td>
  </tr>
  </tbody>
@@ -92,7 +141,32 @@ $(function(){initNavTree('index.html','',''); });
   <div class="headertitle"><div class="title">ECO Project Documentation</div></div>
 </div><!--header-->
 <div class="contents">
-<a href="doxygen_crawl.html"></a>
+  <div class="hero-banner">
+    <h1>Explore the full-stack ECO application with rich generated documentation</h1>
+    <p>Everything is documented in one place: frontend React pages, backend API routes, utilities, and the complete source listing. Use this documentation to understand architecture, trace behavior, and onboard quickly.</p>
+  </div>
+  <div class="docs-grid">
+    <div class="docs-card">
+      <h3>Project Overview</h3>
+      <p>Designed as a full-stack volunteer ecosystem, this project includes auth, event management, grievance handling, reward systems, and interactive community features.</p>
+      <a href="files.html">Browse source files</a>
+    </div>
+    <div class="docs-card">
+      <h3>Key Interfaces</h3>
+      <p>Inspect the HTML/JSX views for auth, dashboard, community, organizer, and profile screens, plus backend route definitions for auth and user management.</p>
+      <a href="_auth_8jsx.html">Open Auth page docs</a>
+    </div>
+    <div class="docs-card">
+      <h3>API & Backend</h3>
+      <p>Trace backend behavior through generated route and utility documentation for the server code under `server/src`.</p>
+      <a href="files.html">View backend source</a>
+    </div>
+    <div class="docs-card">
+      <h3>Search & Explore</h3>
+      <p>Use the built-in search to locate functions, variables, and files instantly. This makes the generated docs usable for both developers and reviewers.</p>
+      <a href="globals.html">Search globals</a>
+    </div>
+  </div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 </div><!-- container -->
