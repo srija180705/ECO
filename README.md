@@ -182,11 +182,3 @@ npm run seed     # Seed database with sample data (if available)
 - **Deployment**: Vercel (frontend)
 
 ---
-
-## 📝 Notes
-
-- Default city: "Hyderabad"
-- Initial points: 0 (for rewards system)
-- Initial badge: "b1" (for gamification)
-- Tokens expire after 7 days
-- Passwords are hashed with bcrypt (10 rounds)
